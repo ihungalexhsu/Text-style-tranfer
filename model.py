@@ -13,161 +13,45 @@ import random
 import os
 
 class Encoder(torch.nn.Module):
-    def __init__(self, input_dim, hidden_dim, n_layers, subsample, dropout_rate, in_channel=1):
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, n_layers, dropout_rate, 
+                 pad_idx=0, bidirectional=True, pre_embedding=None, update_embedding=True):
         super(Encoder, self).__init__()
-        #self.enc1 = VGG2L(in_channel)
-        #out_channel = _get_vgg2l_odim(input_dim)
-        self.enc2 = pBLSTM(input_dim=input_dim, hidden_dim=hidden_dim, n_layers=n_layers, 
-                           subsample=subsample, dropout_rate=dropout_rate)
+        
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
+        if embedding is not None:
+            self.embedding.weight = nn.Parameter(pre_embedding)
+        self.embedding.weight.requires_grad = update_embedding
+        self.enc = nn.GRU(embedding_dim, hidden_dim, n_layers, batch_first=True,
+                          bidirectional=bidirectional, dropout=dropout_rate)
 
     def forward(self, x, ilens):
-        #out, ilens = self.enc1(x, ilens)
-        out, ilens = self.enc2(x, ilens)
-        return out, ilens
-
-class AttLoc(torch.nn.Module):
-    def __init__(self, encoder_dim, decoder_dim, att_dim, conv_channels, conv_kernel_size, att_odim):
-        super(AttLoc, self).__init__()
-        self.mlp_enc = torch.nn.Linear(encoder_dim, att_dim)
-        self.mlp_dec = torch.nn.Linear(decoder_dim, att_dim, bias=False)
-        self.mlp_att = torch.nn.Linear(conv_channels, att_dim, bias=False)
-        self.loc_conv = torch.nn.Conv2d(in_channels=1, out_channels=conv_channels, 
-                                        kernel_size=(1, 2 * conv_kernel_size + 1),
-                                        stride=1,
-                                        padding=(0, conv_kernel_size), bias=False)
-        self.gvec = torch.nn.Linear(att_dim, 1, bias=False)
-        self.mlp_o = torch.nn.Linear(encoder_dim, att_odim)
-
-        self.encoder_dim = encoder_dim
-        self.decoder_dim = decoder_dim
-        self.att_dim = att_dim
-        self.att_odim = att_odim
-        self.conv_channels = conv_channels
-        
-        self.enc_length = None
-        self.enc_h = None
-        self.pre_compute_enc_h = None
-
-    def reset(self):
-        self.enc_length = None
-        self.enc_h = None
-        self.pre_compute_enc_h = None
-
-    def forward(self, enc_pad, enc_len, dec_h, att_prev, scaling=2.0):
-        '''
-        enc_pad:(batch, enc_length, enc_dim)
-        enc_len:(batch) of int
-        dec_h:(batch, 1, dec_dim)
-        att_prev:(batch, enc_length)
-        '''
-        batch_size = enc_pad.size(0)
-               
-        if self.pre_compute_enc_h is None:
-            self.enc_h = enc_pad
-            self.enc_length = self.enc_h.size(1)
-            self.pre_compute_enc_h = self.mlp_enc(self.enc_h) # batch_size x enc_length x att_dim
-
-        if dec_h is None:
-            dec_h = enc_pad.new_zeros(batch_size, self.decoder_dim)
-        else:
-            dec_h = dec_h.view(batch_size, self.decoder_dim)
-
-        # initialize attention weights to uniform
-        if att_prev is None:
-            att_prev = pad_list([self.enc_h.new(l).fill_(1.0 / l) for l in enc_len], 0)
-
-        att_conv = self.loc_conv(att_prev.view(batch_size, 1, 1, self.enc_length))
-        att_conv = att_conv.squeeze(2).transpose(1, 2) 
-        # att_conv: batch_size x channel x 1 x frame -> batch_size x frame x channel
-        att_conv = self.mlp_att(att_conv) # att_conv: batch_size x frame x channel -> batch_size x frame x att_dim
-
-        dec_h_tiled = self.mlp_dec(dec_h).view(batch_size, 1, self.att_dim)
-        
-        att_state = torch.tanh(self.pre_compute_enc_h + dec_h_tiled + att_conv)
-        e = self.gvec(att_state).squeeze(2) # batch_size x enc_length x 1 => batch_size x enc_length
-        attn = F.softmax(scaling * e, dim=1)
-        w_expanded = attn.unsqueeze(1) # w_expanded: batch_size x 1 x frame
-        
-        c = torch.bmm(w_expanded, self.enc_h).squeeze(1) 
-        # batch x 1 x frame * batch x enc_length x enc_dim => batchx1xenc_dim
-        c = self.mlp_o(c)
-        return c, attn
-
-class MultiHeadAttLoc(torch.nn.Module):
-    def __init__(self, encoder_dim, decoder_dim, att_dim, conv_channels, conv_kernel_size, heads, att_odim):
-        super(MultiHeadAttLoc, self).__init__()
-        self.heads = heads
-        self.mlp_enc = torch.nn.ModuleList([torch.nn.Linear(encoder_dim, att_dim) for _ in range(self.heads)])
-        self.mlp_dec = torch.nn.ModuleList([torch.nn.Linear(decoder_dim, att_dim, bias=False) \
-                for _ in range(self.heads)])
-        self.mlp_att = torch.nn.ModuleList([torch.nn.Linear(conv_channels, att_dim, bias=False) \
-                for _ in range(self.heads)])
-        self.loc_conv = torch.nn.ModuleList([torch.nn.Conv2d(
-                1, conv_channels, (1, 2 * conv_kernel_size + 1), 
-                padding=(0, conv_kernel_size), bias=False) for _ in range(self.heads)])
-        self.gvec = torch.nn.ModuleList([torch.nn.Linear(att_dim, 1, bias=False) for _ in range(self.heads)])
-        self.mlp_o = torch.nn.Linear(self.heads * encoder_dim, att_odim)
-
-        self.encoder_dim = encoder_dim
-        self.decoder_dim = decoder_dim
-        self.att_dim = att_dim
-        self.conv_channels = conv_channels
-        self.enc_length = None
-        self.enc_h = None
-        self.pre_compute_enc_h = None
-
-    def reset(self):
-        self.enc_length = None
-        self.enc_h = None
-        self.pre_compute_enc_h = None
-
-    def forward(self, enc_pad, enc_len, dec_h, att_prev, scaling=2.0):
-        batch_size =enc_pad.size(0)
-        if self.pre_compute_enc_h is None:
-            self.enc_h = enc_pad
-            self.enc_length = self.enc_h.size(1)
-            self.pre_compute_enc_h = [self.mlp_enc[h](self.enc_h) for h in range(self.heads)]
-
-        if dec_h is None:
-            dec_h = enc_pad.new_zeros(batch_size, self.decoder_dim)
-        else:
-            dec_h = dec_h.view(batch_size, self.decoder_dim)
-
-        # initialize attention weights to uniform
-        if att_prev is None:
-            att_prev = []
-            for h in range(self.heads):
-                att_prev += [pad_list([self.enc_h.new(l).fill_(1.0 / l) for l in enc_len], 0)]
-        
-        cs, ws = [], []
-        for h in range(self.heads):
-            att_conv = self.loc_conv[h](att_prev[h].view(batch_size, 1, 1, self.enc_length))
-            att_conv = att_conv.squeeze(2).transpose(1, 2)
-            att_conv = self.mlp_att[h](att_conv)
-            dec_h_tiled = self.mlp_dec[h](dec_h).view(batch_size, 1, self.att_dim)
-            att_state = torch.tanh(self.pre_compute_enc_h[h] + dec_h_tiled + att_conv)
-            e = self.gvec[h](att_state).squeeze(2)
-            attn = F.softmax(scaling * e, dim=1)
-            ws.append(attn)
-            w_expanded = attn.unsqueeze(1)
-            c = torch.bmm(w_expanded, self.enc_h).squeeze(1)
-            cs.append(c)
-        c = self.mlp_o(torch.cat(cs, dim=1))
-        return c, ws 
+        embedded = self.embedding(x)
+        xpack = pack_padded_sequence(embedded, ilens, batch_first=True)
+        output, hidden = self.enc(xpack)
+        output, ilens = pad_packed_sequence(output, batch_first=True)
+        ilens = np.array(ilens, dtype=np.int64).tolist()
+        return output, ilens
 
 class Decoder(torch.nn.Module):
-    def __init__(self, output_dim, embedding_dim, hidden_dim, attention, att_odim, 
-                 dropout_rate, bos, eos, pad, ls_weight=0, labeldist=None):
+    def __init__(self, output_dim, embedding_dim, hidden_dim, 
+                 dropout_rate, bos, eos, pad,
+                 use_attention=False, attention=None, att_odim=100, enc_out_dim,
+                 ls_weight=0, labeldist=None):
         super(Decoder, self).__init__()
         self.bos, self.eos, self.pad = bos, eos, pad
         self.embedding = torch.nn.Embedding(output_dim, embedding_dim, padding_idx=pad)
-        self.LSTMCell = torch.nn.LSTMCell(embedding_dim + att_odim, hidden_dim)
-        self.output_layer = torch.nn.Linear(hidden_dim + att_odim, output_dim)
-        self.attention = attention
-
         self.hidden_dim = hidden_dim
+        self.use_attention = use_attention
+        self.attention = attention
         self.att_odim = att_odim
         self.dropout_rate = dropout_rate
+        
+        if use_attention:
+            self.GRUCell = nn.GRUCell(embedding_dim + att_odim, hidden_dim)
+            self.output_layer = torch.nn.Linear(hidden_dim + att_odim, output_dim)
+        else:
+            self.GRUCell = nn.GRUCell(embedding_dim + enc_out_dim, hidden_dim)
+            self.output_layer = torch.nn.Linear(hidden_dim, output_dim)
 
         # label smoothing hyperparameters
         self.ls_weight = ls_weight
@@ -184,49 +68,56 @@ class Decoder(torch.nn.Module):
         else:
             return ori_tensor.new_zeros(ori_tensor.size(0), dim)
 
-    def forward_step(self, emb, dec_h, dec_c, c, attn, enc_output, enc_len):
-        cell_inp = torch.cat([emb, c], dim=-1)
+    def forward_step(self, emb, dec_h, context, attn, enc_output, enc_len):
+        cell_inp = torch.cat([emb, context], dim=-1)
         cell_inp = F.dropout(cell_inp, self.dropout_rate, training=self.training)
-        dec_h, dec_c = self.LSTMCell(cell_inp, (dec_h, dec_c))
+        dec_h = self.GRUCell(cell_inp, dec_h)
 
-        # run attention module
-        c, attn = self.attention(enc_output, enc_len, dec_h, attn)
-        output = torch.cat([dec_h, c], dim=-1)
+        if self.use_attention:
+            # run attention module
+            context, attn = self.attention(enc_output, enc_len, dec_h, attn)
+            output = torch.cat([dec_h, context], dim=-1)
+        else:
+            output = dec_h
+
         output = F.dropout(output, self.dropout_rate)
         logit = self.output_layer(output)
-        return logit, dec_h, dec_c, c, attn
+        return logit, dec_h, context, attn
 
     def forward(self, enc_output, enc_len, dec_input=None, tf_rate=1.0, max_dec_timesteps=500, sample=False):
         batch_size = enc_output.size(0)
         if dec_input is not None:
-            # dec_input shape: (batch, len, embed_dim)
+            # dec_input shape: (batch, len)
             # prepare input and output sequences
             bos = dec_input[0].data.new([self.bos])
             eos = dec_input[0].data.new([self.eos])
             dec_input_in = [torch.cat([bos, y], dim=0) for y in dec_input]
             dec_input_out = [torch.cat([y, eos], dim=0) for y in dec_input]
-            pad_dec_input_in = pad_list(dec_input_in, pad_value=self.pad) #TODO
-            pad_dec_input_out = pad_list(dec_input_out, pad_value=self.pad) #TODO
+            pad_dec_input_in = pad_list(dec_input_in, pad_value=self.pad)
+            pad_dec_input_out = pad_list(dec_input_out, pad_value=self.pad)
             # get length info
             batch_size, olength = pad_dec_input_out.size(0), pad_dec_input_out.size(1)
             # map idx to embedding
             dec_input_embedded = self.embedding(pad_dec_input_in)
 
         # initialization
-        dec_c = self.zero_state(enc_output)
         dec_h = self.zero_state(enc_output)
-        context = self.zero_state(enc_output, dim=self.att_odim)
+        if self.use_attention:
+            context = self.zero_state(enc_output, dim=self.att_odim)
+        else:
+            context = enc_output[:,-1,:]
 
         attn = None
         logits, prediction, attns = [], [], []
         # reset the attention module
-        if torch.cuda.is_available():
-            try:
-                self.attention.module.reset()
-            except:
+        if self.use_attention:
+            if torch.cuda.is_available():
+                try:
+                    self.attention.module.reset()
+                except:
+                    self.attention.reset()
+            else:
                 self.attention.reset()
-        else:
-            self.attention.reset()
 
         # loop for each timestep
         olength = max_dec_timesteps if not dec_input else olength
@@ -245,9 +136,8 @@ class Decoder(torch.nn.Module):
                 else:
                     emb = self.embedding(prediction[-1])
 
-            logit, dec_h, dec_c, context, attn = \
-                self.forward_step(emb, dec_h, dec_c, context, 
-                                  attn, enc_output, enc_len)
+            logit, dec_h, context, attn = \
+                self.forward_step(emb, dec_h, context, attn, enc_output, enc_len)
 
             attns.append(attn)
             logits.append(logit)
@@ -260,9 +150,10 @@ class Decoder(torch.nn.Module):
         logits = torch.stack(logits, dim=1) # batch x length x output_dim
         log_probs = F.log_softmax(logits, dim=2)
         prediction = torch.stack(prediction, dim=1) # batch x length
-        attns = torch.stack(attns, dim=1) # batch x length x enc_len
+        if self.use_attention:
+            attns = torch.stack(attns, dim=1) # batch x length x enc_len
 
-        # get the log probs of the true label # batch x length
+        # get the log probs of the true label(batch x length)
         if dec_input:
             dec_output_log_probs = torch.gather(log_probs, dim=2, index=pad_dec_input_out.unsqueeze(2)).squeeze(2)
         else:
@@ -441,4 +332,134 @@ class inverse_pBLSTM(nn.Module):
             enc_output = F.relu(projected)
         output_lens= np.array(enc_len, dtype=np.int64).tolist()
         return enc_output, output_lens
+
+class AttLoc(torch.nn.Module):
+    def __init__(self, encoder_dim, decoder_dim, att_dim, conv_channels, conv_kernel_size, att_odim):
+        super(AttLoc, self).__init__()
+        self.mlp_enc = torch.nn.Linear(encoder_dim, att_dim)
+        self.mlp_dec = torch.nn.Linear(decoder_dim, att_dim, bias=False)
+        self.mlp_att = torch.nn.Linear(conv_channels, att_dim, bias=False)
+        self.loc_conv = torch.nn.Conv2d(in_channels=1, out_channels=conv_channels, 
+                                        kernel_size=(1, 2 * conv_kernel_size + 1),
+                                        stride=1,
+                                        padding=(0, conv_kernel_size), bias=False)
+        self.gvec = torch.nn.Linear(att_dim, 1, bias=False)
+        self.mlp_o = torch.nn.Linear(encoder_dim, att_odim)
+
+        self.encoder_dim = encoder_dim
+        self.decoder_dim = decoder_dim
+        self.att_dim = att_dim
+        self.att_odim = att_odim
+        self.conv_channels = conv_channels
+        
+        self.enc_length = None
+        self.enc_h = None
+        self.pre_compute_enc_h = None
+
+    def reset(self):
+        self.enc_length = None
+        self.enc_h = None
+        self.pre_compute_enc_h = None
+
+    def forward(self, enc_pad, enc_len, dec_h, att_prev, scaling=2.0):
+        '''
+        enc_pad:(batch, enc_length, enc_dim)
+        enc_len:(batch) of int
+        dec_h:(batch, 1, dec_dim)
+        att_prev:(batch, enc_length)
+        '''
+        batch_size = enc_pad.size(0)
+               
+        if self.pre_compute_enc_h is None:
+            self.enc_h = enc_pad
+            self.enc_length = self.enc_h.size(1)
+            self.pre_compute_enc_h = self.mlp_enc(self.enc_h) # batch_size x enc_length x att_dim
+
+        if dec_h is None:
+            dec_h = enc_pad.new_zeros(batch_size, self.decoder_dim)
+        else:
+            dec_h = dec_h.view(batch_size, self.decoder_dim)
+
+        # initialize attention weights to uniform
+        if att_prev is None:
+            att_prev = pad_list([self.enc_h.new(l).fill_(1.0 / l) for l in enc_len], 0)
+
+        att_conv = self.loc_conv(att_prev.view(batch_size, 1, 1, self.enc_length))
+        att_conv = att_conv.squeeze(2).transpose(1, 2) 
+        # att_conv: batch_size x channel x 1 x frame -> batch_size x frame x channel
+        att_conv = self.mlp_att(att_conv) # att_conv: batch_size x frame x channel -> batch_size x frame x att_dim
+
+        dec_h_tiled = self.mlp_dec(dec_h).view(batch_size, 1, self.att_dim)
+        
+        att_state = torch.tanh(self.pre_compute_enc_h + dec_h_tiled + att_conv)
+        e = self.gvec(att_state).squeeze(2) # batch_size x enc_length x 1 => batch_size x enc_length
+        attn = F.softmax(scaling * e, dim=1)
+        w_expanded = attn.unsqueeze(1) # w_expanded: batch_size x 1 x frame
+        
+        c = torch.bmm(w_expanded, self.enc_h).squeeze(1) 
+        # batch x 1 x frame * batch x enc_length x enc_dim => batchx1xenc_dim
+        c = self.mlp_o(c)
+        return c, attn
+
+class MultiHeadAttLoc(torch.nn.Module):
+    def __init__(self, encoder_dim, decoder_dim, att_dim, conv_channels, conv_kernel_size, heads, att_odim):
+        super(MultiHeadAttLoc, self).__init__()
+        self.heads = heads
+        self.mlp_enc = torch.nn.ModuleList([torch.nn.Linear(encoder_dim, att_dim) for _ in range(self.heads)])
+        self.mlp_dec = torch.nn.ModuleList([torch.nn.Linear(decoder_dim, att_dim, bias=False) \
+                for _ in range(self.heads)])
+        self.mlp_att = torch.nn.ModuleList([torch.nn.Linear(conv_channels, att_dim, bias=False) \
+                for _ in range(self.heads)])
+        self.loc_conv = torch.nn.ModuleList([torch.nn.Conv2d(
+                1, conv_channels, (1, 2 * conv_kernel_size + 1), 
+                padding=(0, conv_kernel_size), bias=False) for _ in range(self.heads)])
+        self.gvec = torch.nn.ModuleList([torch.nn.Linear(att_dim, 1, bias=False) for _ in range(self.heads)])
+        self.mlp_o = torch.nn.Linear(self.heads * encoder_dim, att_odim)
+
+        self.encoder_dim = encoder_dim
+        self.decoder_dim = decoder_dim
+        self.att_dim = att_dim
+        self.conv_channels = conv_channels
+        self.enc_length = None
+        self.enc_h = None
+        self.pre_compute_enc_h = None
+
+    def reset(self):
+        self.enc_length = None
+        self.enc_h = None
+        self.pre_compute_enc_h = None
+
+    def forward(self, enc_pad, enc_len, dec_h, att_prev, scaling=2.0):
+        batch_size =enc_pad.size(0)
+        if self.pre_compute_enc_h is None:
+            self.enc_h = enc_pad
+            self.enc_length = self.enc_h.size(1)
+            self.pre_compute_enc_h = [self.mlp_enc[h](self.enc_h) for h in range(self.heads)]
+
+        if dec_h is None:
+            dec_h = enc_pad.new_zeros(batch_size, self.decoder_dim)
+        else:
+            dec_h = dec_h.view(batch_size, self.decoder_dim)
+
+        # initialize attention weights to uniform
+        if att_prev is None:
+            att_prev = []
+            for h in range(self.heads):
+                att_prev += [pad_list([self.enc_h.new(l).fill_(1.0 / l) for l in enc_len], 0)]
+        
+        cs, ws = [], []
+        for h in range(self.heads):
+            att_conv = self.loc_conv[h](att_prev[h].view(batch_size, 1, 1, self.enc_length))
+            att_conv = att_conv.squeeze(2).transpose(1, 2)
+            att_conv = self.mlp_att[h](att_conv)
+            dec_h_tiled = self.mlp_dec[h](dec_h).view(batch_size, 1, self.att_dim)
+            att_state = torch.tanh(self.pre_compute_enc_h[h] + dec_h_tiled + att_conv)
+            e = self.gvec[h](att_state).squeeze(2)
+            attn = F.softmax(scaling * e, dim=1)
+            ws.append(attn)
+            w_expanded = attn.unsqueeze(1)
+            c = torch.bmm(w_expanded, self.enc_h).squeeze(1)
+            cs.append(c)
+        c = self.mlp_o(torch.cat(cs, dim=1))
+        return c, ws 
 
