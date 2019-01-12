@@ -212,6 +212,28 @@ class E2E(torch.nn.Module):
         loss = -torch.sum(log_probs * mask) / sum(seq_len)
         return loss
 
+class style_classifier(nn.Module):
+    def __init__(self, enc_out_dim, hidden_dim, n_layers, out_dim):
+        super().__init__()
+        linear_layers=[]
+        for i in range(n_layers):
+            idim = enc_out_dim if i==0 else hidden_dim
+            odim = out_dim if i==(n_layers-1)
+            layers.append(nn.Linear(idim, odim))
+        self.layers = nn.ModuleList(linear_layers)
+        self.n_layers = n_layers   
+
+    def forward(self, representation):
+        out = representation
+        for i, layer in enumerate(self.layers):
+            out = layer(out)
+            if i != (self.n_layers-1):
+                out = nn.ReLU(out)
+        return F.log_softmax(out, dim=-1)
+
+'''
+deprecated
+'''
 class disentangle_clean(nn.Module):
     def __init__(self, clean_repre_dim, hidden_dim, nuisance_dim):
         super().__init__()
@@ -243,9 +265,6 @@ class addnoiselayer(nn.Module):
         output = F.dropout(clean_repre, self.dropout_p, training=self.training)
         return output
 
-'''
-deprecated
-'''
 class reconstructRNN(nn.Module):
     def __init__(self, attention, att_odim, hidden_dim, output_dim):
         super().__init__()
