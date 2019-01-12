@@ -29,11 +29,17 @@ def cc_model(net):
         device = torch.device('cpu')
         return net.to(device)
 
-def to_gpu(data):
+def to_gpu(data, bos, eos, pad):
     xs, ilens, ys, spks, envs, trans = data
     xs = cc(xs)
     ilens = cc(torch.LongTensor(ilens))
     ys = [cc(y) for y in ys]
+    bos_t = ys[0].data.new([bos])
+    eos_t = ys[0].data.new([eos])
+    ys_in = [torch.cat([bos_t,y], dim=0) for y in ys]
+    ys_out = [torch.cat([y,eos_t], dim=0) for y in ys]
+    ys_in = pad_list(ys_in, pad_value=pad)
+    ys_out = pad_list(ys_out, pad_value=pad)
     spks = cc(torch.IntTensor(spks))
     envs = cc(torch.IntTensor(envs))
     return xs, ilens, ys, spks, envs, trans
