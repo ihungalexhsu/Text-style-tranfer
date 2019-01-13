@@ -1,0 +1,4 @@
+max_text_length: 30
+min_text_length: 8
+sort_dataset: True
+shuffle: True
