@@ -93,7 +93,7 @@ class Seq2seq(object):
 
     def get_label_dist(self, dataset):
         labelcount = np.zeros(len(self.vocab))
-        for token_ids,_,_ in dataset:
+        for token_ids,_ in dataset:
             for ind in token_ids:
                 labelcount[ind] += 1.
         labelcount[self.vocab['<EOS>']] += len(dataset)
@@ -134,7 +134,7 @@ class Seq2seq(object):
                                         bos=self.vocab['<BOS>'],
                                         eos=self.vocab['<EOS>'],
                                         pad=self.vocab['<PAD>'],
-                                        enc_out_dim=enc_out_dim,i
+                                        enc_out_dim=enc_out_dim,
                                         n_styles=self.config['n_style_type'],
                                         style_emb_dim=self.config['style_emb_dim'],
                                         use_attention=self.config['use_attention'],
@@ -193,7 +193,6 @@ class Seq2seq(object):
 
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
-            gold_transcripts+=trans
 
         self.encoder.train()
         self.decoder.train()
@@ -280,33 +279,6 @@ class Seq2seq(object):
         total_discri_loss = 0.
         total_cheat_loss = 0.
         
-        for cnt in range(self.config['m2_train_freq']):
-            print ()
-            for train_steps, data in enumerate(self.train_lab_loader):
-                bos = self.vocab['<BOS>']
-                eos = self.vocab['<EOS>']
-                pad = self.vocab['<PAD>']
-                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
-
-                # input the encoder
-                enc_outputs, enc_lens = self.encoder(xs, ilens)
-                s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs[:,-1,:])
-                
-                loss_nll = torch.nn.NLLLoss()
-                s_loss = loss_nll(s_log_probs, styles)*self.config['m2_loss_ratio']
-                total_discri_loss += s_loss.item()
-
-                # calculate gradients 
-                self.optimizer_m2.zero_grad()
-                s_loss.backward()
-                self.optimizer_m2.step()
-                # print message
-                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {s_loss:.3f}', end='\r')
-                # add to logger
-                tag = self.config['tag']
-                self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
-                                           value=s_loss.item()/self.config['m2_loss_ratio'], 
-                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
         print()
         for train_steps, data in enumerate(self.train_lab_loader):
             bos = self.vocab['<BOS>']
@@ -347,6 +319,33 @@ class Seq2seq(object):
                                        value=s_loss.item()/self.config['m2_loss_ratio'], 
                                        step=epoch * total_steps + train_steps + 1)
         print()
+        for cnt in range(self.config['m2_train_freq']):
+            print ()
+            for train_steps, data in enumerate(self.train_lab_loader):
+                bos = self.vocab['<BOS>']
+                eos = self.vocab['<EOS>']
+                pad = self.vocab['<PAD>']
+                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
+
+                # input the encoder
+                enc_outputs, enc_lens = self.encoder(xs, ilens)
+                s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs[:,-1,:])
+                
+                loss_nll = torch.nn.NLLLoss()
+                s_loss = loss_nll(s_log_probs, styles)*self.config['m2_loss_ratio']
+                total_discri_loss += s_loss.item()
+
+                # calculate gradients 
+                self.optimizer_m2.zero_grad()
+                s_loss.backward()
+                self.optimizer_m2.step()
+                # print message
+                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {s_loss:.3f}', end='\r')
+                # add to logger
+                tag = self.config['tag']
+                self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
+                                           value=s_loss.item()/self.config['m2_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
         return (total_loss/total_steps),(total_cheat_loss/total_steps),((total_discri_loss/total_steps)/self.config['m2_train_freq'])
 
     def train(self):
@@ -362,8 +361,8 @@ class Seq2seq(object):
         tf_rate_lowerbound = self.config['tf_rate_lowerbound']
 
 	# lr scheduler
-        if self.config['change_learning_rate_epoch'] is not None:
-            milestone = [int(num) for num in self.config['change_lr_epoch'].split(',')]
+        if self.config['change_lr_epoch'] is not None:
+            milestone = [int(num) for num in str(self.config['change_lr_epoch']).split(',')]
         else:
             milestone = []
         scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_m1,

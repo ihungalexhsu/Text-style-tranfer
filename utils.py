@@ -34,8 +34,8 @@ def to_gpu(data, bos, eos, pad):
     ilens = cc(torch.LongTensor(ilens))
     labels = cc(labels)
     ys = [cc(y) for y in token_ids]
-    bos_t = ys[0].data.new([bos])
-    eos_t = ys[0].data.new([eos])
+    bos_t = cc(ys[0].data.new([bos]))
+    eos_t = cc(ys[0].data.new([eos]))
     ys_in = [torch.cat([bos_t,y], dim=0) for y in ys]
     ys_out = [torch.cat([y,eos_t], dim=0) for y in ys]
     xs = pad_list(ys, pad_value=pad)

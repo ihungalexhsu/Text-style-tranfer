@@ -18,7 +18,7 @@ class Encoder(torch.nn.Module):
         super(Encoder, self).__init__()
         
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
-        if embedding is not None:
+        if pre_embedding is not None:
             self.embedding.weight = nn.Parameter(pre_embedding)
         self.embedding.weight.requires_grad = update_embedding
         self.enc = nn.GRU(embedding_dim, hidden_dim, n_layers, batch_first=True,
@@ -27,9 +27,12 @@ class Encoder(torch.nn.Module):
     def forward(self, x, ilens):
         # ilens (Tensor): list of sequences lengths of each batch element.        
         embedded = self.embedding(x)
+        total_length = x.size(1)
         xpack = pack_padded_sequence(embedded, ilens, batch_first=True)
+        self.enc.flatten_parameters()
         output, hidden = self.enc(xpack)
-        output, ilens = pad_packed_sequence(output, batch_first=True)
+        output, ilens = pad_packed_sequence(output, batch_first=True,
+                                            total_length=total_length)
         return output, ilens
 
 class Decoder(torch.nn.Module):
@@ -223,8 +226,8 @@ class Style_classifier(nn.Module):
         linear_layers=[]
         for i in range(n_layers):
             idim = enc_out_dim if i==0 else hidden_dim
-            odim = out_dim if i==(n_layers-1)
-            layers.append(nn.Linear(idim, odim))
+            odim = out_dim if i==(n_layers-1) else hidden_dim
+            linear_layers.append(nn.Linear(idim, odim))
         self.layers = nn.ModuleList(linear_layers)
         self.n_layers = n_layers   
 

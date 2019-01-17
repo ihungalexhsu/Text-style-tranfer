@@ -21,8 +21,8 @@ update_embedding: True
 dec_hidden_dim: 160
 dec_dropout_p: 0.2
 use_attention: False
-s_classifier_hidden_dim: 100
-s_classifier_n_layers: 2
+s_classifier_hidden_dim: 150
+s_classifier_n_layers: 3
 n_style_type: 2
 style_emb_dim: 20
 learning_rate_m1: 0.0001
@@ -38,7 +38,7 @@ init_tf_rate: 1.0
 tf_start_decay_epochs: 15
 tf_decay_epochs: 30
 tf_rate_lowerbound: 0.7
-change_lr_epoch: 30
+change_lr_epoch: 30,40
 lr_gamma: 0.2
 epochs: 50
 max_dec_timesteps: 30
