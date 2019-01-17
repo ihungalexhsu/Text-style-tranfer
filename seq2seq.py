@@ -167,23 +167,25 @@ class Seq2seq(object):
 
     def validation(self):
 
-        self.model.eval()
+        self.encoder.eval()
+        self.decoder.eval()
+        self.s_classifier.eval()
         all_prediction, all_ys = [], []
-        gold_transcripts = []
         total_loss = 0.
         for step, data in enumerate(self.dev_loader):
 
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
-            xs, ilens, ys, ys_in, ys_out, _, _, trans = to_gpu(data, bos, eos, pad)
-
-            # calculate loss
-            #log_probs, _ , _ = self.model(xs, ilens, ys=ys)
-            log_probs , prediction, attns =\
-                self.model(xs, ilens, None, 
-                           max_dec_timesteps=self.config['max_dec_timesteps'])
+            xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
             
+            # input the encoder
+            enc_outputs, enc_lens = self.encoder(xs, ilens)
+            logits, log_probs, prediction, attns=\
+                self.decoder(enc_outputs, enc_lens, styles, None,
+                             max_dec_timesteps=self.config['max_dec_timesteps'])
+
+           
             seq_len = [y.size(0) + 1 for y in ys]
             mask = cc(_seq_mask(seq_len=seq_len, max_len=log_probs.size(1)))
             loss = (-torch.sum(log_probs*mask))/sum(seq_len)
@@ -193,27 +195,25 @@ class Seq2seq(object):
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
             gold_transcripts+=trans
 
-        self.model.train()
+        self.encoder.train()
+        self.decoder.train()
+        self.s_classifier.train()
         # calculate loss
         avg_loss = total_loss / len(self.dev_loader)
 
-        cer, prediction_sents, ground_truth_sents = self.ind2sent(all_prediction, all_ys)
+        wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
-        #return avg_loss, cer, prediction_sents, ground_truth_sents
-        return avg_loss, cer, prediction_sents, gold_transcripts
+        return avg_loss, wer, prediction_sents, ground_truth_sents
     
-    def ind2sent(self, all_prediction, all_ys):
+    def idx2sent(self, all_prediction, all_ys):
         # remove eos and pad
         prediction_til_eos = remove_pad_eos(all_prediction, eos=self.vocab['<EOS>'])
 
-        # indexes to characters
+        # indexes to sentences
         prediction_sents = to_sents(prediction_til_eos, self.vocab, self.non_lang_syms)
         ground_truth_sents = to_sents(all_ys, self.vocab, self.non_lang_syms)
-
-        # calculate cer
-        #cer = calculate_cer(prediction_sents, ground_truth_sents)
-        cer = calculate_cer(prediction_til_eos, all_ys)
-        return cer, prediction_sents, ground_truth_sents
+        wer = calculate_wer(prediction_til_eos, all_ys)
+        return wer, prediction_sents, ground_truth_sents
 
     def test(self, state_dict=None):
 
@@ -221,7 +221,8 @@ class Seq2seq(object):
         if not state_dict:
             self.load_model(self.config['load_model_path'], self.config['load_optimizer'])
         else:
-            self.model.load_state_dict(state_dict)
+            self.encoder.load_state_dict(state_dict[0])
+            self.decoder.load_state_dict(state_dict[1])
 
         # get test dataset
         root_dir = self.config['dataset_root_dir']
@@ -229,42 +230,43 @@ class Seq2seq(object):
         test_file_name = self.config['test_file_name']
 
         test_dataset = PickleDataset(os.path.join(root_dir, f'{test_set}.p'), 
-            config=None, sort=False)
+                                     config=None, sort=False)
 
         test_loader = get_data_loader(test_dataset, 
-                batch_size=1, 
-                shuffle=False)
+                                      batch_size=1, 
+                                      shuffle=False)
 
-        self.model.eval()
+        self.encoder.eval()
+        self.decoder.eval()
+        self.s_classifier.eval()
         all_prediction, all_ys = [], []
-        gold_transcripts = []
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
-            xs, ilens, ys, ys_in, ys_out, _, _, trans = to_gpu(data, bos, eos, pad)
-
-            # max length in ys
-            #max_dec_timesteps = max([y.size(0) for y in ys])
-
-            # feed previous
-            _ , prediction, _ = self.model(xs, ilens, None, 
-                    max_dec_timesteps=self.config['max_dec_timesteps'])
+            xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
+            
+            # input the encoder
+            enc_outputs, enc_lens = self.encoder(xs, ilens)
+            logits, log_probs, prediction, attns=\
+                self.decoder(enc_outputs, enc_lens, styles, None,
+                             max_dec_timesteps=self.config['max_dec_timesteps'])
 
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
-            gold_transcripts+=trans
 
-        self.model.train()
+        self.encoder.train()
+        self.decoder.train()
+        self.s_classifier.train()
 
-        cer, prediction_sents, ground_truth_sents = self.ind2sent(all_prediction, all_ys)
+        wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
         with open(f'{test_file_name}.txt', 'w') as f:
             for p in prediction_sents:
                 f.write(f'{p}\n')
 
-        print(f'{test_file_name}: {len(prediction_sents)} utterances, CER={cer:.4f}')
-        return cer
+        print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
+        return wer
 
     def _normal_target(self, x):
         out = x.new_zeros(x.size())
@@ -349,7 +351,7 @@ class Seq2seq(object):
 
     def train(self):
 
-        best_acc = 0.0
+        best_wer = 200
         best_model = None
         early_stop_counter = 0
 
@@ -384,14 +386,14 @@ class Seq2seq(object):
             avg_train_loss, avg_distri_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
 
             # validation
-            avg_valid_loss, cer, prediction_sents, ground_truth_sents = self.validation()
+            avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
 
             print(f'Epoch: {epoch}, tf_rate={tf_rate:.3f}, train_loss={avg_train_loss:.4f}, '
-                    f'valid_loss={avg_valid_loss:.4f}, val_CER={cer:.4f}')
+                    f'valid_loss={avg_valid_loss:.4f}, val_WER={wer:.4f}')
 
             # add to tensorboard
             tag = self.config['tag']
-            self.logger.scalar_summary(f'{tag}/val/cer', cer, epoch)
+            self.logger.scalar_summary(f'{tag}/val/wer', wer, epoch)
             self.logger.scalar_summary(f'{tag}/val/loss', avg_valid_loss, epoch)
 
             # only add first n samples
@@ -409,18 +411,19 @@ class Seq2seq(object):
                 os.makedirs(self.config['model_dir'])
             model_path = os.path.join(self.config['model_dir'], self.config['model_name'])
             self.save_model(f'{model_path}-{epoch:03d}')
-            if cer < best_cer: 
+            if wer < best_wer: 
                 # save model
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
-                best_cer = cer
+                best_wer = wer
                 self.save_model(model_path)
-                best_model = self.model.state_dict()
-                print(f'Save #{epoch} model, val_loss={avg_valid_loss:.3f}, CER={cer:.3f}')
+                best_model_enc = self.encoder.state_dict()
+                best_model_dec = self.decoder.state_dict()
+                print(f'Save #{epoch} model, val_loss={avg_valid_loss:.4f}, WER={wer:.4f}')
                 print('-----------------')
                 early_stop_counter=0
             if epoch >= self.config['early_stop_start_epoch']:
                 early_stop_counter += 1
-                if early_stop_counter > self.config['early_stop']:
+                if early_stop_counter > self.config['early_stop_patience']:
                     break
-
-        return best_model, best_cer
+        best_model = (best_model_enc, best_model_dec)
+        return best_model, best_wer

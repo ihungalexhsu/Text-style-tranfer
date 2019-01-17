@@ -47,3 +47,9 @@ m2_loss_ratio: 1
 max_grad_norm: 5
 tag: style_transfer_basemodel_50epoch
 m2_train_freq: 5
+sample_num: 10
+model_dir: ./models/
+model_name: naive_style_transfer
+early_stop_start_epoch: 30
+early_stop_patience: 5
+test_file_name: ./tests/test

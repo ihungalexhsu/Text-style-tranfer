@@ -84,3 +84,32 @@ def remove_pad_eos(sequences, eos=2):
         sub_sequence = sequence[:eos_index]
         sub_sequences.append(sub_sequence)
     return sub_sequences
+
+def to_sents(index_seq, vocab, non_lang_syms):
+    word_list = idx2word(index_seq, vocab, non_lang_syms)
+    sentences = word_list_2_str(word_list)
+    return sentences
+
+def idx2word(sequences, vocab, non_lang_syms):
+    inverse_vocab = {v:k for k,v in vocab.items()}
+    non_lang_syms_idx = [vocab[sym] for sym in non_lang_syms]
+    output_seqs = []
+    for sequence in sequences:
+        output_seq = [inverse_vocab[idx] for idx in sequence if idx not in non_lang_syms_idx]
+        output_seqs.append(output_seq)
+    return output_seqs
+
+def word_list_2_str(word_lists):
+    sentences = []
+    for word_list in word_lists:
+        sentence = ' '.join([w if w != ' ' else '' for w in word_list])
+        sentences.append(sentence)
+    return sentences
+
+def calculate_wer(hyps, refs):
+    total_dis, total_len = 0., 0.
+    for hyp, ref in zip(hyps, refs):
+        dis = editdistance.eval(hyp, ref)
+        total_dis += dis
+        total_len += len(ref)
+    return total_dis/total_len
