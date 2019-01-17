@@ -31,6 +31,9 @@ for i in count:
     #if index>=29998:
     #    break
 
-f = open(r"dict.pkl",'wb')
+f = open(r"dict.p",'wb')
 pkl.dump(count_write,f)
 f.close()
+non_lang_syms=['<PAD>','<BOS>','<EOS>']
+pkl.dump(non_lang_syms,open('non_lang_syms.p','wb'))
+

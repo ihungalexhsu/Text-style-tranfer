@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from model import E2E
+from model import Encoder, Decoder, Style_classifier
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
@@ -28,9 +29,6 @@ class Seq2seq(object):
         # get label distribution
         self.get_label_dist(self.train_lab_dataset)
 
-        # calculate proportion between features and characters
-        self.proportion = self.calculate_length_proportion()
-
         # build model and optimizer
         self.build_model(load_model=load_model)
 
@@ -41,7 +39,7 @@ class Seq2seq(object):
 
     def load_vocab(self):
         with open(self.config['vocab_path'], 'rb') as f:
-            self.vocab = pickle.load(f) # a dict;character to index
+            self.vocab = pickle.load(f) # a dict; word to index
         with open(self.config['non_lang_syms_path'], 'rb') as f:
             self.non_lang_syms = pickle.load(f)
         return
@@ -57,18 +55,19 @@ class Seq2seq(object):
 
     def get_data_loaders(self):
         root_dir = self.config['dataset_root_dir']
-        # get labeled dataset
-        labeled_set = self.config['labeled_set']
-        self.train_lab_dataset = PickleDataset(os.path.join(root_dir, f'{labeled_set}.p'), 
-            config=self.config, sort=True)
+        train_set = self.config['train_set']
+        self.train_lab_dataset = PickleDataset(os.path.join(root_dir, 
+                                                            f'{train_set}.p'),
+                                               config=self.config, 
+                                               sort=True)
         self.train_lab_loader = get_data_loader(self.train_lab_dataset, 
                 batch_size=self.config['batch_size'], 
                 shuffle=self.config['shuffle'])
 
         # get dev dataset
         dev_set = self.config['dev_set']
-        # do not sort dev set
-        self.dev_dataset = PickleDataset(os.path.join(root_dir, f'{dev_set}.p'), sort=True)
+        self.dev_dataset = PickleDataset(os.path.join(root_dir, f'{dev_set}.p'), 
+                                         sort=True)
         self.dev_loader = get_data_loader(self.dev_dataset, 
                 batch_size=self.config['batch_size'] // 2, 
                 shuffle=False)
@@ -76,49 +75,71 @@ class Seq2seq(object):
 
     def get_label_dist(self, dataset):
         labelcount = np.zeros(len(self.vocab))
-        for _, y,_,_,_ in dataset:
-            for ind in y:
+        for token_ids,labels in dataset:
+            for ind in token_ids:
                 labelcount[ind] += 1.
         labelcount[self.vocab['<EOS>']] += len(dataset)
         labelcount[self.vocab['<PAD>']] = 0
         labelcount[self.vocab['<BOS>']] = 0
         self.labeldist = labelcount / np.sum(labelcount)
         return
-
-    def calculate_length_proportion(self):
-        x_len, y_len = 0, 0
-        for x, y,_,_,_ in self.train_lab_dataset:
-            x_len += x.shape[0]
-            y_len += len(y)
-        return y_len / x_len
              
     def build_model(self, load_model=False):
         labeldist = self.labeldist
         ls_weight = self.config['ls_weight']
+        pretrain_w2v_path = self.config['pretrain_w2v_path']
+        if pretrain_w2v_path is None:
+            pretrain_w2v = None
+        else:
+            with open(pretrain_w2v_path, 'rb') as f:
+                pretrain_w2v = pickle.load(f)
 
-        self.model = cc_model(E2E(input_dim=self.config['input_dim'],
-            enc_hidden_dim=self.config['enc_hidden_dim'],
-            enc_n_layers=self.config['enc_n_layers'],
-            subsample=self.config['subsample'],
-            dropout_rate=self.config['dropout_rate'],
-            dec_hidden_dim=self.config['dec_hidden_dim'],
-            att_dim=self.config['att_dim'],
-            conv_channels=self.config['conv_channels'],
-            conv_kernel_size=self.config['conv_kernel_size'],
-            att_odim=self.config['att_odim'],
-            output_dim=len(self.vocab),
-            embedding_dim=self.config['embedding_dim'],
-            ls_weight=ls_weight,
-            labeldist=labeldist,
-            pad=self.vocab['<PAD>'],
-            bos=self.vocab['<BOS>'],
-            eos=self.vocab['<EOS>']
-            ))
-        print(self.model)
-        self.model.float()
-        self.gen_opt = torch.optim.Adam(self.model.parameters(), 
-                                        lr=self.config['learning_rate'], 
-                                        weight_decay=self.config['weight_decay'])
+        self.encoder = cc_model(Encoder(vocab_size=len(self.vocab),
+                               embedding_dim=self.config['embedding_dim'],
+                               hidden_dim=self.config['enc_hidden_dim'],
+                               n_layers=self.config['enc_n_layers'],
+                               dropout_rate=self.config['enc_dropout_p'],
+                               pad_idx=self.vocab['<PAD>'],
+                               bidirectional=self.config['bidir_enc'],
+                               pre_embedding=pretrain_w2v,
+                               update_embedding=self.config['update_embedding']
+                               ))
+        print(self.encoder)
+        self.encoder.float()
+        if self.config['bidir_enc']:
+            enc_out_dim=2*self.config['enc_hidden_dim']
+        else:
+            enc_out_dim=self.config['enc_hidden_dim']
+        self.decoder = cc_model(Decoder(output_dim=len(self.vocab),
+                               embedding_dim=self.config['embedding_dim'],
+                               hidden_dim=self.config['dec_hidden_dim'],
+                               dropout_rate=self.config['dec_dropout_p'],
+                               bos=self.vocab['<BOS>'],
+                               eos=self.vocab['<EOS>'],
+                               pad=self.vocab['<PAD>'],
+                               enc_out_dim=enc_out_dim,
+                               use_attention=self.config['use_attention'],
+                               ls_weight=ls_weight,
+                               labeldist=labeldist))
+        print(self.decoder)
+        self.decoder.float()
+        self.s_classifier=\
+            cc_model(Style_classifier(enc_out_dim=enc_out_dim,
+                             hidden_dim=self.config['s_classifier_hidden_dim'],
+                             n_layers=self.config['s_classifier_n_layers'],
+                             out_dim=self.config['n_style_type']))
+        print(self.s_classifier)
+        self.s_classifier.float()
+        optimizer_m1=[self.encoder.parameters(),self.decoder.parameters()]
+        optimizer_m2=[self.s_classifier.parameters()]
+        self.optimizer_m1 =\
+            torch.optim.Adam(parameters_m1, 
+                             lr=self.config['learning_rate_m1'], 
+                             weight_decay=self.config['weight_decay_m1'])
+        self.optimizer_m2 =\
+            torch.optim.Adam(parameters_m2, 
+                             lr=self.config['learning_rate_m2'], 
+                             weight_decay=self.config['weight_decay_m2'])
 
         if load_model:
             self.load_model(self.config['load_model_path'], self.config['load_optimizer'])

@@ -212,7 +212,7 @@ class E2E(torch.nn.Module):
         loss = -torch.sum(log_probs * mask) / sum(seq_len)
         return loss
 
-class style_classifier(nn.Module):
+class Style_classifier(nn.Module):
     def __init__(self, enc_out_dim, hidden_dim, n_layers, out_dim):
         super().__init__()
         linear_layers=[]
