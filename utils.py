@@ -30,19 +30,18 @@ def cc_model(net):
         return net.to(device)
 
 def to_gpu(data, bos, eos, pad):
-    xs, ilens, ys, spks, envs, trans = data
-    xs = cc(xs)
+    token_ids, ilens, labels = data
     ilens = cc(torch.LongTensor(ilens))
-    ys = [cc(y) for y in ys]
+    labels = cc(labels)
+    ys = [cc(y) for y in token_ids]
     bos_t = ys[0].data.new([bos])
     eos_t = ys[0].data.new([eos])
     ys_in = [torch.cat([bos_t,y], dim=0) for y in ys]
     ys_out = [torch.cat([y,eos_t], dim=0) for y in ys]
+    xs = pad_list(ys, pad_value=pad)
     ys_in = pad_list(ys_in, pad_value=pad)
     ys_out = pad_list(ys_out, pad_value=pad)
-    spks = cc(torch.IntTensor(spks))
-    envs = cc(torch.IntTensor(envs))
-    return xs, ilens, ys, spks, envs, trans
+    return xs, ys, ys_in, ys_out, ilens, labels
 
 def _seq_mask(seq_len, max_len):
     '''

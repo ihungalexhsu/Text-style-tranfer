@@ -33,8 +33,16 @@ class Seq2seq(object):
         self.build_model(load_model=load_model)
 
     def save_model(self, model_path):
-        torch.save(self.model.state_dict(), f'{model_path}.ckpt')
-        torch.save(self.gen_opt.state_dict(), f'{model_path}.opt')
+        encoder_path = model_path+'_encoder'
+        decoder_path = model_path+'_decoder'
+        s_classifier_path = model_path+'_sclr'
+        opt1_path = model_path+'_opt1'
+        opt2_path = model_path+'_opt2'
+        torch.save(self.encoder.state_dict(), f'{encoder_path}.ckpt')
+        torch.save(self.decoder.state_dict(), f'{decoder_path}.ckpt')
+        torch.save(self.s_classifier.state_dict(), f'{s_classifier_path}.ckpt')
+        torch.save(self.optimizer_m1.state_dict(), f'{opt1_path}.opt')
+        torch.save(self.optimizer_m2.state_dict(), f'{opt2_path}.opt')
         return
 
     def load_vocab(self):
@@ -45,12 +53,22 @@ class Seq2seq(object):
         return
 
     def load_model(self, model_path, load_optimizer):
-        print(f'Load model from {model_path}.ckpt')
-        self.model.load_state_dict(torch.load(f'{model_path}.ckpt'))
+        print(f'Load model from {model_path}')
+        encoder_path = model_path+'_encoder'
+        decoder_path = model_path+'_decoder'
+        s_classifier_path = model_path+'_sclr'
+        opt1_path = model_path+'_opt1'
+        opt2_path = model_path+'_opt2'
+        self.encoder.load_state_dict(torch.load(f'{encoder_path}.ckpt'))
+        self.decoder.load_state_dict(torch.load(f'{decoder_path}.ckpt'))
+        self.s_classifier.load_state_dict(torch.load(f'{s_classifier_path}.ckpt'))
         if load_optimizer:
-            print(f'Load optmizer from {model_path}.opt')
-            self.gen_opt.load_state_dict(torch.load(f'{model_path}.opt'))
-            adjust_learning_rate(self.gen_opt, self.config['retrieve_learning_rate']) #TODO
+            print(f'Load optmizer from {model_path}')
+            self.optimizer_m1.load_state_dict(torch.load(f'{opt1_path}.opt'))
+            self.optimizer_m2.load_state_dict(torch.load(f'{opt2_path}.opt'))
+            if self.config['adjust_lr']:
+                adjust_learning_rate(self.optimizer_m1, self.config['retrieve_lr_m1']) 
+                adjust_learning_rate(self.optimizer_m2, self.config['retrieve_lr_m2']) 
         return
 
     def get_data_loaders(self):
@@ -75,7 +93,7 @@ class Seq2seq(object):
 
     def get_label_dist(self, dataset):
         labelcount = np.zeros(len(self.vocab))
-        for token_ids,labels in dataset:
+        for token_ids,_,_ in dataset:
             for ind in token_ids:
                 labelcount[ind] += 1.
         labelcount[self.vocab['<EOS>']] += len(dataset)
@@ -95,15 +113,14 @@ class Seq2seq(object):
                 pretrain_w2v = pickle.load(f)
 
         self.encoder = cc_model(Encoder(vocab_size=len(self.vocab),
-                               embedding_dim=self.config['embedding_dim'],
-                               hidden_dim=self.config['enc_hidden_dim'],
-                               n_layers=self.config['enc_n_layers'],
-                               dropout_rate=self.config['enc_dropout_p'],
-                               pad_idx=self.vocab['<PAD>'],
-                               bidirectional=self.config['bidir_enc'],
-                               pre_embedding=pretrain_w2v,
-                               update_embedding=self.config['update_embedding']
-                               ))
+                                        embedding_dim=self.config['embedding_dim'],
+                                        hidden_dim=self.config['enc_hidden_dim'],
+                                        n_layers=self.config['enc_n_layers'],
+                                        dropout_rate=self.config['enc_dropout_p'],
+                                        pad_idx=self.vocab['<PAD>'],
+                                        bidirectional=self.config['bidir_enc'],
+                                        pre_embedding=pretrain_w2v,
+                                        update_embedding=self.config['update_embedding']))
         print(self.encoder)
         self.encoder.float()
         if self.config['bidir_enc']:
@@ -111,33 +128,35 @@ class Seq2seq(object):
         else:
             enc_out_dim=self.config['enc_hidden_dim']
         self.decoder = cc_model(Decoder(output_dim=len(self.vocab),
-                               embedding_dim=self.config['embedding_dim'],
-                               hidden_dim=self.config['dec_hidden_dim'],
-                               dropout_rate=self.config['dec_dropout_p'],
-                               bos=self.vocab['<BOS>'],
-                               eos=self.vocab['<EOS>'],
-                               pad=self.vocab['<PAD>'],
-                               enc_out_dim=enc_out_dim,
-                               use_attention=self.config['use_attention'],
-                               ls_weight=ls_weight,
-                               labeldist=labeldist))
+                                        embedding_dim=self.config['embedding_dim'],
+                                        hidden_dim=self.config['dec_hidden_dim'],
+                                        dropout_rate=self.config['dec_dropout_p'],
+                                        bos=self.vocab['<BOS>'],
+                                        eos=self.vocab['<EOS>'],
+                                        pad=self.vocab['<PAD>'],
+                                        enc_out_dim=enc_out_dim,i
+                                        n_styles=self.config['n_style_type'],
+                                        style_emb_dim=self.config['style_emb_dim'],
+                                        use_attention=self.config['use_attention'],
+                                        ls_weight=ls_weight,
+                                        labeldist=labeldist))
         print(self.decoder)
         self.decoder.float()
         self.s_classifier=\
             cc_model(Style_classifier(enc_out_dim=enc_out_dim,
-                             hidden_dim=self.config['s_classifier_hidden_dim'],
-                             n_layers=self.config['s_classifier_n_layers'],
-                             out_dim=self.config['n_style_type']))
+                                      hidden_dim=self.config['s_classifier_hidden_dim'],
+                                      n_layers=self.config['s_classifier_n_layers'],
+                                      out_dim=self.config['n_style_type']))
         print(self.s_classifier)
         self.s_classifier.float()
-        optimizer_m1=[self.encoder.parameters(),self.decoder.parameters()]
-        optimizer_m2=[self.s_classifier.parameters()]
+        self.params_m1=list(self.encoder.parameters())+list(self.decoder.parameters())
+        self.params_m2=list(self.s_classifier.parameters())
         self.optimizer_m1 =\
-            torch.optim.Adam(parameters_m1, 
+            torch.optim.Adam(self.params_m1, 
                              lr=self.config['learning_rate_m1'], 
                              weight_decay=self.config['weight_decay_m1'])
         self.optimizer_m2 =\
-            torch.optim.Adam(parameters_m2, 
+            torch.optim.Adam(self.params_m2, 
                              lr=self.config['learning_rate_m2'], 
                              weight_decay=self.config['weight_decay_m2'])
 
@@ -247,50 +266,90 @@ class Seq2seq(object):
         print(f'{test_file_name}: {len(prediction_sents)} utterances, CER={cer:.4f}')
         return cer
 
-    
+    def _normal_target(self, x):
+        out = x.new_zeros(x.size())
+        out = out.fill_(1/int(x.size(-1)))
+        return out
+
     def train_one_epoch(self, epoch, tf_rate):
 
         total_steps = len(self.train_lab_loader)
         total_loss = 0.
+        total_discri_loss = 0.
+        total_cheat_loss = 0.
+        
+        for cnt in range(self.config['m2_train_freq']):
+            print ()
+            for train_steps, data in enumerate(self.train_lab_loader):
+                bos = self.vocab['<BOS>']
+                eos = self.vocab['<EOS>']
+                pad = self.vocab['<PAD>']
+                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
 
+                # input the encoder
+                enc_outputs, enc_lens = self.encoder(xs, ilens)
+                s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs[:,-1,:])
+                
+                loss_nll = torch.nn.NLLLoss()
+                s_loss = loss_nll(s_log_probs, styles)*self.config['m2_loss_ratio']
+                total_discri_loss += s_loss.item()
+
+                # calculate gradients 
+                self.optimizer_m2.zero_grad()
+                s_loss.backward()
+                self.optimizer_m2.step()
+                # print message
+                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {s_loss:.3f}', end='\r')
+                # add to logger
+                tag = self.config['tag']
+                self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
+                                           value=s_loss.item()/self.config['m2_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+        print()
         for train_steps, data in enumerate(self.train_lab_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
-            xs, ilens, ys, ys_in, ys_out, _, _,trans = to_gpu(data, bos, eos, pad)
+            xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
 
-            # add gaussian noise after gaussian_epoch
-            if self.config['add_gaussian'] and epoch >= self.config['gaussian_epoch']:
-                gau = np.random.normal(0, self.config['gaussian_std'], (xs.size(0), xs.size(1), xs.size(2)))
-                gau = cc(torch.from_numpy(np.array(gau, dtype=np.float32)))
-                xs = xs + gau
+            # input the encoder
+            enc_outputs, enc_lens = self.encoder(xs, ilens)
+            logits, log_probs, prediction, attns=\
+                self.decoder(enc_outputs, enc_lens, styles, (ys_in, ys_out),
+                             tf_rate=tf_rate, sample=False,
+                             max_dec_timesteps=self.config['max_dec_timesteps'])
 
-            # input the model
-            log_probs, prediction, attns = self.model(xs, ilens, (ys_in,ys_out), 
-                                                      tf_rate=tf_rate, sample=False)
-            # mask and calculate loss
-            loss = -torch.mean(log_probs)
+            loss = -torch.mean(log_probs)*self.config['m1_loss_ratio']
             total_loss += loss.item()
-            #loss = self.model.mask_and_cal_loss(log_probs, ys)
-            #total_loss +=loss.item()
-
+            
+            s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs[:,-1,:])
+            # target would be uniform distribution on every style
+            uniform_target = self._normal_target(s_logits)
+            s_prob = F.softmax(s_logits, dim=1)
+            KLloss = nn.KLDivLoss()
+            s_loss = KLloss(s_prob, uniform_target)*self.config['m2_loss_ratio']
+            total_cheat_loss += s_loss.item()
             # calculate gradients 
-            self.gen_opt.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=self.config['max_grad_norm'])
-            self.gen_opt.step()
+            self.optimizer_m1.zero_grad()
+            (loss+s_loss).backward()
+            torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
+            self.optimizer_m1.step()
             # print message
-            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f}', end='\r')
+            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f}, classifier_loss: {s_loss.item():.3f}', end='\r')
             # add to logger
             tag = self.config['tag']
-            self.logger.scalar_summary(tag=f'{tag}/train/loss', value=loss.item(), 
-                    step=epoch * total_steps + train_steps + 1)
-
-        return total_loss / total_steps
+            self.logger.scalar_summary(tag=f'{tag}/train/loss', 
+                                       value=loss.item()/self.config['m1_loss_ratio'], 
+                                       step=epoch * total_steps + train_steps + 1)
+            self.logger.scalar_summary(tag=f'{tag}/train/normal_distri_loss', 
+                                       value=s_loss.item()/self.config['m2_loss_ratio'], 
+                                       step=epoch * total_steps + train_steps + 1)
+        print()
+        return (total_loss/total_steps),(total_cheat_loss/total_steps),((total_discri_loss/total_steps)/self.config['m2_train_freq'])
 
     def train(self):
 
-        best_cer = 200
+        best_acc = 0.0
         best_model = None
         early_stop_counter = 0
 
@@ -300,28 +359,29 @@ class Seq2seq(object):
         tf_decay_epochs = self.config['tf_decay_epochs']
         tf_rate_lowerbound = self.config['tf_rate_lowerbound']
 
-	    # lr scheduler
-        milestone = [int(num) for num in self.config['change_learning_rate_epoch'].split(',')]
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(self.gen_opt, 
-                milestones=milestone,
-                gamma=self.config['lr_gamma'])
+	# lr scheduler
+        if self.config['change_learning_rate_epoch'] is not None:
+            milestone = [int(num) for num in self.config['change_lr_epoch'].split(',')]
+        else:
+            milestone = []
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer_m1,
+                                                         milestones=milestone,
+                                                         gamma=self.config['lr_gamma'])
 
         print('------start training-------')
 
         for epoch in range(self.config['epochs']):
-            # schedule
             scheduler.step()
-            # calculate tf rate
             if epoch > tf_start_decay_epochs:
                 if epoch <= tf_decay_epochs:
-                    tf_rate = init_tf_rate - (init_tf_rate - tf_rate_lowerbound) * ((epoch-tf_start_decay_epochs) / (tf_decay_epochs-tf_start_decay_epochs))
+                    tf_rate = init_tf_rate-(init_tf_rate-tf_rate_lowerbound)*((epoch-tf_start_decay_epochs)/(tf_decay_epochs-tf_start_decay_epochs))
                 else:
                     tf_rate = tf_rate_lowerbound
             else:
                 tf_rate = init_tf_rate
 
             # train one epoch
-            avg_train_loss = self.train_one_epoch(epoch, tf_rate)
+            avg_train_loss, avg_distri_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
 
             # validation
             avg_valid_loss, cer, prediction_sents, ground_truth_sents = self.validation()

@@ -35,11 +35,13 @@ class Encoder(torch.nn.Module):
 class Decoder(torch.nn.Module):
     def __init__(self, output_dim, embedding_dim, hidden_dim, 
                  dropout_rate, bos, eos, pad, enc_out_dim,
+                 n_styles, style_emb_dim,
                  use_attention=False, attention=None, att_odim=100,
                  ls_weight=0, labeldist=None):
         super(Decoder, self).__init__()
         self.bos, self.eos, self.pad = bos, eos, pad
         self.embedding = torch.nn.Embedding(output_dim, embedding_dim, padding_idx=pad)
+        self.style_embedding = torch.nn.Embedding(n_styles, style_emb_dim)
         self.hidden_dim = hidden_dim
         self.use_attention = use_attention
         self.attention = attention
@@ -47,10 +49,10 @@ class Decoder(torch.nn.Module):
         self.dropout_rate = dropout_rate
         
         if use_attention:
-            self.GRUCell = nn.GRUCell(embedding_dim + att_odim, hidden_dim)
-            self.output_layer = torch.nn.Linear(hidden_dim + att_odim, output_dim)
+            self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+att_odim, hidden_dim)
+            self.output_layer = torch.nn.Linear(hidden_dim+att_odim, output_dim)
         else:
-            self.GRUCell = nn.GRUCell(embedding_dim + enc_out_dim, hidden_dim)
+            self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+enc_out_dim, hidden_dim)
             self.output_layer = torch.nn.Linear(hidden_dim, output_dim)
 
         # label smoothing hyperparameters
@@ -68,8 +70,8 @@ class Decoder(torch.nn.Module):
         else:
             return ori_tensor.new_zeros(ori_tensor.size(0), dim)
 
-    def forward_step(self, emb, dec_h, context, attn, enc_output, enc_len):
-        cell_inp = torch.cat([emb, context], dim=-1)
+    def forward_step(self, emb, style_emb, dec_h, context, attn, enc_output, enc_len):
+        cell_inp = torch.cat([emb, style_emb, context], dim=-1)
         cell_inp = F.dropout(cell_inp, self.dropout_rate, training=self.training)
         dec_h = self.GRUCell(cell_inp, dec_h)
 
@@ -83,7 +85,8 @@ class Decoder(torch.nn.Module):
         logit = self.output_layer(output)
         return logit, dec_h, context, attn
 
-    def forward(self, enc_output, enc_len, dec_input=None, tf_rate=1.0, max_dec_timesteps=500, sample=False):
+    def forward(self, enc_output, enc_len, styles, dec_input=None, tf_rate=1.0, 
+                max_dec_timesteps=500, sample=False):
         batch_size = enc_output.size(0)
         if dec_input is not None:
             # dec_input would be a tuple (dec_in, dec_out)
@@ -93,6 +96,7 @@ class Decoder(torch.nn.Module):
             batch_size, olength = pad_dec_input_out.size(0), pad_dec_input_out.size(1)
             # map idx to embedding
             dec_input_embedded = self.embedding(pad_dec_input_in)
+        style_embedded = self.style_embedding(styles) #batch x style_emb_dim
 
         # initialization
         dec_h = self.zero_state(enc_output)
@@ -128,7 +132,8 @@ class Decoder(torch.nn.Module):
                     emb = self.embedding(prediction[-1])
 
             logit, dec_h, context, attn = \
-                self.forward_step(emb, dec_h, context, attn, enc_output, enc_len)
+                self.forward_step(emb, style_embedded, dec_h, context, attn, 
+                                  enc_output, enc_len)
 
             attns.append(attn)
             logits.append(logit)
@@ -227,9 +232,13 @@ class Style_classifier(nn.Module):
         out = representation
         for i, layer in enumerate(self.layers):
             out = layer(out)
-            if i != (self.n_layers-1):
-                out = nn.ReLU(out)
-        return F.log_softmax(out, dim=-1)
+            out = F.relu(out)
+
+        logits = out # batch x out_dim
+        log_probs = F.log_softmax(logits, dim=1)
+        prediction =  log_probs.topk(1, dim=1)[1]
+
+        return logits, log_probs, prediction
 
 '''
 deprecated
