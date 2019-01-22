@@ -113,3 +113,6 @@ def calculate_wer(hyps, refs):
         total_dis += dis
         total_len += len(ref)
     return total_dis/total_len
+
+def get_enc_context(enc_outputs, enc_lens):
+    return torch.gather(enc_outputs,1,(enc_lens-1).view(-1,1).unsqueeze(2).repeat(1,1,enc_outputs.size(2))).squeeze(1)

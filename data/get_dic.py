@@ -28,8 +28,8 @@ index=4
 for i in count:
     count_write[i[0]]=index
     index+=1
-    #if index>=29998:
-    #    break
+    if index>=60000:
+        break
 
 f = open(r"dict.p",'wb')
 pkl.dump(count_write,f)

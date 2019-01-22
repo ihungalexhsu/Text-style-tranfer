@@ -25,7 +25,6 @@ if __name__ == '__main__':
         if args.train:
             state_dict, wer = model.train()
             model.test(state_dict)
-
         else:
             model.test()
 

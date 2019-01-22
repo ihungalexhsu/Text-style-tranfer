@@ -4,7 +4,7 @@ import pickle
 import collections
 import os
 
-vocab_dict = pickle.load(open('dict.pkl','rb'))
+vocab_dict = pickle.load(open('dict.p','rb'))
 def sent2vec(vocab_dict, sentence):
     output=[]
     wordvec = sentence.split()

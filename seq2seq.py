@@ -87,7 +87,7 @@ class Seq2seq(object):
         self.dev_dataset = PickleDataset(os.path.join(root_dir, f'{dev_set}.p'), 
                                          sort=True)
         self.dev_loader = get_data_loader(self.dev_dataset, 
-                batch_size=self.config['batch_size'] // 2, 
+                batch_size=self.config['batch_size'], 
                 shuffle=False)
         return
 
@@ -104,7 +104,6 @@ class Seq2seq(object):
              
     def build_model(self, load_model=False):
         labeldist = self.labeldist
-        ls_weight = self.config['ls_weight']
         pretrain_w2v_path = self.config['pretrain_w2v_path']
         if pretrain_w2v_path is None:
             pretrain_w2v = None
@@ -137,8 +136,9 @@ class Seq2seq(object):
                                         enc_out_dim=enc_out_dim,
                                         n_styles=self.config['n_style_type'],
                                         style_emb_dim=self.config['style_emb_dim'],
+                                        use_enc_init=self.config['use_enc_init'],
                                         use_attention=self.config['use_attention'],
-                                        ls_weight=ls_weight,
+                                        ls_weight=self.config['ls_weight'],
                                         labeldist=labeldist))
         print(self.decoder)
         self.decoder.float()
@@ -278,8 +278,7 @@ class Seq2seq(object):
         total_loss = 0.
         total_discri_loss = 0.
         total_cheat_loss = 0.
-        
-        print()
+            
         for train_steps, data in enumerate(self.train_lab_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -295,13 +294,15 @@ class Seq2seq(object):
 
             loss = -torch.mean(log_probs)*self.config['m1_loss_ratio']
             total_loss += loss.item()
-            
-            s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs[:,-1,:])
-            # target would be uniform distribution on every style
-            uniform_target = self._normal_target(s_logits)
-            s_prob = F.softmax(s_logits, dim=1)
-            KLloss = nn.KLDivLoss()
-            s_loss = KLloss(s_prob, uniform_target)*self.config['m2_loss_ratio']
+            enc_representation = get_enc_context(enc_outputs, enc_lens)
+            s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+            true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
+            s_loss = torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']
+            # target should be uniform distribution on every style
+            #uniform_target = self._normal_target(s_logits)
+            #s_prob = F.softmax(s_logits, dim=1)
+            #KLloss = nn.KLDivLoss()
+            #s_loss = KLloss(s_prob, uniform_target)*self.config['m2_loss_ratio']
             total_cheat_loss += s_loss.item()
             # calculate gradients 
             self.optimizer_m1.zero_grad()
@@ -320,19 +321,17 @@ class Seq2seq(object):
                                        step=epoch * total_steps + train_steps + 1)
         print()
         for cnt in range(self.config['m2_train_freq']):
-            print ()
             for train_steps, data in enumerate(self.train_lab_loader):
                 bos = self.vocab['<BOS>']
                 eos = self.vocab['<EOS>']
                 pad = self.vocab['<PAD>']
                 xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
-
                 # input the encoder
                 enc_outputs, enc_lens = self.encoder(xs, ilens)
-                s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs[:,-1,:])
-                
-                loss_nll = torch.nn.NLLLoss()
-                s_loss = loss_nll(s_log_probs, styles)*self.config['m2_loss_ratio']
+                enc_representation = get_enc_context(enc_outputs, enc_lens)
+                s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+                true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
+                s_loss = -torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']
                 total_discri_loss += s_loss.item()
 
                 # calculate gradients 
@@ -346,6 +345,7 @@ class Seq2seq(object):
                 self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
                                            value=s_loss.item()/self.config['m2_loss_ratio'], 
                                            step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+            print ()
         return (total_loss/total_steps),(total_cheat_loss/total_steps),((total_discri_loss/total_steps)/self.config['m2_train_freq'])
 
     def train(self):
@@ -360,7 +360,7 @@ class Seq2seq(object):
         tf_decay_epochs = self.config['tf_decay_epochs']
         tf_rate_lowerbound = self.config['tf_rate_lowerbound']
 
-	# lr scheduler
+	    # lr scheduler
         if self.config['change_lr_epoch'] is not None:
             milestone = [int(num) for num in str(self.config['change_lr_epoch']).split(',')]
         else:
@@ -370,7 +370,6 @@ class Seq2seq(object):
                                                          gamma=self.config['lr_gamma'])
 
         print('------start training-------')
-
         for epoch in range(self.config['epochs']):
             scheduler.step()
             if epoch > tf_start_decay_epochs:
@@ -383,7 +382,6 @@ class Seq2seq(object):
 
             # train one epoch
             avg_train_loss, avg_distri_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
-
             # validation
             avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
 

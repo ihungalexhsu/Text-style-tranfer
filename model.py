@@ -8,6 +8,7 @@ import numpy as np
 from utils import cc
 from utils import pad_list
 from utils import _seq_mask
+from utils import get_enc_context
 from torch.distributions.categorical import Categorical
 import random
 import os
@@ -21,24 +22,31 @@ class Encoder(torch.nn.Module):
         if pre_embedding is not None:
             self.embedding.weight = nn.Parameter(pre_embedding)
         self.embedding.weight.requires_grad = update_embedding
-        self.enc = nn.GRU(embedding_dim, hidden_dim, n_layers, batch_first=True,
-                          bidirectional=bidirectional, dropout=dropout_rate)
-
+        layers = []
+        hdim = hidden_dim*2 if bidirectional else hidden_dim
+        for i in range(n_layers):
+            input_dim = embedding_dim if i==0 else hdim
+            layers.append(nn.GRU(input_dim, hidden_dim, num_layers=1,
+                                 bidirectional=bidirectional, batch_first=True))
+        self.enc = nn.ModuleList(layers)
+        self.dropout_rate=dropout_rate
+                          
     def forward(self, x, ilens):
-        # ilens (Tensor): list of sequences lengths of each batch element.        
         embedded = self.embedding(x)
-        total_length = x.size(1)
-        xpack = pack_padded_sequence(embedded, ilens, batch_first=True)
-        self.enc.flatten_parameters()
-        output, hidden = self.enc(xpack)
-        output, ilens = pad_packed_sequence(output, batch_first=True,
-                                            total_length=total_length)
-        return output, ilens
+        total_length = embedded.size(1)
+        for layer in self.enc:
+            xpack = pack_padded_sequence(embedded, ilens, batch_first=True)
+            layer.flatten_parameters()
+            xpack, _ = layer(xpack)
+            xpad, ilens = pad_packed_sequence(xpack, batch_first=True,
+                                              total_length=total_length)
+            embedded = F.dropout(xpad, self.dropout_rate, training=self.training)
+        return embedded, cc(ilens)
 
 class Decoder(torch.nn.Module):
     def __init__(self, output_dim, embedding_dim, hidden_dim, 
                  dropout_rate, bos, eos, pad, enc_out_dim,
-                 n_styles, style_emb_dim,
+                 n_styles, style_emb_dim, use_enc_init=True,
                  use_attention=False, attention=None, att_odim=100,
                  ls_weight=0, labeldist=None):
         super(Decoder, self).__init__()
@@ -50,13 +58,19 @@ class Decoder(torch.nn.Module):
         self.attention = attention
         self.att_odim = att_odim
         self.dropout_rate = dropout_rate
-        
+        self.use_enc_init = use_enc_init
         if use_attention:
             self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+att_odim, hidden_dim)
             self.output_layer = torch.nn.Linear(hidden_dim+att_odim, output_dim)
         else:
+            # in this version, input contains input_words+style+enc_context
             self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+enc_out_dim, hidden_dim)
+            # in this version, input contains input_words only
+            #self.GRUCell = nn.GRUCell(embedding_dim)
             self.output_layer = torch.nn.Linear(hidden_dim, output_dim)
+        if use_enc_init:
+            # projecting layer to map the encoder ouput dim to dec_hidden_dim
+            self.project = torch.nn.Linear(enc_out_dim+style_emb_dim, hidden_dim)
 
         # label smoothing hyperparameters
         self.ls_weight = ls_weight
@@ -84,7 +98,7 @@ class Decoder(torch.nn.Module):
         else:
             output = dec_h
 
-        output = F.dropout(output, self.dropout_rate)
+        output = F.dropout(output, self.dropout_rate, training=self.training)
         logit = self.output_layer(output)
         return logit, dec_h, context, attn
 
@@ -102,11 +116,14 @@ class Decoder(torch.nn.Module):
         style_embedded = self.style_embedding(styles) #batch x style_emb_dim
 
         # initialization
-        dec_h = self.zero_state(enc_output)
+        if self.use_enc_init:
+            dec_h = self.project(torch.cat([get_enc_context(enc_output,enc_len),style_embedded], dim=-1))
+        else:
+            dec_h = self.zero_state(enc_output)
         if self.use_attention:
             context = self.zero_state(enc_output, dim=self.att_odim)
         else:
-            context = enc_output[:,-1,:]
+            context = get_enc_context(enc_output, enc_len)
 
         attn = None
         logits, prediction, attns = [], [], []
@@ -161,64 +178,9 @@ class Decoder(torch.nn.Module):
         # label smoothing : q'(y|x) = (1-e)*q(y|x) + e*u(y)
         if self.ls_weight > 0:
             loss_reg = torch.sum(log_probs * self.vlabeldist, dim=2) # u(y)
-            dec_output_log_probs = (1 - self.ls_weight) * dec_output_log_probs + self.ls_weight * loss_reg
+            dec_output_log_probs=(1-self.ls_weight)*dec_output_log_probs+self.ls_weight*loss_reg
 
         return logits, dec_output_log_probs, prediction, attns
-
-class E2E(torch.nn.Module):
-    def __init__(self, vocab_size, embedding_dim, enc_hidden_dim, 
-                 enc_n_layers, dropout_rate, dec_hidden_dim,
-                 bidir_enc=True, pre_embedding=None, update_embedding=True,
-                 use_attention=False, att_dim=100, att_odim=100, 
-                 ls_weight=0, labeldist=None, pad=0, bos=1, eos=2):
-
-        super(E2E, self).__init__()
-
-        self.encoder = Encoder(vocab_size=vocab_size,
-                               embedding_dim=embedding_dim,
-                               hidden_dim=enc_hidden_dim,
-                               n_layers=enc_n_layers,
-                               dropout_rate=dropout_rate,
-                               pad_idx=pad,
-                               bidirectional=bidir_enc,
-                               pre_embedding=pre_embedding,
-                               update_embedding=update_embedding)
-        
-        self.attention = None
-        
-        self.decoder = Decoder(output_dim=vocab_size, 
-                               embedding_dim=embedding_dim,
-                               hidden_dim=dec_hidden_dim, 
-                               dropout_rate=dropout_rate,
-                               bos=bos, 
-                               eos=eos, 
-                               pad=pad,
-                               enc_out_dim=enc_hidden_dim*2 if bidir_enc else enc_hidden_dim,
-                               use_attention=use_attention,
-                               attention=self.attention,
-                               att_odim=att_odim, 
-                               ls_weight=ls_weight, 
-                               labeldist=labeldist) 
-
-    def forward(self, data, ilens, true_label=None, tf_rate=1.0, 
-                max_dec_timesteps=200, sample=False):
-        
-        enc_outputs, enc_lens = self.encoder(data, ilens)
-        logits, log_probs, prediction, attns =\
-            self.decoder(enc_outputs, enc_lens, true_label, tf_rate=tf_rate, 
-                         max_dec_timesteps=max_dec_timesteps, sample=sample)
-        return log_probs, prediction, attns
-
-    def mask_and_cal_loss(self, log_probs, ys, mask=None):
-        # mask is batch x max_len
-        if mask is None: 
-            seq_len = [y.size(0) + 1 for y in ys]
-            mask = cc(_seq_mask(seq_len=seq_len, max_len=log_probs.size(1)))
-        else:
-            seq_len = [y.size(0) for y in ys]
-        # divide by total length
-        loss = -torch.sum(log_probs * mask) / sum(seq_len)
-        return loss
 
 class Style_classifier(nn.Module):
     def __init__(self, enc_out_dim, hidden_dim, n_layers, out_dim):
@@ -229,19 +191,21 @@ class Style_classifier(nn.Module):
             odim = out_dim if i==(n_layers-1) else hidden_dim
             linear_layers.append(nn.Linear(idim, odim))
         self.layers = nn.ModuleList(linear_layers)
-        self.n_layers = n_layers   
+        self.n_layers = n_layers
 
     def forward(self, representation):
         out = representation
         for i, layer in enumerate(self.layers):
             out = layer(out)
-            out = F.relu(out)
+            if i !=(self.n_layers-1):
+                out = F.relu(out)
 
         logits = out # batch x out_dim
         log_probs = F.log_softmax(logits, dim=1)
-        prediction =  log_probs.topk(1, dim=1)[1]
+        prediction = log_probs.topk(1, dim=1)[1]
 
         return logits, log_probs, prediction
+
 
 '''
 deprecated
@@ -454,4 +418,59 @@ class MultiHeadAttLoc(torch.nn.Module):
             cs.append(c)
         c = self.mlp_o(torch.cat(cs, dim=1))
         return c, ws 
+
+class E2E(torch.nn.Module):
+    def __init__(self, vocab_size, embedding_dim, enc_hidden_dim, 
+                 enc_n_layers, dropout_rate, dec_hidden_dim,
+                 bidir_enc=True, pre_embedding=None, update_embedding=True,
+                 use_attention=False, att_dim=100, att_odim=100, 
+                 ls_weight=0, labeldist=None, pad=0, bos=1, eos=2):
+
+        super(E2E, self).__init__()
+
+        self.encoder = Encoder(vocab_size=vocab_size,
+                               embedding_dim=embedding_dim,
+                               hidden_dim=enc_hidden_dim,
+                               n_layers=enc_n_layers,
+                               dropout_rate=dropout_rate,
+                               pad_idx=pad,
+                               bidirectional=bidir_enc,
+                               pre_embedding=pre_embedding,
+                               update_embedding=update_embedding)
+        
+        self.attention = None
+        
+        self.decoder = Decoder(output_dim=vocab_size, 
+                               embedding_dim=embedding_dim,
+                               hidden_dim=dec_hidden_dim, 
+                               dropout_rate=dropout_rate,
+                               bos=bos, 
+                               eos=eos, 
+                               pad=pad,
+                               enc_out_dim=enc_hidden_dim*2 if bidir_enc else enc_hidden_dim,
+                               use_attention=use_attention,
+                               attention=self.attention,
+                               att_odim=att_odim, 
+                               ls_weight=ls_weight, 
+                               labeldist=labeldist) 
+
+    def forward(self, data, ilens, true_label=None, tf_rate=1.0, 
+                max_dec_timesteps=200, sample=False):
+        
+        enc_outputs, enc_lens = self.encoder(data, ilens)
+        logits, log_probs, prediction, attns =\
+            self.decoder(enc_outputs, enc_lens, true_label, tf_rate=tf_rate, 
+                         max_dec_timesteps=max_dec_timesteps, sample=sample)
+        return log_probs, prediction, attns
+
+    def mask_and_cal_loss(self, log_probs, ys, mask=None):
+        # mask is batch x max_len
+        if mask is None: 
+            seq_len = [y.size(0) + 1 for y in ys]
+            mask = cc(_seq_mask(seq_len=seq_len, max_len=log_probs.size(1)))
+        else:
+            seq_len = [y.size(0) for y in ys]
+        # divide by total length
+        loss = -torch.sum(log_probs * mask) / sum(seq_len)
+        return loss
 
