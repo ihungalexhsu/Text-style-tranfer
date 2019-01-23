@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from model import E2E
-from model import Encoder, Decoder, Style_classifier
+from model import Encoder, Decoder
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
@@ -11,7 +11,7 @@ import yaml
 import os
 import pickle
 
-class Seq2seq(object):
+class AutoEncoder(object):
     def __init__(self, config, load_model=False):
 
         self.config = config
@@ -35,14 +35,10 @@ class Seq2seq(object):
     def save_model(self, model_path):
         encoder_path = model_path+'_encoder'
         decoder_path = model_path+'_decoder'
-        s_classifier_path = model_path+'_sclr'
         opt1_path = model_path+'_opt1'
-        opt2_path = model_path+'_opt2'
         torch.save(self.encoder.state_dict(), f'{encoder_path}.ckpt')
         torch.save(self.decoder.state_dict(), f'{decoder_path}.ckpt')
-        torch.save(self.s_classifier.state_dict(), f'{s_classifier_path}.ckpt')
         torch.save(self.optimizer_m1.state_dict(), f'{opt1_path}.opt')
-        torch.save(self.optimizer_m2.state_dict(), f'{opt2_path}.opt')
         return
 
     def load_vocab(self):
@@ -56,19 +52,14 @@ class Seq2seq(object):
         print(f'Load model from {model_path}')
         encoder_path = model_path+'_encoder'
         decoder_path = model_path+'_decoder'
-        s_classifier_path = model_path+'_sclr'
         opt1_path = model_path+'_opt1'
-        opt2_path = model_path+'_opt2'
         self.encoder.load_state_dict(torch.load(f'{encoder_path}.ckpt'))
         self.decoder.load_state_dict(torch.load(f'{decoder_path}.ckpt'))
-        self.s_classifier.load_state_dict(torch.load(f'{s_classifier_path}.ckpt'))
         if load_optimizer:
             print(f'Load optmizer from {model_path}')
             self.optimizer_m1.load_state_dict(torch.load(f'{opt1_path}.opt'))
-            self.optimizer_m2.load_state_dict(torch.load(f'{opt2_path}.opt'))
             if self.config['adjust_lr']:
                 adjust_learning_rate(self.optimizer_m1, self.config['retrieve_lr_m1']) 
-                adjust_learning_rate(self.optimizer_m2, self.config['retrieve_lr_m2']) 
         return
 
     def get_data_loaders(self):
@@ -139,26 +130,15 @@ class Seq2seq(object):
                                         use_enc_init=self.config['use_enc_init'],
                                         use_attention=self.config['use_attention'],
                                         ls_weight=self.config['ls_weight'],
-                                        labeldist=labeldist))
+                                        labeldist=labeldist,
+                                        use_style_embedding=False))
         print(self.decoder)
         self.decoder.float()
-        self.s_classifier=\
-            cc_model(Style_classifier(enc_out_dim=enc_out_dim,
-                                      hidden_dim=self.config['s_classifier_hidden_dim'],
-                                      n_layers=self.config['s_classifier_n_layers'],
-                                      out_dim=self.config['n_style_type']))
-        print(self.s_classifier)
-        self.s_classifier.float()
         self.params_m1=list(self.encoder.parameters())+list(self.decoder.parameters())
-        self.params_m2=list(self.s_classifier.parameters())
         self.optimizer_m1 =\
             torch.optim.Adam(self.params_m1, 
                              lr=self.config['learning_rate_m1'], 
                              weight_decay=self.config['weight_decay_m1'])
-        self.optimizer_m2 =\
-            torch.optim.Adam(self.params_m2, 
-                             lr=self.config['learning_rate_m2'], 
-                             weight_decay=self.config['weight_decay_m2'])
 
         if load_model:
             self.load_model(self.config['load_model_path'], self.config['load_optimizer'])
@@ -169,7 +149,6 @@ class Seq2seq(object):
 
         self.encoder.eval()
         self.decoder.eval()
-        self.s_classifier.eval()
         all_prediction, all_ys = [], []
         total_loss = 0.
         for step, data in enumerate(self.dev_loader):
@@ -196,7 +175,6 @@ class Seq2seq(object):
 
         self.encoder.train()
         self.decoder.train()
-        self.s_classifier.train()
         # calculate loss
         avg_loss = total_loss / len(self.dev_loader)
 
@@ -237,7 +215,6 @@ class Seq2seq(object):
 
         self.encoder.eval()
         self.decoder.eval()
-        self.s_classifier.eval()
         all_prediction, all_ys = [], []
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
@@ -256,7 +233,6 @@ class Seq2seq(object):
 
         self.encoder.train()
         self.decoder.train()
-        self.s_classifier.train()
 
         wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
@@ -276,37 +252,7 @@ class Seq2seq(object):
 
         total_steps = len(self.train_lab_loader)
         total_loss = 0.
-        total_discri_loss = 0.
-        total_cheat_loss = 0.
         
-        for cnt in range(self.config['m2_train_freq']):
-            for train_steps, data in enumerate(self.train_lab_loader):
-                bos = self.vocab['<BOS>']
-                eos = self.vocab['<EOS>']
-                pad = self.vocab['<PAD>']
-                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
-                # input the encoder
-                enc_outputs, enc_lens = self.encoder(xs, ilens)
-                enc_representation = get_enc_context(enc_outputs, enc_lens)
-                s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
-                #s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs, enc_lens)
-                true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
-                s_loss = -torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']
-                total_discri_loss += s_loss.item()
-
-                # calculate gradients 
-                self.optimizer_m2.zero_grad()
-                s_loss.backward()
-                self.optimizer_m2.step()
-                # print message
-                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {s_loss:.3f}', end='\r')
-                # add to logger
-                tag = self.config['tag']
-                self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
-                                           value=s_loss.item()/self.config['m2_loss_ratio'], 
-                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
-            print ()
-            
         for train_steps, data in enumerate(self.train_lab_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -323,36 +269,20 @@ class Seq2seq(object):
             loss = -torch.mean(log_probs)*self.config['m1_loss_ratio']
             total_loss += loss.item()
             
-            enc_representation = get_enc_context(enc_outputs, enc_lens)
-            s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
-            true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
-            s_loss = torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']
-            '''
-            # target should be uniform distribution on every style
-            uniform_target = self._normal_target(s_logits)
-            s_prob = F.softmax(s_logits, dim=1)
-            KLloss = nn.KLDivLoss()
-            s_loss = KLloss(s_prob, uniform_target)*self.config['m2_loss_ratio']
-            '''
-            total_cheat_loss += s_loss.item()
-            
             # calculate gradients 
             self.optimizer_m1.zero_grad()
-            (loss+s_loss).backward()
+            loss.backward()
             torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
             self.optimizer_m1.step()
             # print message
-            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f}, classifier_loss: {s_loss.item():.3f}', end='\r')
+            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f}', end='\r')
             # add to logger
             tag = self.config['tag']
             self.logger.scalar_summary(tag=f'{tag}/train/loss', 
                                        value=loss.item()/self.config['m1_loss_ratio'], 
                                        step=epoch * total_steps + train_steps + 1)
-            self.logger.scalar_summary(tag=f'{tag}/train/normal_distri_loss', 
-                                       value=s_loss.item()/self.config['m2_loss_ratio'], 
-                                       step=epoch * total_steps + train_steps + 1)
         print()
-        return (total_loss/total_steps),(total_cheat_loss/total_steps),((total_discri_loss/total_steps)/self.config['m2_train_freq'])
+        return total_loss/total_steps
 
     def train(self):
 
@@ -387,7 +317,7 @@ class Seq2seq(object):
                 tf_rate = init_tf_rate
 
             # train one epoch
-            avg_train_loss, avg_distri_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
+            avg_train_loss = self.train_one_epoch(epoch, tf_rate)
             # validation
             avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
 

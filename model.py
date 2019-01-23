@@ -48,29 +48,40 @@ class Decoder(torch.nn.Module):
                  dropout_rate, bos, eos, pad, enc_out_dim,
                  n_styles, style_emb_dim, use_enc_init=True,
                  use_attention=False, attention=None, att_odim=100,
-                 ls_weight=0, labeldist=None):
+                 use_style_embedding=True, ls_weight=0, labeldist=None):
         super(Decoder, self).__init__()
         self.bos, self.eos, self.pad = bos, eos, pad
         self.embedding = torch.nn.Embedding(output_dim, embedding_dim, padding_idx=pad)
-        self.style_embedding = torch.nn.Embedding(n_styles, style_emb_dim)
         self.hidden_dim = hidden_dim
         self.use_attention = use_attention
+        self.use_style_embedding = use_style_embedding
+        if use_style_embedding:    
+            self.style_embedding = torch.nn.Embedding(n_styles, style_emb_dim)
         self.attention = attention
         self.att_odim = att_odim
         self.dropout_rate = dropout_rate
         self.use_enc_init = use_enc_init
         if use_attention:
-            self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+att_odim, hidden_dim)
+            if use_style_embedding:
+                self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+att_odim, hidden_dim)
+            else:
+                self.GRUCell = nn.GRUCell(embedding_dim+att_odim, hidden_dim)
             self.output_layer = torch.nn.Linear(hidden_dim+att_odim, output_dim)
         else:
             # in this version, input contains input_words+style+enc_context
-            self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+enc_out_dim, hidden_dim)
+            if use_style_embedding:
+                self.GRUCell = nn.GRUCell(embedding_dim+style_emb_dim+enc_out_dim, hidden_dim)
+            else:
+                self.GRUCell = nn.GRUCell(embedding_dim+enc_out_dim, hidden_dim)
             # in this version, input contains input_words only
             #self.GRUCell = nn.GRUCell(embedding_dim)
             self.output_layer = torch.nn.Linear(hidden_dim, output_dim)
         if use_enc_init:
             # projecting layer to map the encoder ouput dim to dec_hidden_dim
-            self.project = torch.nn.Linear(enc_out_dim+style_emb_dim, hidden_dim)
+            if use_style_embedding:
+                self.project = torch.nn.Linear(enc_out_dim+style_emb_dim, hidden_dim)
+            else:
+                self.project = torch.nn.Linear(enc_out_dim, hidden_dim)        
 
         # label smoothing hyperparameters
         self.ls_weight = ls_weight
@@ -88,7 +99,10 @@ class Decoder(torch.nn.Module):
             return ori_tensor.new_zeros(ori_tensor.size(0), dim)
 
     def forward_step(self, emb, style_emb, dec_h, context, attn, enc_output, enc_len):
-        cell_inp = torch.cat([emb, style_emb, context], dim=-1)
+        if self.use_style_embedding:
+            cell_inp = torch.cat([emb, style_emb, context], dim=-1)
+        else:
+            cell_inp = torch.cat([emb, context], dim=-1)
         cell_inp = F.dropout(cell_inp, self.dropout_rate, training=self.training)
         dec_h = self.GRUCell(cell_inp, dec_h)
 
@@ -113,13 +127,21 @@ class Decoder(torch.nn.Module):
             batch_size, olength = pad_dec_input_out.size(0), pad_dec_input_out.size(1)
             # map idx to embedding
             dec_input_embedded = self.embedding(pad_dec_input_in)
-        style_embedded = self.style_embedding(styles) #batch x style_emb_dim
+        if self.use_style_embedding:
+            style_embedded = self.style_embedding(styles) #batch x style_emb_dim
+        else:
+            style_embedded = None
 
         # initialization
         if self.use_enc_init:
-            dec_h = self.project(torch.cat([get_enc_context(enc_output,enc_len),style_embedded], dim=-1))
+            if self.use_style_embedding:
+                dec_h = self.project(torch.cat([get_enc_context(enc_output,enc_len),style_embedded], dim=-1))
+            else:
+                dec_h = self.project(get_enc_context(enc_output,enc_len))
+
         else:
             dec_h = self.zero_state(enc_output)
+        
         if self.use_attention:
             context = self.zero_state(enc_output, dim=self.att_odim)
         else:
@@ -192,6 +214,10 @@ class Style_classifier(nn.Module):
             linear_layers.append(nn.Linear(idim, odim))
         self.layers = nn.ModuleList(linear_layers)
         self.n_layers = n_layers
+        '''
+        self.GRU = torch.nn.GRU(enc_out_dim, hidden_dim, batch_first=True, bidirectional=True)
+        self.output_layer = torch.nn.Linear(hidden_dim*2, out_dim)
+        '''
 
     def forward(self, representation):
         out = representation
@@ -199,6 +225,14 @@ class Style_classifier(nn.Module):
             out = layer(out)
             if i !=(self.n_layers-1):
                 out = F.relu(out)
+        '''
+        rpack = pack_padded_sequence(representation, ilens, batch_first=True)
+        self.GRU.flatten_parameters()
+        out,_ = self.GRU(rpack)
+        out, ilens = pad_packed_sequence(out, batch_first=True)
+        out = get_enc_context(out, cc(ilens))
+        out = self.output_layer(out)
+        '''
 
         logits = out # batch x out_dim
         log_probs = F.log_softmax(logits, dim=1)

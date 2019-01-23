@@ -2,7 +2,7 @@ max_text_length: 30
 min_text_length: 8
 sort_dataset: True
 shuffle: True
-logdir: ./log/
+logdir: ./log/naive_style_transfer/
 vocab_path: ./data/dict.p
 non_lang_syms_path: ./data/non_lang_syms.p
 dataset_root_dir: ./data
@@ -23,11 +23,11 @@ dec_dropout_p: 0.1
 use_attention: False
 use_enc_init: True
 s_classifier_hidden_dim: 64
-s_classifier_n_layers: 2
+s_classifier_n_layers: 4
 n_style_type: 2
 style_emb_dim: 64
 learning_rate_m1: 0.0001
-learning_rate_m2: 0.0001
+learning_rate_m2: 0.001
 weight_decay_m1: 0.0000001
 weight_decay_m2: 0.0000001
 load_model_path: 
@@ -47,9 +47,9 @@ m1_loss_ratio: 1
 m2_loss_ratio: 1
 max_grad_norm: 5
 tag: style_transfer_basemodel_50epoch
-m2_train_freq: 5
+m2_train_freq: 10
 sample_num: 10
-model_dir: ./models/
+model_dir: ./models/naive_style_transfer/
 model_name: naive_style_transfer
 early_stop_start_epoch: 10
 early_stop_patience: 10
