@@ -299,7 +299,7 @@ class Seq2seq(object):
                 s_loss.backward()
                 self.optimizer_m2.step()
                 # print message
-                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {s_loss:.3f}', end='\r')
+                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}],loss:{s_loss.item():.3f}', end='\r')
                 # add to logger
                 tag = self.config['tag']
                 self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
@@ -342,7 +342,8 @@ class Seq2seq(object):
             torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
             self.optimizer_m1.step()
             # print message
-            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f}, classifier_loss: {s_loss.item():.3f}', end='\r')
+            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f},'
+                  f'classifier_loss: {(s_loss.item()):.3f}', end='\r')
             # add to logger
             tag = self.config['tag']
             self.logger.scalar_summary(tag=f'{tag}/train/loss', 
@@ -391,8 +392,8 @@ class Seq2seq(object):
             # validation
             avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
 
-            print(f'Epoch: {epoch}, tf_rate={tf_rate:.3f}, train_loss={avg_train_loss:.4f}, '
-                    f'valid_loss={avg_valid_loss:.4f}, val_WER={wer:.4f}')
+            print(f'Epoch: {epoch}, tf_rate={tf_rate:.3f}, train_loss={avg_train_loss:.4f},'
+                  f'valid_loss={avg_valid_loss:.4f}, val_WER={wer:.4f}')
 
             # add to tensorboard
             tag = self.config['tag']
