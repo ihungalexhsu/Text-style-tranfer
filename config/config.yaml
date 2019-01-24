@@ -9,11 +9,11 @@ dataset_root_dir: ./data
 train_set: train
 dev_set: val
 test_set: test
-batch_size: 128
+batch_size: 256
 ls_weight: 0.0
 embedding_dim: 64
 enc_hidden_dim: 64
-enc_n_layers: 1
+enc_n_layers: 3
 enc_dropout_p: 0.2
 bidir_enc: True
 pretrain_w2v_path: 
@@ -23,11 +23,11 @@ dec_dropout_p: 0.1
 use_attention: False
 use_enc_init: True
 s_classifier_hidden_dim: 64
-s_classifier_n_layers: 4
+s_classifier_n_layers: 3
 n_style_type: 2
 style_emb_dim: 64
-learning_rate_m1: 0.0001
-learning_rate_m2: 0.001
+learning_rate_m1: 0.001
+learning_rate_m2: 0.002
 weight_decay_m1: 0.0000001
 weight_decay_m2: 0.0000001
 load_model_path: 
@@ -47,7 +47,7 @@ m1_loss_ratio: 1
 m2_loss_ratio: 1
 max_grad_norm: 5
 tag: style_transfer_basemodel_50epoch
-m2_train_freq: 10
+m2_train_freq: 5
 sample_num: 10
 model_dir: ./models/naive_style_transfer/
 model_name: naive_style_transfer
