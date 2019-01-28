@@ -232,7 +232,7 @@ class Seq2seq(object):
                                      config=None, sort=False)
 
         test_loader = get_data_loader(test_dataset, 
-                                      batch_size=1, 
+                                      batch_size=2, 
                                       shuffle=False)
 
         self.encoder.eval()
@@ -244,11 +244,15 @@ class Seq2seq(object):
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
             xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
-            
+            reverse_styles = styles.cpu().new_zeros(styles.size())
+            for idx, ele in enumerate(reverse_styles.tolist()):
+                if not(ele):
+                    reverse_styles[idx]=1
+            reverse_styles=cc(torch.LongTensor(reverse_styles))
             # input the encoder
             enc_outputs, enc_lens = self.encoder(xs, ilens)
             logits, log_probs, prediction, attns=\
-                self.decoder(enc_outputs, enc_lens, styles, None,
+                self.decoder(enc_outputs, enc_lens, reverse_styles, None,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
 
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
@@ -261,8 +265,9 @@ class Seq2seq(object):
         wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
         with open(f'{test_file_name}.txt', 'w') as f:
-            for p in prediction_sents:
-                f.write(f'{p}\n')
+            for idx, p in enumerate(prediction_sents):
+                f.write(f'prediction:{p}\n')
+                f.write(f'original sentence:{ground_truth_sents[idx]}\n')
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
         return wer

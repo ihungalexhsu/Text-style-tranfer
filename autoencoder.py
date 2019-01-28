@@ -210,7 +210,7 @@ class AutoEncoder(object):
                                      config=None, sort=False)
 
         test_loader = get_data_loader(test_dataset, 
-                                      batch_size=1, 
+                                      batch_size=2, 
                                       shuffle=False)
 
         self.encoder.eval()
