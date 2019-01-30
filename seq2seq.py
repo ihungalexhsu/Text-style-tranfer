@@ -245,7 +245,7 @@ class Seq2seq(object):
             pad = self.vocab['<PAD>']
             xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
             reverse_styles = styles.cpu().new_zeros(styles.size())
-            for idx, ele in enumerate(reverse_styles.tolist()):
+            for idx, ele in enumerate(styles.cpu().tolist()):
                 if not(ele):
                     reverse_styles[idx]=1
             reverse_styles=cc(torch.LongTensor(reverse_styles))
@@ -266,8 +266,8 @@ class Seq2seq(object):
 
         with open(f'{test_file_name}.txt', 'w') as f:
             for idx, p in enumerate(prediction_sents):
-                f.write(f'prediction:{p}\n')
-                f.write(f'original sentence:{ground_truth_sents[idx]}\n')
+                f.write(f'Predictions :{p}\n')
+                f.write(f'OriSentence :{ground_truth_sents[idx]}\n')
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
         return wer
