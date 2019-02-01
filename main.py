@@ -1,4 +1,4 @@
-from seq2seq import Seq2seq
+from style_transfer import Style_transfer
 from autoencoder import AutoEncoder
 import yaml
 from argparse import ArgumentParser
@@ -8,8 +8,8 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument('-config', '-c', default='config/config.yaml')
-    parser.add_argument('-model', '-m', default='seq2seq', 
-                        choices=['seq2seq','autoencoder'])
+    parser.add_argument('-model', '-m', default='style', 
+                        choices=['style','autoencoder'])
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--load_model', action='store_true')
     parser.add_argument('--test', action='store_true')
@@ -20,13 +20,13 @@ if __name__ == '__main__':
         config = yaml.load(f)
 
     if args.load_model:
-        if args.model=='seq2seq':
-            model = Seq2seq(config, load_model=True)
+        if args.model=='style':
+            model = Style_transfer(config, load_model=True)
         elif args.model=='autoencoder':
             model = AutoEncoder(config, load_model=True)
     else:
-        if args.model=='seq2seq':
-            model = Seq2seq(config, load_model=False)
+        if args.model=='style':
+            model = Style_transfer(config, load_model=False)
         elif args.model=='autoencoder':
             model = AutoEncoder(config, load_model=False)
     

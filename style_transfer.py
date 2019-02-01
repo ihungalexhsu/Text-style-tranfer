@@ -11,7 +11,7 @@ import yaml
 import os
 import pickle
 
-class Seq2seq(object):
+class Style_transfer(object):
     def __init__(self, config, load_model=False):
 
         self.config = config
