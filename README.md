@@ -1,1 +1,1 @@
-# pytorch-style-transfer-aaai18
+# Style-Transfer## Autoencoder## Style discriminator## Todo:- [ ] Cycle Loss- [ ] Beam search- [ ] Second stage decoding
