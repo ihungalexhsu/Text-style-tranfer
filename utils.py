@@ -116,3 +116,14 @@ def calculate_wer(hyps, refs):
 
 def get_enc_context(enc_outputs, enc_lens):
     return torch.gather(enc_outputs,1,(enc_lens-1).view(-1,1).unsqueeze(2).repeat(1,1,enc_outputs.size(2))).squeeze(1)
+
+def get_prediction_length(predictions, eos=2):
+    ilen = []
+    for prediction in predictions:
+        try:
+            eos_index = next(i for i, v in enumerate(prediction) if v == eos)
+        except StopIteration:
+            eos_index = len(prediction)
+        ilen.append(eos_index)
+    
+    return cc(torch.LongTensor(ilen))

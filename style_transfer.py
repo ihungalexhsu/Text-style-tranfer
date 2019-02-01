@@ -283,7 +283,8 @@ class Style_transfer(object):
         total_loss = 0.
         total_discri_loss = 0.
         total_cheat_loss = 0.
-        
+        total_cycle_loss = 0.
+
         for cnt in range(self.config['m2_train_freq']):
             for train_steps, data in enumerate(self.train_lab_loader):
                 bos = self.vocab['<BOS>']
@@ -317,8 +318,13 @@ class Style_transfer(object):
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
             xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
+            reverse_styles = styles.cpu().new_zeros(styles.size())
+            for idx, ele in enumerate(styles.cpu().tolist()):
+                if not(ele):
+                    reverse_styles[idx]=1
+            reverse_styles=cc(torch.LongTensor(reverse_styles))
 
-            # input the encoder
+            # Reconstruct Loss
             enc_outputs, enc_lens = self.encoder(xs, ilens)
             logits, log_probs, prediction, attns=\
                 self.decoder(enc_outputs, enc_lens, styles, (ys_in, ys_out),
@@ -328,37 +334,47 @@ class Style_transfer(object):
             loss = -torch.mean(log_probs)*self.config['m1_loss_ratio']
             total_loss += loss.item()
             
+            # Adversarial Loss
             enc_representation = get_enc_context(enc_outputs, enc_lens)
             s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
             true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
-            s_loss = torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']
-            '''
-            # target should be uniform distribution on every style
-            uniform_target = self._normal_target(s_logits)
-            s_prob = F.softmax(s_logits, dim=1)
-            KLloss = nn.KLDivLoss()
-            s_loss = KLloss(s_prob, uniform_target)*self.config['m2_loss_ratio']
-            '''
+            s_loss = torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']            
             total_cheat_loss += s_loss.item()
-            
+
+            # Cycle Loss
+            _,_,prediction,_ = self.decoder(enc_outputs, enc_lens, reverse_styles, None, 
+                                            max_dec_timesteps=self.config['max_dec_timesteps'])
+            fake_ilens = get_prediction_length(prediction, eos=self.vocab['<EOS>'])
+            fake_enc_outputs, fake_enc_lens = self.encoder(prediction, fake_ilens)
+            fake_logits, _, _, _=\
+                self.decoder(fake_enc_outputs, fake_enc_lens, styles, (ys_in, ys_out),
+                             tf_rate=tf_rate, sample=False,
+                             max_dec_timesteps=self.config['max_dec_timesteps'])
+            cycle_loss = -torch.mean(fake_logits)*self.config['cycle_loss_ratio']
+            total_cycle_loss += cycle_loss.item()
+
             # calculate gradients 
             self.optimizer_m1.zero_grad()
-            (loss+s_loss).backward()
+            (loss+s_loss+cycle_loss).backward()
             torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
             self.optimizer_m1.step()
             # print message
-            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss:.3f},'
-                  f'classifier_loss: {(s_loss.item()):.3f}', end='\r')
+            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss.item():.3f},'
+                  f'cycle_loss: {cycle_loss.item():.3f}, classifier_loss: {s_loss.item():.3f}', end='\r')
             # add to logger
             tag = self.config['tag']
             self.logger.scalar_summary(tag=f'{tag}/train/loss', 
                                        value=loss.item()/self.config['m1_loss_ratio'], 
                                        step=epoch * total_steps + train_steps + 1)
-            self.logger.scalar_summary(tag=f'{tag}/train/normal_distri_loss', 
+            self.logger.scalar_summary(tag=f'{tag}/train/adversarial_loss', 
                                        value=s_loss.item()/self.config['m2_loss_ratio'], 
                                        step=epoch * total_steps + train_steps + 1)
+            self.logger.scalar_summary(tag=f'{tag}/train/cycle_loss', 
+                                       value=loss.item()/self.config['cycle_loss_ratio'], 
+                                       step=epoch * total_steps + train_steps + 1)
         print()
-        return (total_loss/total_steps),(total_cheat_loss/total_steps),((total_discri_loss/total_steps)/self.config['m2_train_freq'])
+        return (total_loss/total_steps),(total_cheat_loss/total_steps),(total_cycle_loss/total_steps),\
+            ((total_discri_loss/total_steps)/self.config['m2_train_freq'])
 
     def train(self):
 
@@ -393,7 +409,7 @@ class Style_transfer(object):
                 tf_rate = init_tf_rate
 
             # train one epoch
-            avg_train_loss, avg_distri_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
+            avg_train_loss, avg_distri_loss, avg_cycle_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
             # validation
             avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
 
