@@ -21,19 +21,19 @@ for idx,config in enumerate(configs):
         bash_file = 'runs/naive_style_transfer-beta1.sh'
         with open( bash_file, 'w' ) as OUT:
             OUT.write('source ~/.zshrc\n')
-            OUT.write('cd ~/Code/Robust-Speech-Recognition\n')
+            OUT.write('cd ~/Code/pytorch-style-transfer-aaai18\n')
             OUT.write(command+'--load_model')
     if idx==1:
         bash_file = 'runs/naive_style_transfer-beta5.sh'
         with open( bash_file, 'w' ) as OUT:
             OUT.write('source ~/.zshrc\n')
-            OUT.write('cd ~/Code/Robust-Speech-Recognition\n')
+            OUT.write('cd ~/Code/pytorch-style-transfer-aaai18\n')
             OUT.write(command+'--load_model')
     if idx==2:
         bash_file = 'runs/naive_style_transfer-beta10.sh'
         with open( bash_file, 'w' ) as OUT:
             OUT.write('source ~/.zshrc\n')
-            OUT.write('cd ~/Code/Robust-Speech-Recognition\n')
+            OUT.write('cd ~/Code/pytorch-style-transfer-aaai18\n')
             OUT.write(command)
     if idx!=2:
         qsub_command = 'qsub -P other -j y -o runs_output/{}.output -cwd -l h=\'!vista13\',h_rt=24:00:00,h_vmem=8G,gpu=2 -q ephemeral.q {}'.format(bash_file, bash_file)
