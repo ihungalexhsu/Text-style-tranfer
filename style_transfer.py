@@ -238,7 +238,7 @@ class Style_transfer(object):
         self.encoder.eval()
         self.decoder.eval()
         self.s_classifier.eval()
-        all_prediction, all_ys = [], []
+        all_prediction, all_ys, all_styles, all_reverse_styles = [], [], [], []
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -257,6 +257,8 @@ class Style_transfer(object):
 
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
+            all_styles = all_styles + styles.cpu().tolist()
+            all_reverse_styles = all_reverse_styles + reverse_styles.cpu().tolist()
 
         self.encoder.train()
         self.decoder.train()
@@ -266,8 +268,9 @@ class Style_transfer(object):
 
         with open(f'{test_file_name}.txt', 'w') as f:
             for idx, p in enumerate(prediction_sents):
-                f.write(f'Predictions :{p}\n')
-                f.write(f'OriSentence :{ground_truth_sents[idx]}\n')
+                f.write(f'Predict  (style:{all_reverse_styles[idx]}) :{p}\n')
+                f.write(f'Original (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
+                f.write('----------------------------------------\n')
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
         return wer

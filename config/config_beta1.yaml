@@ -30,12 +30,12 @@ learning_rate_m1: 0.001
 learning_rate_m2: 0.002
 weight_decay_m1: 0.0000001
 weight_decay_m2: 0.0000001
-load_model_path: ./models/naive_style_transfer_b1_con/naive_style_transfer-021
+load_model_path: 
 load_optimizer: True
 adjust_lr: False
 retrieve_lr_m1: 0.002
 retrieve_lr_m2: 0.004
-init_tf_rate: 0.9
+init_tf_rate: 1.0
 tf_start_decay_epochs: 12
 tf_decay_epochs: 30
 tf_rate_lowerbound: 0.9
@@ -49,8 +49,8 @@ max_grad_norm: 5
 tag: style_transfer_basemodel
 m2_train_freq: 5
 sample_num: 10
-model_dir: ./models/naive_style_transfer_b1_con/
+model_dir: ./models/naive_style_transfer_b1/
 model_name: naive_style_transfer
-early_stop_start_epoch: 10
+early_stop_start_epoch: 20
 early_stop_patience: 15
 test_file_name: ./tests/test_b1
