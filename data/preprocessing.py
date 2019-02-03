@@ -46,10 +46,10 @@ def process_data(d_path,l_path,store_path_pos,store_path_neg):
                 'label':int(label[i])
             }
             cnt_pos+=1
-    #pickle.dump(pos,open(store_path_pos,'wb'))
-    #pickle.dump(neg,open(store_path_neg,'wb'))
-    pickle.dump(total,open(store_path_pos,'wb'))
+    pickle.dump(pos,open(store_path_pos,'wb'))
+    pickle.dump(neg,open(store_path_neg,'wb'))
+    #pickle.dump(total,open(store_path_pos,'wb'))
 
-process_data('raw/q_train.txt','raw/s_train.txt','train.p','neg_train.p')
-process_data('raw/q_val.txt','raw/s_val.txt','val.p','neg_val.p')
-process_data('raw/q_test.txt','raw/s_test.txt','test.p','neg_test.p')
+process_data('raw/q_train.txt','raw/s_train.txt','pos_train.p','neg_train.p')
+process_data('raw/q_val.txt','raw/s_val.txt','pos_val.p','neg_val.p')
+process_data('raw/q_test.txt','raw/s_test.txt','pos_test.p','neg_test.p')

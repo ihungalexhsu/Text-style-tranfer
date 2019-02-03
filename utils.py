@@ -125,5 +125,4 @@ def get_prediction_length(predictions, eos=2):
         except StopIteration:
             eos_index = len(prediction)
         ilen.append(eos_index)
-    
     return cc(torch.LongTensor(ilen))

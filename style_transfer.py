@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from model import E2E
-from model import Encoder, Decoder, Style_classifier
+from model import Encoder, Decoder, Style_classifier, Domain_discri
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
@@ -27,7 +27,7 @@ class Style_transfer(object):
         self.get_data_loaders()
 
         # get label distribution
-        self.get_label_dist(self.train_lab_dataset)
+        self.get_label_dist()
 
         # build model and optimizer
         self.build_model(load_model=load_model)
@@ -36,20 +36,26 @@ class Style_transfer(object):
         encoder_path = model_path+'_encoder'
         decoder_path = model_path+'_decoder'
         s_classifier_path = model_path+'_sclr'
+        pos_discri_path = model_path+'_posdis'
+        neg_discri_path = model_path+'_negdis'
         opt1_path = model_path+'_opt1'
         opt2_path = model_path+'_opt2'
+        opt3_path = model_path+'_opt3'
         torch.save(self.encoder.state_dict(), f'{encoder_path}.ckpt')
         torch.save(self.decoder.state_dict(), f'{decoder_path}.ckpt')
         torch.save(self.s_classifier.state_dict(), f'{s_classifier_path}.ckpt')
+        torch.save(self.pos_discri.state_dict(), f'{pos_discri_path}.ckpt')
+        torch.save(self.neg_discri.state_dict(), f'{neg_discri_path}.ckpt')
         torch.save(self.optimizer_m1.state_dict(), f'{opt1_path}.opt')
         torch.save(self.optimizer_m2.state_dict(), f'{opt2_path}.opt')
+        torch.save(self.optimizer_m3.state_dict(), f'{opt3_path}.opt')
         return
 
     def load_vocab(self):
         with open(self.config['vocab_path'], 'rb') as f:
             self.vocab = pickle.load(f) # a dict; word to index
         with open(self.config['non_lang_syms_path'], 'rb') as f:
-            self.non_lang_syms = pickle.load(f)
+            self.non_lang_syms = pickle.load(f) # an array
         return
 
     def load_model(self, model_path, load_optimizer):
@@ -57,48 +63,75 @@ class Style_transfer(object):
         encoder_path = model_path+'_encoder'
         decoder_path = model_path+'_decoder'
         s_classifier_path = model_path+'_sclr'
+        pos_discri_path = model_path+'_posdis'
+        neg_discri_path = model_path+'_negdis'
         opt1_path = model_path+'_opt1'
         opt2_path = model_path+'_opt2'
+        opt3_path = model_path+'_opt3'
         self.encoder.load_state_dict(torch.load(f'{encoder_path}.ckpt'))
         self.decoder.load_state_dict(torch.load(f'{decoder_path}.ckpt'))
         self.s_classifier.load_state_dict(torch.load(f'{s_classifier_path}.ckpt'))
+        self.pos_discri.load_state_dict(torch.load(f'{pos_discri_path}.ckpt'))
+        self.neg_discri.load_state_dict(torch.load(f'{neg_discri_path}.ckpt'))
         if load_optimizer:
             print(f'Load optmizer from {model_path}')
             self.optimizer_m1.load_state_dict(torch.load(f'{opt1_path}.opt'))
             self.optimizer_m2.load_state_dict(torch.load(f'{opt2_path}.opt'))
+            self.optimizer_m3.load_state_dict(torch.load(f'{opt3_path}.opt'))
             if self.config['adjust_lr']:
                 adjust_learning_rate(self.optimizer_m1, self.config['retrieve_lr_m1']) 
                 adjust_learning_rate(self.optimizer_m2, self.config['retrieve_lr_m2']) 
+                adjust_learning_rate(self.optimizer_m3, self.config['retrieve_lr_m3']) 
         return
 
     def get_data_loaders(self):
         root_dir = self.config['dataset_root_dir']
+        
+        # get train dataset
+        '''
         train_set = self.config['train_set']
-        self.train_lab_dataset = PickleDataset(os.path.join(root_dir, 
-                                                            f'{train_set}.p'),
+        self.train_lab_dataset = PickleDataset(os.path.join(root_dir,f'{train_set}.p'),
                                                config=self.config, 
                                                sort=True)
         self.train_lab_loader = get_data_loader(self.train_lab_dataset, 
-                batch_size=self.config['batch_size'], 
-                shuffle=self.config['shuffle'])
-
+                                                batch_size=self.config['batch_size'], 
+                                                shuffle=self.config['shuffle'])
+        '''
+        train_pos_set = self.config['pos_train_set']
+        train_neg_set = self.config['neg_train_set']
+        self.train_pos_dataset = PickleDataset(os.path.join(root_dir,f'{train_pos_set}.p'),
+                                               config=self.config,
+                                               sort=self.config['sort_dataset'])
+        self.train_pos_loader = get_data_loader(self.train_pos_dataset, 
+                                                batch_size=self.config['batch_size'], 
+                                                shuffle=self.config['shuffle'])
+        self.train_neg_dataset = PickleDataset(os.path.join(root_dir,f'{train_neg_set}.p'),
+                                               config=self.config,
+                                               sort=self.config['sort_dataset'])
+        self.train_neg_loader = get_data_loader(self.train_neg_dataset, 
+                                                batch_size=self.config['batch_size'], 
+                                                shuffle=self.config['shuffle'])
+        
         # get dev dataset
         dev_set = self.config['dev_set']
         self.dev_dataset = PickleDataset(os.path.join(root_dir, f'{dev_set}.p'), 
                                          sort=True)
         self.dev_loader = get_data_loader(self.dev_dataset, 
-                batch_size=self.config['batch_size'], 
-                shuffle=False)
+                                          batch_size=self.config['batch_size'], 
+                                          shuffle=False)
         return
 
-    def get_label_dist(self, dataset):
+    def get_label_dist(self):
         labelcount = np.zeros(len(self.vocab))
-        for token_ids,_ in dataset:
+        for token_ids,_ in self.train_pos_dataset:
             for ind in token_ids:
                 labelcount[ind] += 1.
-        labelcount[self.vocab['<EOS>']] += len(dataset)
-        labelcount[self.vocab['<PAD>']] = 0
-        labelcount[self.vocab['<BOS>']] = 0
+        for token_ids,_ in self.train_neg_dataset:
+            for ind in token_ids:
+                labelcount[ind] += 1.
+        labelcount[self.vocab['<EOS>']]+=len(self.train_pos_dataset)+len(self.train_neg_dataset)
+        labelcount[self.vocab['<PAD>']]=0
+        labelcount[self.vocab['<BOS>']]=0
         self.labeldist = labelcount / np.sum(labelcount)
         return
              
@@ -149,8 +182,31 @@ class Style_transfer(object):
                                       out_dim=self.config['n_style_type']))
         print(self.s_classifier)
         self.s_classifier.float()
+        self.pos_discri=\
+            cc_model(Domain_discri(vocab_size=len(self.vocab),
+                                   embedding_dim=self.config['embedding_dim'],
+                                   rnn_hidden_dim=self.config['discri_hidden_dim'],
+                                   dropout_rate=self.config['discri_dropout_p'],
+                                   dnn_hidden_dim=self.config['discri_hidden_dim'],
+                                   pad_idx=self.vocab['<PAD>'],
+                                   pre_embedding=pretrain_w2v,
+                                   update_embedding=self.config['update_embedding']))
+        self.neg_discri=\
+            cc_model(Domain_discri(vocab_size=len(self.vocab),
+                                   embedding_dim=self.config['embedding_dim'],
+                                   rnn_hidden_dim=self.config['discri_hidden_dim'],
+                                   dropout_rate=self.config['discri_dropout_p'],
+                                   dnn_hidden_dim=self.config['discri_hidden_dim'],
+                                   pad_idx=self.vocab['<PAD>'],
+                                   pre_embedding=pretrain_w2v,
+                                   update_embedding=self.config['update_embedding']))
+        self.pos_discri.float()
+        self.neg_discri.float()
+        print(self.pos_discri)
+        print(self.neg_discri)
         self.params_m1=list(self.encoder.parameters())+list(self.decoder.parameters())
         self.params_m2=list(self.s_classifier.parameters())
+        self.params_m3=list(self.pos_discri.parameters())+list(self.neg_discri.parameters())
         self.optimizer_m1 =\
             torch.optim.Adam(self.params_m1, 
                              lr=self.config['learning_rate_m1'], 
@@ -159,6 +215,10 @@ class Style_transfer(object):
             torch.optim.Adam(self.params_m2, 
                              lr=self.config['learning_rate_m2'], 
                              weight_decay=self.config['weight_decay_m2'])
+        self.optimizer_m3 =\
+            torch.optim.Adam(self.params_m3, 
+                             lr=self.config['learning_rate_m3'], 
+                             weight_decay=self.config['weight_decay_m3'])
 
         if load_model:
             self.load_model(self.config['load_model_path'], self.config['load_optimizer'])
@@ -169,7 +229,6 @@ class Style_transfer(object):
 
         self.encoder.eval()
         self.decoder.eval()
-        self.s_classifier.eval()
         all_prediction, all_ys = [], []
         total_loss = 0.
         for step, data in enumerate(self.dev_loader):
@@ -184,7 +243,6 @@ class Style_transfer(object):
             logits, log_probs, prediction, attns=\
                 self.decoder(enc_outputs, enc_lens, styles, None,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
-
            
             seq_len = [y.size(0) + 1 for y in ys]
             mask = cc(_seq_mask(seq_len=seq_len, max_len=log_probs.size(1)))
@@ -196,7 +254,6 @@ class Style_transfer(object):
 
         self.encoder.train()
         self.decoder.train()
-        self.s_classifier.train()
         # calculate loss
         avg_loss = total_loss / len(self.dev_loader)
 
@@ -237,8 +294,7 @@ class Style_transfer(object):
 
         self.encoder.eval()
         self.decoder.eval()
-        self.s_classifier.eval()
-        all_prediction, all_ys = [], []
+        all_prediction, all_ys, all_styles, all_reverse_styles = [], [], [], []
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -257,124 +313,274 @@ class Style_transfer(object):
 
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
+            all_styles = all_styles + styles.cpu().tolist()
+            all_reverse_styles = all_reverse_styles + reverse_styles.cpu().tolist()
 
         self.encoder.train()
         self.decoder.train()
-        self.s_classifier.train()
 
         wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
         with open(f'{test_file_name}.txt', 'w') as f:
+            f.write(f'Total sentences: {len(prediction_sent)}, WER={wer:.4f}')
             for idx, p in enumerate(prediction_sents):
-                f.write(f'Predictions :{p}\n')
-                f.write(f'OriSentence :{ground_truth_sents[idx]}\n')
+                f.write(f'Predict  (style:{all_reverse_styles[idx]}) :{p}\n')
+                f.write(f'Original (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
+                f.write('----------------------------------------\n')
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
         return wer
 
-    def _normal_target(self, x):
-        out = x.new_zeros(x.size())
-        out = out.fill_(1/int(x.size(-1)))
+    def _random_target(self, x, num_class=2):
+        out = cc(torch.LongTensor(x.size()).random_(0,num_class))
         return out
 
     def train_one_epoch(self, epoch, tf_rate):
 
-        total_steps = len(self.train_lab_loader)
+        total_steps = len(self.train_pos_loader)
         total_loss = 0.
-        total_discri_loss = 0.
-        total_cheat_loss = 0.
+        total_style_loss = 0.
+        total_inverse_style_loss = 0.
         total_cycle_loss = 0.
-
-        for cnt in range(self.config['m2_train_freq']):
-            for train_steps, data in enumerate(self.train_lab_loader):
-                bos = self.vocab['<BOS>']
-                eos = self.vocab['<EOS>']
-                pad = self.vocab['<PAD>']
-                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
-                # input the encoder
-                enc_outputs, enc_lens = self.encoder(xs, ilens)
-                enc_representation = get_enc_context(enc_outputs, enc_lens)
-                s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
-                #s_logits, s_log_probs, s_pred = self.s_classifier(enc_outputs, enc_lens)
-                true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
-                s_loss = -torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']
-                total_discri_loss += s_loss.item()
-
-                # calculate gradients 
-                self.optimizer_m2.zero_grad()
-                s_loss.backward()
-                self.optimizer_m2.step()
-                # print message
-                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}],loss:{s_loss.item():.3f}', end='\r')
-                # add to logger
-                tag = self.config['tag']
-                self.logger.scalar_summary(tag=f'{tag}/train/style_classifier_loss', 
-                                           value=s_loss.item()/self.config['m2_loss_ratio'], 
-                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
-            print ()
-            
-        for train_steps, data in enumerate(self.train_lab_loader):
+        total_discri_loss = 0.
+        total_inverse_discri_loss = 0.
+        
+        for train_steps, data in enumerate(zip(self.train_pos_loader,self.train_neg_loader)):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
-            xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
-            reverse_styles = styles.cpu().new_zeros(styles.size())
-            for idx, ele in enumerate(styles.cpu().tolist()):
-                if not(ele):
-                    reverse_styles[idx]=1
-            reverse_styles=cc(torch.LongTensor(reverse_styles))
-
+            xs_pos, ys_pos, ys_in_pos, ys_out_pos, ilens_pos, pos_styles = to_gpu(data[0], bos, eos, pad)
+            xs_neg, ys_neg, ys_in_neg, ys_out_neg, ilens_neg, neg_styles = to_gpu(data[1], bos, eos, pad)
+            
+            # Positive Part
             # Reconstruct Loss
-            enc_outputs, enc_lens = self.encoder(xs, ilens)
-            logits, log_probs, prediction, attns=\
-                self.decoder(enc_outputs, enc_lens, styles, (ys_in, ys_out),
+            enc_outputs, enc_lens = self.encoder(xs_pos, ilens_pos)
+            recon_logits, recon_log_probs, _, _=\
+                self.decoder(enc_outputs, enc_lens, pos_styles, (ys_in_pos, ys_out_pos),
                              tf_rate=tf_rate, sample=False,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
 
-            loss = -torch.mean(log_probs)*self.config['m1_loss_ratio']
-            total_loss += loss.item()
-            
-            # Adversarial Loss
+            loss_pos = -torch.mean(recon_log_probs)*self.config['recons_loss_ratio']
+            total_loss += loss_pos.item()
+            # Style Loss
             enc_representation = get_enc_context(enc_outputs, enc_lens)
             s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
-            true_label_log_probs = torch.gather(s_log_probs, dim=1, index= styles.unsqueeze(1)).squeeze(1)
-            s_loss = torch.mean(true_label_log_probs)*self.config['m2_loss_ratio']            
-            total_cheat_loss += s_loss.item()
-
+            random_s_log_probs =\
+                torch.gather(s_log_probs,dim=1,
+                             index=self._random_target(pos_styles, self.config['n_style_type']).unsqueeze(1)).squeeze(1)
+            s_loss_pos = -torch.mean(random_s_log_probs)*self.config['style_loss_ratio']            
+            total_style_loss += s_loss_pos.item()           
             # Cycle Loss
-            _,_,prediction,_ = self.decoder(enc_outputs, enc_lens, reverse_styles, None, 
+            _,_,predict_neg,_ = self.decoder(enc_outputs, enc_lens, neg_styles, None, 
                                             max_dec_timesteps=self.config['max_dec_timesteps'])
-            fake_ilens = get_prediction_length(prediction, eos=self.vocab['<EOS>'])
-            fake_enc_outputs, fake_enc_lens = self.encoder(prediction, fake_ilens)
-            fake_logits, _, _, _=\
-                self.decoder(fake_enc_outputs, fake_enc_lens, styles, (ys_in, ys_out),
+            cycle_ilens = get_prediction_length(predict_neg, eos=self.vocab['<EOS>'])
+            cycle_enc_outputs, cycle_enc_lens = self.encoder(predict_neg, cycle_ilens, need_sort=True)
+            cycle_logits, cycle_log_probs, _, _ =\
+                self.decoder(cycle_enc_outputs, cycle_enc_lens, pos_styles, (ys_in_pos, ys_out_pos),
                              tf_rate=tf_rate, sample=False,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
-            cycle_loss = -torch.mean(fake_logits)*self.config['cycle_loss_ratio']
-            total_cycle_loss += cycle_loss.item()
+            cycle_loss_pos = -torch.mean(cycle_log_probs)*self.config['cycle_loss_ratio']
+            total_cycle_loss += cycle_loss_pos.item()            
+            # Discriminator Loss
+            # For fake negative data, try to cheat neg_discri
+            _, neg_discri_log_probs, _ = self.neg_discri(predict_neg, cycle_ilens, need_sort=True)
+            rand_neg_discri_log_probs =\
+                torch.gather(neg_discri_log_probs,dim=1,
+                             index=self._random_target(pos_styles).unsqueeze(1)).squeeze(1)
+            neg_discri_loss = -torch.mean(rand_neg_discri_log_probs)*self.config['discri_loss_ratio']
+            total_discri_loss += neg_discri_loss.item()
+           
+            # Negative Part
+            # Reconstruct Loss
+            enc_outputs, enc_lens = self.encoder(xs_neg, ilens_neg)
+            recon_logits, recon_log_probs, _, _=\
+                self.decoder(enc_outputs, enc_lens, neg_styles, (ys_in_neg, ys_out_neg),
+                             tf_rate=tf_rate, sample=False,
+                             max_dec_timesteps=self.config['max_dec_timesteps'])
 
+            loss_neg = -torch.mean(recon_log_probs)*self.config['recons_loss_ratio']
+            total_loss += loss_neg.item()
+            # Style Loss
+            enc_representation = get_enc_context(enc_outputs, enc_lens)
+            s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+            random_s_log_probs =\
+                torch.gather(s_log_probs,dim=1,
+                             index=self._random_target(neg_styles, self.config['n_style_type']).unsqueeze(1)).squeeze(1)
+            s_loss_neg = -torch.mean(random_s_log_probs)*self.config['style_loss_ratio']            
+            total_style_loss += s_loss_neg.item()
+
+            # Cycle Loss
+            _,_,predict_pos,_ = self.decoder(enc_outputs, enc_lens, pos_styles, None, 
+                                            max_dec_timesteps=self.config['max_dec_timesteps'])
+            cycle_ilens = get_prediction_length(predict_pos, eos=self.vocab['<EOS>'])
+            cycle_enc_outputs, cycle_enc_lens = self.encoder(predict_pos, cycle_ilens, need_sort=True)
+            cycle_logits, cycle_log_probs, _, _ =\
+                self.decoder(cycle_enc_outputs, cycle_enc_lens, neg_styles, (ys_in_neg, ys_out_neg),
+                             tf_rate=tf_rate, sample=False,
+                             max_dec_timesteps=self.config['max_dec_timesteps'])
+            cycle_loss_neg = -torch.mean(cycle_log_probs)*self.config['cycle_loss_ratio']
+            total_cycle_loss += cycle_loss_neg.item()
+            
+            # Discriminator Loss
+            # For fake positive data, try to cheat pos_discri
+            _, pos_discri_log_probs, _ = self.pos_discri(predict_pos, cycle_ilens, need_sort=True)
+            rand_pos_discri_log_probs =\
+                torch.gather(pos_discri_log_probs,dim=1,
+                             index=self._random_target(neg_styles).unsqueeze(1)).squeeze(1)
+            pos_discri_loss = -torch.mean(rand_pos_discri_log_probs)*self.config['discri_loss_ratio']
+            total_discri_loss += pos_discri_loss.item()
+           
             # calculate gradients 
             self.optimizer_m1.zero_grad()
-            (loss+s_loss+cycle_loss).backward()
+            tloss = loss_pos+loss_neg+s_loss_pos+s_loss_neg+cycle_loss_pos
+            tloss += cycle_loss_neg+neg_discri_loss+pos_discri_loss
+            tloss.backward()
             torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
             self.optimizer_m1.step()
             # print message
-            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {loss.item():.3f},'
-                  f'cycle_loss: {cycle_loss.item():.3f}, classifier_loss: {s_loss.item():.3f}', end='\r')
+            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {(loss_pos.item()+loss_neg.item())/2:.3f},'
+                  f'cycle_loss: {(cycle_loss_pos.item()+cycle_loss_neg.item())/2:.3f},'
+                  f'style_loss: {(s_loss_pos.item()+s_loss_neg.item())/2:.3f},'
+                  f'discri_loss: {(pos_discri_loss.item()+neg_discri_loss.item())/2:.3f}', end='\r')
+            
             # add to logger
             tag = self.config['tag']
-            self.logger.scalar_summary(tag=f'{tag}/train/loss', 
-                                       value=loss.item()/self.config['m1_loss_ratio'], 
-                                       step=epoch * total_steps + train_steps + 1)
-            self.logger.scalar_summary(tag=f'{tag}/train/adversarial_loss', 
-                                       value=s_loss.item()/self.config['m2_loss_ratio'], 
-                                       step=epoch * total_steps + train_steps + 1)
-            self.logger.scalar_summary(tag=f'{tag}/train/cycle_loss', 
-                                       value=loss.item()/self.config['cycle_loss_ratio'], 
-                                       step=epoch * total_steps + train_steps + 1)
+            self.logger.scalar_summary(tag=f'{tag}/train/reconloss_pos', 
+                                       value=loss_pos.item()/self.config['recons_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/reconloss_neg', 
+                                       value=loss_neg.item()/self.config['recons_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/styleloss_pos', 
+                                       value=s_loss_pos.item()/self.config['style_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/styleloss_neg', 
+                                       value=s_loss_neg.item()/self.config['style_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/cycleloss_pos', 
+                                       value=cycle_loss_pos.item()/self.config['cycle_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/cycleloss_neg', 
+                                       value=cycle_loss_neg.item()/self.config['cycle_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/discriloss_pos', 
+                                       value=pos_discri_loss.item()/self.config['discri_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
+            self.logger.scalar_summary(tag=f'{tag}/train/discriloss_neg', 
+                                       value=neg_discri_loss.item()/self.config['discri_loss_ratio'], 
+                                       step=epoch*total_steps+train_steps+1)
         print()
-        return (total_loss/total_steps),(total_cheat_loss/total_steps),(total_cycle_loss/total_steps),\
-            ((total_discri_loss/total_steps)/self.config['m2_train_freq'])
+        
+        for cnt in range(self.config['m2_train_freq']):
+            for train_steps, data in enumerate(zip(self.train_pos_loader,self.train_neg_loader)):
+                bos = self.vocab['<BOS>']
+                eos = self.vocab['<EOS>']
+                pad = self.vocab['<PAD>']
+                xs_pos, ys_pos, ys_in_pos, ys_out_pos, ilens_pos, pos_styles = to_gpu(data[0], bos, eos, pad)
+                xs_neg, ys_neg, ys_in_neg, ys_out_neg, ilens_neg, neg_styles = to_gpu(data[1], bos, eos, pad)
+                # Positive Part
+                enc_outputs, enc_lens = self.encoder(xs_pos, ilens_pos)
+                # Style Loss
+                enc_representation = get_enc_context(enc_outputs, enc_lens)
+                s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+                true_s_log_probs =\
+                    torch.gather(s_log_probs,dim=1,
+                                 index=pos_styles.unsqueeze(1)).squeeze(1)
+                s_loss_pos = -torch.mean(true_s_log_probs)*self.config['style_loss_ratio']            
+                total_inverse_style_loss += s_loss_pos.item()           
+                # Discriminator Loss
+                _,_,predict_neg,_ = self.decoder(enc_outputs, enc_lens, neg_styles, None, 
+                                                max_dec_timesteps=self.config['max_dec_timesteps'])
+                cycle_ilens = get_prediction_length(predict_neg, eos=self.vocab['<EOS>'])
+                # For real positive xs_pos, pos_discri should learn True
+                _, realpos_discri_log_probs, _ = self.pos_discri(xs_pos, ilens_pos)
+                # For fake negative predict_neg, neg_discri should learn False
+                _, fakeneg_discri_log_probs, _ = self.neg_discri(predict_neg, cycle_ilens, need_sort=True)
+                #here, use pos_styles since it's an all one tensor, neg_styles: all zero tensor
+                true_realpos_discri_log_probs =\
+                    torch.gather(realpos_discri_log_probs,dim=1,
+                                 index=pos_styles.unsqueeze(1)).squeeze(1) 
+                true_fakeneg_discri_log_probs =\
+                    torch.gather(fakeneg_discri_log_probs,dim=1,
+                                 index=neg_styles.unsqueeze(1)).squeeze(1) 
+                realpos_discri_loss = -torch.mean(true_realpos_discri_log_probs)*self.config['discri_loss_ratio']
+                fakeneg_discri_loss = -torch.mean(true_fakeneg_discri_log_probs)*self.config['discri_loss_ratio']
+                total_inverse_discri_loss += realpos_discri_loss.item()
+                total_inverse_discri_loss += fakeneg_discri_loss.item()
+               
+                # Negative Part
+                enc_outputs, enc_lens = self.encoder(xs_neg, ilens_neg)
+                # Style Loss
+                enc_representation = get_enc_context(enc_outputs, enc_lens)
+                s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+                true_s_log_probs =\
+                    torch.gather(s_log_probs,dim=1,
+                                 index=neg_styles.unsqueeze(1)).squeeze(1)
+                s_loss_neg = -torch.mean(true_s_log_probs)*self.config['style_loss_ratio']            
+                total_inverse_style_loss += s_loss_neg.item()           
+                # Discriminator Loss
+                _,_,predict_pos,_ = self.decoder(enc_outputs, enc_lens, pos_styles, None, 
+                                                max_dec_timesteps=self.config['max_dec_timesteps'])
+                cycle_ilens = get_prediction_length(predict_pos, eos=self.vocab['<EOS>'])
+                # For real negative xs_neg, neg_discri should learn True
+                _, realneg_discri_log_probs, _ = self.neg_discri(xs_neg, ilens_neg)
+                # For fake positive predict_pos, pos_discri should learn False
+                _, fakepos_discri_log_probs, _ = self.pos_discri(predict_pos, cycle_ilens, need_sort=True)
+                #here, use pos_styles since it's an all one tensor, neg_styles: all zero tensor
+                true_realneg_discri_log_probs =\
+                    torch.gather(realneg_discri_log_probs,dim=1,
+                                 index=pos_styles.unsqueeze(1)).squeeze(1) 
+                true_fakepos_discri_log_probs =\
+                    torch.gather(fakepos_discri_log_probs,dim=1,
+                                 index=neg_styles.unsqueeze(1)).squeeze(1) 
+                realneg_discri_loss = -torch.mean(true_realneg_discri_log_probs)*self.config['discri_loss_ratio']
+                fakepos_discri_loss = -torch.mean(true_fakepos_discri_log_probs)*self.config['discri_loss_ratio']
+                total_inverse_discri_loss += realneg_discri_loss.item()
+                total_inverse_discri_loss += fakepos_discri_loss.item()
+     
+                # calculate gradients 
+                self.optimizer_m2.zero_grad()
+                (s_loss_pos+s_loss_neg).backward()
+                self.optimizer_m2.step()
+                self.optimizer_m3.zero_grad()
+                (realpos_discri_loss+fakeneg_discri_loss+realneg_discri_loss+fakepos_discri_loss).backward()
+                self.optimizer_m3.step()
+                # print message
+                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}],'
+                      f'style_loss: {(s_loss_pos.item()+s_loss_neg.item())/2:.3f},'
+                      f'pos_d_loss: {(realpos_discri_loss.item()+fakepos_discri_loss.item())/2:.3f},'
+                      f'neg_d_loss: {(realneg_discri_loss.item()+fakeneg_discri_loss.item())/2:.3f}', end='\r')
+                # add to logger
+                tag = self.config['tag']
+                self.logger.scalar_summary(tag=f'{tag}/train/inv_styleloss_pos', 
+                                           value=s_loss_pos.item()/self.config['style_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+                self.logger.scalar_summary(tag=f'{tag}/train/inv_styleloss_neg', 
+                                           value=s_loss_neg.item()/self.config['style_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+                self.logger.scalar_summary(tag=f'{tag}/train/realneg_dloss', 
+                                           value=realneg_discri_loss.item()/self.config['discri_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+                self.logger.scalar_summary(tag=f'{tag}/train/realpos_dloss', 
+                                           value=realpos_discri_loss.item()/self.config['discri_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+                self.logger.scalar_summary(tag=f'{tag}/train/fakepos_dloss', 
+                                           value=fakepos_discri_loss.item()/self.config['discri_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+                self.logger.scalar_summary(tag=f'{tag}/train/fakeneg_dloss', 
+                                           value=fakeneg_discri_loss.item()/self.config['discri_loss_ratio'], 
+                                           step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
+            print ()
+        total_loss = 0.
+        total_style_loss = 0.
+        total_inverse_style_loss = 0.
+        total_cycle_loss = 0.
+        total_discri_loss = 0.
+        total_inverse_discri_loss = 0.
+            
+        return ((total_loss/total_steps),(total_style_loss/total_steps),(total_cycle_loss/total_steps),\
+                (total_discri_loss/total_steps),((total_inverse_style_loss/total_steps)/self.config['m2_train_freq']),\
+                ((total_inverse_discri_loss/total_steps))/self.config['m2_train_freq'])
 
     def train(self):
 
@@ -409,11 +615,13 @@ class Style_transfer(object):
                 tf_rate = init_tf_rate
 
             # train one epoch
-            avg_train_loss, avg_distri_loss, avg_cycle_loss, avg_discri_loss = self.train_one_epoch(epoch, tf_rate)
+            avgl_re,avgl_s,avgl_c,avgl_dis,avgl_invs,avgl_invdis = self.train_one_epoch(epoch, tf_rate)
             # validation
             avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
 
-            print(f'Epoch: {epoch}, tf_rate={tf_rate:.3f}, train_loss={avg_train_loss:.4f},'
+            print(f'Epoch: {epoch}, tf_rate={tf_rate:.3f}, train_reconl={avgl_re:.4f},'
+                  f'train_stylel:{avgl_s:.4f}, train_disl:{avgl_dis:.4f},'
+                  f'train_inv_stylel:{avgl_invs:.4f}, train_inv_disl:{avgl_invdis:.4f},'
                   f'valid_loss={avg_valid_loss:.4f}, val_WER={wer:.4f}')
 
             # add to tensorboard

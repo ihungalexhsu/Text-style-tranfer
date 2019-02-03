@@ -31,7 +31,12 @@ class Encoder(torch.nn.Module):
         self.enc = nn.ModuleList(layers)
         self.dropout_rate=dropout_rate
                           
-    def forward(self, x, ilens):
+    def forward(self, x, ilens, need_sort=False):
+        if need_sort:
+            sort_idx = np.argsort((-ilens).cpu().numpy())
+            x = x[sort_idx]
+            ilens = ilens[sort_idx]
+            unsort_idx = np.argsort(sort_idx)
         embedded = self.embedding(x)
         total_length = embedded.size(1)
         for layer in self.enc:
@@ -41,6 +46,9 @@ class Encoder(torch.nn.Module):
             xpad, ilens = pad_packed_sequence(xpack, batch_first=True,
                                               total_length=total_length)
             embedded = F.dropout(xpad, self.dropout_rate, training=self.training)
+        if need_sort:
+            embedded = embedded[unsort_idx]
+            ilens = ilens[unsort_idx]
         return embedded, cc(ilens)
 
 class Decoder(torch.nn.Module):
@@ -57,6 +65,7 @@ class Decoder(torch.nn.Module):
         self.use_style_embedding = use_style_embedding
         if use_style_embedding:    
             self.style_embedding = torch.nn.Embedding(n_styles, style_emb_dim)
+            torch.nn.init.orthogonal_(self.style_embedding.weight)
         self.attention = attention
         self.att_odim = att_odim
         self.dropout_rate = dropout_rate
@@ -214,10 +223,6 @@ class Style_classifier(nn.Module):
             linear_layers.append(nn.Linear(idim, odim))
         self.layers = nn.ModuleList(linear_layers)
         self.n_layers = n_layers
-        '''
-        self.GRU = torch.nn.GRU(enc_out_dim, hidden_dim, batch_first=True, bidirectional=True)
-        self.output_layer = torch.nn.Linear(hidden_dim*2, out_dim)
-        '''
 
     def forward(self, representation):
         out = representation
@@ -225,14 +230,6 @@ class Style_classifier(nn.Module):
             out = layer(out)
             if i !=(self.n_layers-1):
                 out = F.relu(out)
-        '''
-        rpack = pack_padded_sequence(representation, ilens, batch_first=True)
-        self.GRU.flatten_parameters()
-        out,_ = self.GRU(rpack)
-        out, ilens = pad_packed_sequence(out, batch_first=True)
-        out = get_enc_context(out, cc(ilens))
-        out = self.output_layer(out)
-        '''
 
         logits = out # batch x out_dim
         log_probs = F.log_softmax(logits, dim=1)
@@ -240,9 +237,48 @@ class Style_classifier(nn.Module):
 
         return logits, log_probs, prediction
 
+class Domain_discri(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, rnn_hidden_dim, dropout_rate,
+                 dnn_hidden_dim, pad_idx=0, pre_embedding=None, update_embedding=True):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
+        if pre_embedding is not None:
+            self.embedding.weight = nn.Parameter(pre_embedding)
+        self.embedding.weight.requires_grad = update_embedding
+        self.rnn = nn.GRU(embedding_dim, rnn_hidden_dim, num_layers=1,
+                          bidirectional=True, batch_first=True)
+        self.dropout_rate = dropout_rate
+        self.dnn = nn.Sequential(
+            nn.Linear(2*rnn_hidden_dim, dnn_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(dnn_hidden_dim, 2),
+        )
+                          
+    def forward(self, x, ilens, need_sort=False):
+        if need_sort:
+            sort_idx = np.argsort((-ilens).cpu().numpy())
+            x = x[sort_idx]
+            ilens = ilens[sort_idx]
+            unsort_idx = np.argsort(sort_idx)
+        embedded = self.embedding(x)
+        total_length = embedded.size(1)
+        xpack = pack_padded_sequence(embedded, ilens, batch_first=True)
+        self.rnn.flatten_parameters()
+        xpack, _ = self.rnn(xpack)
+        xpad, ilens = pad_packed_sequence(xpack, batch_first=True, total_length=total_length)
+        rnnout = F.dropout(xpad, self.dropout_rate, training=self.training)
+        if need_sort:
+            rnnout=rnnout[unsort_idx]
+            ilens=ilens[unsort_idx]
+        logits = self.dnn(get_enc_context(rnnout,cc(ilens)))
+        log_probs = F.log_softmax(logits, dim=1)
+        prediction = log_probs.topk(1, dim=1)[1]
+        return logits, log_probs, prediction
 
 '''
-deprecated
+==============
+**deprecated**
+==============
 '''
 class disentangle_clean(nn.Module):
     def __init__(self, clean_repre_dim, hidden_dim, nuisance_dim):
