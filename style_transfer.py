@@ -322,7 +322,7 @@ class Style_transfer(object):
         wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
         with open(f'{test_file_name}.txt', 'w') as f:
-            f.write(f'Total sentences: {len(prediction_sent)}, WER={wer:.4f}')
+            f.write(f'Total sentences: {len(prediction_sents)}, WER={wer:.4f}\n')
             for idx, p in enumerate(prediction_sents):
                 f.write(f'Predict  (style:{all_reverse_styles[idx]}) :{p}\n')
                 f.write(f'Original (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
@@ -351,11 +351,13 @@ class Style_transfer(object):
             pad = self.vocab['<PAD>']
             xs_pos, ys_pos, ys_in_pos, ys_out_pos, ilens_pos, pos_styles = to_gpu(data[0], bos, eos, pad)
             xs_neg, ys_neg, ys_in_neg, ys_out_neg, ilens_neg, neg_styles = to_gpu(data[1], bos, eos, pad)
+            reverse_pos_styles = cc(torch.LongTensor(pos_styles.cpu().new_zeros(pos_styles.size()))) 
+            reverse_neg_styles = cc(torch.LongTensor(neg_styles.cpu().new_ones(neg_styles.size()))) 
             
             # Positive Part
             # Reconstruct Loss
             enc_outputs, enc_lens = self.encoder(xs_pos, ilens_pos)
-            recon_logits, recon_log_probs, _, _=\
+            _, recon_log_probs, _, _=\
                 self.decoder(enc_outputs, enc_lens, pos_styles, (ys_in_pos, ys_out_pos),
                              tf_rate=tf_rate, sample=False,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
@@ -364,18 +366,18 @@ class Style_transfer(object):
             total_loss += loss_pos.item()
             # Style Loss
             enc_representation = get_enc_context(enc_outputs, enc_lens)
-            s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+            _, s_log_probs, _= self.s_classifier(enc_representation)
             random_s_log_probs =\
                 torch.gather(s_log_probs,dim=1,
                              index=self._random_target(pos_styles, self.config['n_style_type']).unsqueeze(1)).squeeze(1)
             s_loss_pos = -torch.mean(random_s_log_probs)*self.config['style_loss_ratio']            
             total_style_loss += s_loss_pos.item()           
             # Cycle Loss
-            _,_,predict_neg,_ = self.decoder(enc_outputs, enc_lens, neg_styles, None, 
-                                            max_dec_timesteps=self.config['max_dec_timesteps'])
+            _,_,predict_neg,_ = self.decoder(enc_outputs, enc_lens, reverse_pos_styles, None, 
+                                             max_dec_timesteps=self.config['max_dec_timesteps'])
             cycle_ilens = get_prediction_length(predict_neg, eos=self.vocab['<EOS>'])
             cycle_enc_outputs, cycle_enc_lens = self.encoder(predict_neg, cycle_ilens, need_sort=True)
-            cycle_logits, cycle_log_probs, _, _ =\
+            _, cycle_log_probs, _, _ =\
                 self.decoder(cycle_enc_outputs, cycle_enc_lens, pos_styles, (ys_in_pos, ys_out_pos),
                              tf_rate=tf_rate, sample=False,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
@@ -393,7 +395,7 @@ class Style_transfer(object):
             # Negative Part
             # Reconstruct Loss
             enc_outputs, enc_lens = self.encoder(xs_neg, ilens_neg)
-            recon_logits, recon_log_probs, _, _=\
+            _, recon_log_probs, _, _=\
                 self.decoder(enc_outputs, enc_lens, neg_styles, (ys_in_neg, ys_out_neg),
                              tf_rate=tf_rate, sample=False,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
@@ -402,7 +404,7 @@ class Style_transfer(object):
             total_loss += loss_neg.item()
             # Style Loss
             enc_representation = get_enc_context(enc_outputs, enc_lens)
-            s_logits, s_log_probs, s_pred = self.s_classifier(enc_representation)
+            _, s_log_probs, _ = self.s_classifier(enc_representation)
             random_s_log_probs =\
                 torch.gather(s_log_probs,dim=1,
                              index=self._random_target(neg_styles, self.config['n_style_type']).unsqueeze(1)).squeeze(1)
@@ -410,8 +412,8 @@ class Style_transfer(object):
             total_style_loss += s_loss_neg.item()
 
             # Cycle Loss
-            _,_,predict_pos,_ = self.decoder(enc_outputs, enc_lens, pos_styles, None, 
-                                            max_dec_timesteps=self.config['max_dec_timesteps'])
+            _,_,predict_pos,_ = self.decoder(enc_outputs, enc_lens, reverse_neg_styles, None, 
+                                             max_dec_timesteps=self.config['max_dec_timesteps'])
             cycle_ilens = get_prediction_length(predict_pos, eos=self.vocab['<EOS>'])
             cycle_enc_outputs, cycle_enc_lens = self.encoder(predict_pos, cycle_ilens, need_sort=True)
             cycle_logits, cycle_log_probs, _, _ =\
@@ -478,6 +480,8 @@ class Style_transfer(object):
                 pad = self.vocab['<PAD>']
                 xs_pos, ys_pos, ys_in_pos, ys_out_pos, ilens_pos, pos_styles = to_gpu(data[0], bos, eos, pad)
                 xs_neg, ys_neg, ys_in_neg, ys_out_neg, ilens_neg, neg_styles = to_gpu(data[1], bos, eos, pad)
+                reverse_pos_styles = cc(torch.LongTensor(pos_styles.cpu().new_zeros(pos_styles.size()))) 
+                reverse_neg_styles = cc(torch.LongTensor(neg_styles.cpu().new_ones(neg_styles.size()))) 
                 # Positive Part
                 enc_outputs, enc_lens = self.encoder(xs_pos, ilens_pos)
                 # Style Loss
@@ -489,7 +493,7 @@ class Style_transfer(object):
                 s_loss_pos = -torch.mean(true_s_log_probs)*self.config['style_loss_ratio']            
                 total_inverse_style_loss += s_loss_pos.item()           
                 # Discriminator Loss
-                _,_,predict_neg,_ = self.decoder(enc_outputs, enc_lens, neg_styles, None, 
+                _,_,predict_neg,_ = self.decoder(enc_outputs, enc_lens, reverse_pos_styles, None, 
                                                 max_dec_timesteps=self.config['max_dec_timesteps'])
                 cycle_ilens = get_prediction_length(predict_neg, eos=self.vocab['<EOS>'])
                 # For real positive xs_pos, pos_discri should learn True
@@ -502,7 +506,7 @@ class Style_transfer(object):
                                  index=pos_styles.unsqueeze(1)).squeeze(1) 
                 true_fakeneg_discri_log_probs =\
                     torch.gather(fakeneg_discri_log_probs,dim=1,
-                                 index=neg_styles.unsqueeze(1)).squeeze(1) 
+                                 index=reverse_pos_styles.unsqueeze(1)).squeeze(1) 
                 realpos_discri_loss = -torch.mean(true_realpos_discri_log_probs)*self.config['discri_loss_ratio']
                 fakeneg_discri_loss = -torch.mean(true_fakeneg_discri_log_probs)*self.config['discri_loss_ratio']
                 total_inverse_discri_loss += realpos_discri_loss.item()
@@ -519,7 +523,7 @@ class Style_transfer(object):
                 s_loss_neg = -torch.mean(true_s_log_probs)*self.config['style_loss_ratio']            
                 total_inverse_style_loss += s_loss_neg.item()           
                 # Discriminator Loss
-                _,_,predict_pos,_ = self.decoder(enc_outputs, enc_lens, pos_styles, None, 
+                _,_,predict_pos,_ = self.decoder(enc_outputs, enc_lens, reverse_neg_styles, None, 
                                                 max_dec_timesteps=self.config['max_dec_timesteps'])
                 cycle_ilens = get_prediction_length(predict_pos, eos=self.vocab['<EOS>'])
                 # For real negative xs_neg, neg_discri should learn True
@@ -529,7 +533,7 @@ class Style_transfer(object):
                 #here, use pos_styles since it's an all one tensor, neg_styles: all zero tensor
                 true_realneg_discri_log_probs =\
                     torch.gather(realneg_discri_log_probs,dim=1,
-                                 index=pos_styles.unsqueeze(1)).squeeze(1) 
+                                 index=reverse_neg_styles.unsqueeze(1)).squeeze(1) 
                 true_fakepos_discri_log_probs =\
                     torch.gather(fakepos_discri_log_probs,dim=1,
                                  index=neg_styles.unsqueeze(1)).squeeze(1) 
