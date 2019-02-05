@@ -1,1 +1,1 @@
-# Style-Transfer## Autoencoder## Style discriminator## Todo:- [ ] Cycle Loss- [ ] Beam search- [ ] Second stage decoding
+# Style-Transfer## Autoencoder## Style discriminator## Cycle gan## Todo:- [x] Cycle Loss- [ ] Beam search- [ ] Second stage decoding- [ ] Auto Validation
