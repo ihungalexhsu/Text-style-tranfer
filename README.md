@@ -1,1 +1,1 @@
-# Style-Transfer## Autoencoder## Style discriminator## Cycle gan## Todo:- [x] Cycle Loss- [ ] Beam search- [ ] Second stage decoding- [ ] Auto Validation
+# Style-Transfer## Usage### Autoencoder- python main.py -c config/config_autoencoder.yaml -m autoencoder --train --test### Style discriminator- python main.py -c config/config_fader.yaml -m style_fader --train --test### Cycle gan- python main.py -c config/config_cycle_exp.yaml -m style_cycle --train --test## Todo:- [x] Cycle Loss- [ ] Beam search- [ ] Second stage decoding- [ ] Auto Validation
