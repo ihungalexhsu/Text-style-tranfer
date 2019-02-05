@@ -88,15 +88,6 @@ class Style_transfer(object):
         root_dir = self.config['dataset_root_dir']
         
         # get train dataset
-        '''
-        train_set = self.config['train_set']
-        self.train_lab_dataset = PickleDataset(os.path.join(root_dir,f'{train_set}.p'),
-                                               config=self.config, 
-                                               sort=True)
-        self.train_lab_loader = get_data_loader(self.train_lab_dataset, 
-                                                batch_size=self.config['batch_size'], 
-                                                shuffle=self.config['shuffle'])
-        '''
         train_pos_set = self.config['pos_train_set']
         train_neg_set = self.config['neg_train_set']
         self.train_pos_dataset = PickleDataset(os.path.join(root_dir,f'{train_pos_set}.p'),
@@ -453,10 +444,10 @@ class Style_transfer(object):
             self.logger.scalar_summary(tag=f'{tag}/train/reconloss_neg', 
                                        value=loss_neg.item()/self.config['recons_loss_ratio'], 
                                        step=epoch*total_steps+train_steps+1)
-            self.logger.scalar_summary(tag=f'{tag}/train/styleloss_pos', 
+            self.logger.scalar_summary(tag=f'{tag}/train/adv_style_l_pos', 
                                        value=s_loss_pos.item()/self.config['style_loss_ratio'], 
                                        step=epoch*total_steps+train_steps+1)
-            self.logger.scalar_summary(tag=f'{tag}/train/styleloss_neg', 
+            self.logger.scalar_summary(tag=f'{tag}/train/adv_style_l__neg', 
                                        value=s_loss_neg.item()/self.config['style_loss_ratio'], 
                                        step=epoch*total_steps+train_steps+1)
             self.logger.scalar_summary(tag=f'{tag}/train/cycleloss_pos', 
@@ -465,10 +456,10 @@ class Style_transfer(object):
             self.logger.scalar_summary(tag=f'{tag}/train/cycleloss_neg', 
                                        value=cycle_loss_neg.item()/self.config['cycle_loss_ratio'], 
                                        step=epoch*total_steps+train_steps+1)
-            self.logger.scalar_summary(tag=f'{tag}/train/discriloss_pos', 
+            self.logger.scalar_summary(tag=f'{tag}/train/adv_domain_pos', 
                                        value=pos_discri_loss.item()/self.config['discri_loss_ratio'], 
                                        step=epoch*total_steps+train_steps+1)
-            self.logger.scalar_summary(tag=f'{tag}/train/discriloss_neg', 
+            self.logger.scalar_summary(tag=f'{tag}/train/adv_domain_neg', 
                                        value=neg_discri_loss.item()/self.config['discri_loss_ratio'], 
                                        step=epoch*total_steps+train_steps+1)
         print()
@@ -556,10 +547,10 @@ class Style_transfer(object):
                       f'neg_d_loss: {(realneg_discri_loss.item()+fakeneg_discri_loss.item())/2:.3f}', end='\r')
                 # add to logger
                 tag = self.config['tag']
-                self.logger.scalar_summary(tag=f'{tag}/train/inv_styleloss_pos', 
+                self.logger.scalar_summary(tag=f'{tag}/train/style_classify_pos', 
                                            value=s_loss_pos.item()/self.config['style_loss_ratio'], 
                                            step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
-                self.logger.scalar_summary(tag=f'{tag}/train/inv_styleloss_neg', 
+                self.logger.scalar_summary(tag=f'{tag}/train/style_classify_neg', 
                                            value=s_loss_neg.item()/self.config['style_loss_ratio'], 
                                            step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
                 self.logger.scalar_summary(tag=f'{tag}/train/realneg_dloss', 
