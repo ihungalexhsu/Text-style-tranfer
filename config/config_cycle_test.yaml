@@ -38,7 +38,7 @@ learning_rate_m3: 0.001
 weight_decay_m1: 0.0000001
 weight_decay_m2: 0.0000001
 weight_decay_m3: 0.0000001
-load_model_path: ./models/style_transfer_cycle/style_transfer_cycle_best 
+load_model_path: ./models/style_transfer_cycle_v1/style_transfer_cycle_best 
 load_optimizer: True
 adjust_lr: False
 retrieve_lr_m1: 0.002

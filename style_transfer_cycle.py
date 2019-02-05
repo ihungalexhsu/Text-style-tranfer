@@ -575,13 +575,7 @@ class Style_transfer(object):
                                            value=fakeneg_discri_loss.item()/self.config['discri_loss_ratio'], 
                                            step=(epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
             print ()
-        total_loss = 0.
-        total_style_loss = 0.
-        total_inverse_style_loss = 0.
-        total_cycle_loss = 0.
-        total_discri_loss = 0.
-        total_inverse_discri_loss = 0.
-            
+           
         return ((total_loss/total_steps),(total_style_loss/total_steps),(total_cycle_loss/total_steps),\
                 (total_discri_loss/total_steps),((total_inverse_style_loss/total_steps)/self.config['m2_train_freq']),\
                 ((total_inverse_discri_loss/total_steps))/self.config['m2_train_freq'])
