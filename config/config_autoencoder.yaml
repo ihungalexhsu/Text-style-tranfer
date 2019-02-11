@@ -30,7 +30,7 @@ learning_rate_m1: 0.001
 learning_rate_m2: 0.001
 weight_decay_m1: 0.0000001
 weight_decay_m2: 0.0000001
-load_model_path: ./models/autoencoder_lre3_e256/autoencoder_best
+load_model_path: ./models/autoencoder_lr2e3_e256/autoencoder_best
 load_optimizer: True
 adjust_lr: False
 retrieve_lr_m1: 0.00002
