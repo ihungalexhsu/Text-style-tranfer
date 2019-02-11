@@ -4,7 +4,9 @@ from tensorboardX import SummaryWriter
 import editdistance
 import torch.nn as nn
 import torch.nn.init as init
-
+import matplotlib.pyplot as plt
+from sklearn import manifold
+from sklearn.decomposition import PCA
 
 def pad_list(xs, pad_value=0):
     '''
@@ -128,3 +130,23 @@ def get_prediction_length(predictions, eos=2):
             eos_index=1
         ilen.append(eos_index)
     return cc(torch.LongTensor(ilen))
+
+def PCAreduction(input_nparray, dim_left):
+    pca = PCA(n_components=dim_left)
+    return pca.fit_transform(input_nparray)
+
+def tsneplot(input_nparray, category_nparray, pca_dim_left, plot_path):
+    input_nparray = PCAreduction(input_nparray, pca_dim_left)
+    tsne = manifold.TSNE(n_components=2, random_state=500)
+    tsne_out = tsne.fit_transform(input_nparray)
+    x_min, x_max = tsne_out.min(0), tsne_out.max(0)
+    tsne_out = (tsne_out-x_min)/(x_max-x_min)
+    plt.figure()
+    for i in range(tsne_out.shape[0]):
+        plt.text(tsne_out[i, 0], tsne_out[i,1], str(category_nparray[i]))
+    #plt.scatter(tsne_out[:,0], tsne_out[:,1], s=category_nparray)
+    plt.xticks([])
+    plt.yticks([])
+    plt.savefig(plot_path)
+    return
+

@@ -1,7 +1,6 @@
 import torch 
 import torch.nn.functional as F
 import numpy as np
-from model import E2E
 from model import Encoder, Decoder, Style_classifier, Domain_discri
 from dataloader import get_data_loader
 from dataset import PickleDataset
@@ -125,7 +124,121 @@ class Style_transfer(object):
         labelcount[self.vocab['<BOS>']]=0
         self.labeldist = labelcount / np.sum(labelcount)
         return
-             
+    
+    def load_automatic_style_classifier(self, model_path, train=False):
+        pretrain_w2v_path = self.config['pretrain_w2v_path']
+        if pretrain_w2v_path is None:
+            pretrain_w2v = None
+        else:
+            with open(pretrain_w2v_path, 'rb') as f:
+                pretrain_w2v = pickle.load(f)
+        self.textrnn = cc_model(Domain_discri(vocab_size=len(self.vocab),
+                                              embedding_dim=100,
+                                              rnn_hidden_dim=256,
+                                              dropout_rate=0.2,
+                                              dnn_hidden_dim=200,
+                                              pad_idx=self.vocab['<PAD>'],
+                                              pre_embedding=pretrain_w2v,
+                                              update_embedding=self.config['update_embedding']))
+        print(self.textrnn)
+        self.textrnn.float()
+        if (model_path is None) or (train):
+            if train:
+                best_model = self.train_automatic_style_classifier(train, model_path)
+            else:
+                best_model = self.train_automatic_style_classifier(False, model_path)
+            self.textrnn.load_state_dict(best_model)
+        else:
+            self.textrnn.load_state_dict(torch.load(f'{model_path}.ckpt'))
+        self.textrnn.eval()
+        return
+
+    def train_automatic_style_classifier(self, load=False, model_path=None): 
+        total_steps = len(self.train_pos_loader)
+        total_val_steps = len(self.dev_loader)
+        best_acc = 0.
+        early_stop_counter = 0
+        best_model = None
+        opt_pretrain_sc = torch.optim.Adam(list(self.textrnn.parameters()), 
+                                           lr=0.001, weight_decay=1e-7)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(opt_pretrain_sc,
+                                                               mode='min',
+                                                               factor=0.5,
+                                                               patience=3,
+                                                               verbose=True,
+                                                               min_lr=1e-7) 
+        if load:
+            self.textrnn.load_state_dict(torch.load(f'{model_path}.ckpt'))
+        print('------------------------------------------')
+        print('start training pretrained style classifier')
+        for epoch in range(20):
+            total_train_loss = 0.
+            for train_steps, data in enumerate(zip(self.train_pos_loader,self.train_neg_loader)):
+                bos = self.vocab['<BOS>']
+                eos = self.vocab['<EOS>']
+                pad = self.vocab['<PAD>']
+                xs, _, _, _, ilens, styles = to_gpu(data[0], bos, eos, pad)
+                _, log_probs, prediction = self.textrnn(xs, ilens)
+                true_log_probs=torch.gather(log_probs,dim=1,index=styles.unsqueeze(1)).squeeze(1)
+                train_loss = -torch.mean(true_log_probs)
+                xs, _, _, _, ilens, styles = to_gpu(data[1], bos, eos, pad)
+                _, log_probs, prediction = self.textrnn(xs, ilens)
+                true_log_probs=torch.gather(log_probs,dim=1,index=styles.unsqueeze(1)).squeeze(1)
+                train_loss2 = -torch.mean(true_log_probs)
+                total_train_loss += train_loss2.item()
+                
+                opt_pretrain_sc.zero_grad()
+                (train_loss+train_loss2).backward()
+                torch.nn.utils.clip_grad_norm_(list(self.textrnn.parameters()),5)
+                opt_pretrain_sc.step()
+                print(f'epoch: {epoch}, [{train_steps+1}/{total_steps}], '
+                      f'loss: {train_loss.item()+train_loss2.item():.4f}', end='\r')
+            
+            # validation
+            self.textrnn.eval()
+            total_val_loss = 0.
+            total_val_num = 0.
+            total_correct_num = 0.
+            for step, data in enumerate(self.dev_loader):
+                bos = self.vocab['<BOS>']
+                eos = self.vocab['<EOS>']
+                pad = self.vocab['<PAD>']
+                xs, _, _, _, ilens, styles = to_gpu(data, bos, eos, pad)
+                _, log_probs, prediction = self.textrnn(xs, ilens)
+                true_log_probs=torch.gather(log_probs,dim=1,index=styles.unsqueeze(1)).squeeze(1)
+                val_loss = -torch.mean(true_log_probs)
+                total_val_loss += val_loss.item()
+                total_val_num += styles.size(0)
+                correct = prediction.view(-1).eq(styles).sum().item()
+                total_correct_num += correct
+            
+            val_acc = total_correct_num/total_val_num
+            print(f'epoch: {epoch}, avg_train_loss: {total_train_loss/total_steps:.4f} '
+                  f'avg_val_loss: {total_val_loss/total_val_steps:.4f}, val_acc: {val_acc:.4f}')
+            # save model in every epoch
+            if not os.path.exists('./models/pretrained_cnn_style_classifier'):
+                os.makedirs('./models/pretrained_cnn_style_classifier')
+            model_path = './models/pretrained_cnn_style_classifier/pretrained_style_classifier'
+            torch.save(self.textrnn.state_dict(), f'{model_path}-{epoch:03d}.ckpt')
+            self.textrnn.train()
+            if val_acc > best_acc: 
+                # save model
+                torch.save(self.textrnn.state_dict(), f'{model_path}_best.ckpt')
+                best_acc = val_acc
+                best_model = self.textrnn.state_dict()
+                print('-----------------')
+                print(f'Save #{epoch} model, val_acc={val_acc:.4f}')
+                print('-----------------')
+                early_stop_counter=0
+            early_stop_counter+=1
+            if early_stop_counter > 5:
+                break
+            scheduler.step(val_acc)
+        print('------------------------------------------')
+        print('finish training pretrained style classifier')
+        print(f'best validation acc :{best_acc:.4f}')
+        return best_model
+
     def build_model(self, load_model=False):
         labeldist = self.labeldist
         pretrain_w2v_path = self.config['pretrain_w2v_path']
@@ -213,6 +326,8 @@ class Style_transfer(object):
 
         if load_model:
             self.load_model(self.config['load_model_path'], self.config['load_optimizer'])
+        self.load_automatic_style_classifier(self.config['load_pretrained_style_classifier_path'],
+                                             self.config['train_pretrained_style_classifier'])
 
         return
 
@@ -222,19 +337,33 @@ class Style_transfer(object):
         self.decoder.eval()
         all_prediction, all_ys = [], []
         total_loss = 0.
+        total_val_num = 0.
+        total_correct_num = 0.
         for step, data in enumerate(self.dev_loader):
 
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
             pad = self.vocab['<PAD>']
             xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
+            reverse_styles = styles.cpu().new_zeros(styles.size())
+            for idx, ele in enumerate(styles.cpu().tolist()):
+                if not(ele):
+                    reverse_styles[idx]=1
+            reverse_styles=cc(torch.LongTensor(reverse_styles))
             
             # input the encoder
             enc_outputs, enc_lens = self.encoder(xs, ilens)
             logits, log_probs, prediction, attns=\
-                self.decoder(enc_outputs, enc_lens, styles, None,
+                self.decoder(enc_outputs, enc_lens, reverse_styles, None,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
            
+            # pass the prediction to the pretrained style classifier
+            pred_ilens = get_prediction_length(prediction, eos=self.vocab['<EOS>'])
+            _, pr_style_probs, pr_style_prediction = self.textrnn(prediction, pred_ilens, need_sort=True)
+            correct = pr_style_prediction.cpu().view(-1).eq(reverse_styles.cpu()).sum().item()
+            total_correct_num += correct
+            total_val_num += reverse_styles.size(0)
+            
             seq_len = [y.size(0) + 1 for y in ys]
             mask = cc(_seq_mask(seq_len=seq_len, max_len=log_probs.size(1)))
             loss = (-torch.sum(log_probs*mask))/sum(seq_len)
@@ -247,10 +376,11 @@ class Style_transfer(object):
         self.decoder.train()
         # calculate loss
         avg_loss = total_loss / len(self.dev_loader)
+        avg_style_correct = total_correct_num / total_val_num
 
         wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
-        return avg_loss, wer, prediction_sents, ground_truth_sents
+        return avg_loss, wer, prediction_sents, ground_truth_sents, avg_style_correct
     
     def idx2sent(self, all_prediction, all_ys):
         # remove eos and pad
@@ -285,7 +415,9 @@ class Style_transfer(object):
 
         self.encoder.eval()
         self.decoder.eval()
-        all_prediction, all_ys, all_styles, all_reverse_styles = [], [], [], []
+        total_val_num = 0.
+        total_correct_num = 0.
+        all_prediction,all_ys,all_styles,all_reverse_styles,all_style_predict=[],[],[],[],[]
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -302,6 +434,15 @@ class Style_transfer(object):
                 self.decoder(enc_outputs, enc_lens, reverse_styles, None,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
 
+            # pass the prediction to the pretrained style classifier
+            pred_ilens = get_prediction_length(prediction, eos=self.vocab['<EOS>'])
+            #pr_style_probs, pr_style_prediction = self.textcnn(prediction)
+            _, pr_style_probs, pr_style_prediction = self.textrnn(prediction, pred_ilens, need_sort=True)
+            correct = pr_style_prediction.cpu().view(-1).eq(reverse_styles.cpu()).sum().item()
+            total_val_num +=reverse_styles.size(0)
+            total_correct_num +=correct
+            
+            all_style_predict = all_style_predict + pr_style_prediction.cpu().view(-1).tolist()
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
             all_styles = all_styles + styles.cpu().tolist()
@@ -309,17 +450,19 @@ class Style_transfer(object):
 
         self.encoder.train()
         self.decoder.train()
-
+        avg_style_correct = total_correct_num / total_val_num
         wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
         with open(f'{test_file_name}.txt', 'w') as f:
             f.write(f'Total sentences: {len(prediction_sents)}, WER={wer:.4f}\n')
+            f.write(f'Average style accuracy: {avg_style_correct:.4f} \n')
             for idx, p in enumerate(prediction_sents):
-                f.write(f'Predict  (style:{all_reverse_styles[idx]}) :{p}\n')
-                f.write(f'Original (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
+                f.write(f'Pred (style:{all_reverse_styles[idx]},pred_s:{all_style_predict[idx]}) :{p}\n')
+                f.write(f'Original Sent (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
                 f.write('----------------------------------------\n')
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
+        print(f'Average style accuracy: {avg_style_correct:.4f}')
         return wer
 
     def _random_target(self, x, num_class=2):
@@ -431,9 +574,9 @@ class Style_transfer(object):
             torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
             self.optimizer_m1.step()
             # print message
-            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {(loss_pos.item()+loss_neg.item())/2:.3f},'
-                  f'cycle_loss: {(cycle_loss_pos.item()+cycle_loss_neg.item())/2:.3f},'
-                  f'style_loss: {(s_loss_pos.item()+s_loss_neg.item())/2:.3f},'
+            print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], loss: {(loss_pos.item()+loss_neg.item())/2:.3f}, '
+                  f'cycle_loss: {(cycle_loss_pos.item()+cycle_loss_neg.item())/2:.3f}, '
+                  f'style_loss: {(s_loss_pos.item()+s_loss_neg.item())/2:.3f}, '
                   f'discri_loss: {(pos_discri_loss.item()+neg_discri_loss.item())/2:.3f}', end='\r')
             
             # add to logger
@@ -541,9 +684,9 @@ class Style_transfer(object):
                 (realpos_discri_loss+fakeneg_discri_loss+realneg_discri_loss+fakepos_discri_loss).backward()
                 self.optimizer_m3.step()
                 # print message
-                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}],'
-                      f'style_loss: {(s_loss_pos.item()+s_loss_neg.item())/2:.3f},'
-                      f'pos_d_loss: {(realpos_discri_loss.item()+fakepos_discri_loss.item())/2:.3f},'
+                print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], '
+                      f'style_loss: {(s_loss_pos.item()+s_loss_neg.item())/2:.3f}, '
+                      f'pos_d_loss: {(realpos_discri_loss.item()+fakepos_discri_loss.item())/2:.3f}, '
                       f'neg_d_loss: {(realneg_discri_loss.item()+fakeneg_discri_loss.item())/2:.3f}', end='\r')
                 # add to logger
                 tag = self.config['tag']
@@ -606,17 +749,18 @@ class Style_transfer(object):
             # train one epoch
             avgl_re,avgl_s,avgl_c,avgl_dis,avgl_invs,avgl_invdis = self.train_one_epoch(epoch, tf_rate)
             # validation
-            avg_valid_loss, wer, prediction_sents, ground_truth_sents = self.validation()
+            avg_valid_loss, wer, prediction_sents, ground_truth_sents, avg_style_acc = self.validation()
 
             print(f'Epoch: {epoch}, tf_rate={tf_rate:.3f}, train_reconl={avgl_re:.4f},'
                   f'train_stylel:{avgl_s:.4f}, train_disl:{avgl_dis:.4f},'
                   f'train_inv_stylel:{avgl_invs:.4f}, train_inv_disl:{avgl_invdis:.4f},'
-                  f'valid_loss={avg_valid_loss:.4f}, val_WER={wer:.4f}')
+                  f'valid_loss={avg_valid_loss:.4f}, val_WER={wer:.4f}, Val_style_acc={avg_style_acc:.4f}')
 
             # add to tensorboard
             tag = self.config['tag']
             self.logger.scalar_summary(f'{tag}/val/wer', wer, epoch)
             self.logger.scalar_summary(f'{tag}/val/loss', avg_valid_loss, epoch)
+            self.logger.scalar_summary(f'{tag}/val/style_acc', avg_style_acc, epoch)
 
             # only add first n samples
             lead_n = self.config['sample_num']

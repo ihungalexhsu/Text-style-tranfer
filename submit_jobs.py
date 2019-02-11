@@ -9,36 +9,28 @@ import os
 from itertools import product
 
 # parameters
-#beta = ['1', '0.1', '0.01', '0.001', '0.0001']
-#gamma = ['10', '1', '0.1']
-configs = ['config/config_beta1.yaml','config/config_beta5.yaml','config/config_beta10.yaml']
+beta = ['1','10']
+gamma = ['10', '1', '0.1']
+delta = ['1000','100','10']
+#zeta = ['1000','100','10']
+configs = ['config/config_proposed.yaml']
 # command template
-command_template = 'python main.py -m seq2seq -c {} --train --test '
+command_template = 'python main.py -m style_proposed -c {} --test --alpha 1 --beta {} --gamma {} --delta {} --zeta {} --load_model'
 
 for idx,config in enumerate(configs):
-    command = command_template.format(config)
-    if idx==0:
-        bash_file = 'runs/naive_style_transfer-beta1.sh'
-        with open( bash_file, 'w' ) as OUT:
-            OUT.write('source ~/.zshrc\n')
-            OUT.write('cd ~/Code/pytorch-style-transfer-aaai18\n')
-            OUT.write(command+'--load_model')
-    if idx==1:
-        bash_file = 'runs/naive_style_transfer-beta5.sh'
-        with open( bash_file, 'w' ) as OUT:
-            OUT.write('source ~/.zshrc\n')
-            OUT.write('cd ~/Code/pytorch-style-transfer-aaai18\n')
-            OUT.write(command+'--load_model')
-    if idx==2:
-        bash_file = 'runs/naive_style_transfer-beta10.sh'
-        with open( bash_file, 'w' ) as OUT:
-            OUT.write('source ~/.zshrc\n')
-            OUT.write('cd ~/Code/pytorch-style-transfer-aaai18\n')
-            OUT.write(command)
-    if idx!=2:
-        qsub_command = 'qsub -P other -j y -o runs_output/{}.output -cwd -l h=\'!vista13\',h_rt=24:00:00,h_vmem=8G,gpu=2 -q ephemeral.q {}'.format(bash_file, bash_file)
-    else:
-        qsub_command = 'qsub -P other -j y -o runs_output/{}.output -cwd -l h=\'!vista13\',h_rt=24:00:00,h_vmem=8G,gpu=4 -q ephemeral.q {}'.format(bash_file, bash_file)
-    os.system( qsub_command )
-    print( qsub_command )
-    print( 'Submitted' )
+    for b in beta:
+        for g in gamma:
+            for d in delta:
+                #for z in zeta:
+                z = str(int(d)*5)
+                command = command_template.format(config,b,g,d,z)
+                bash_file = 'test_scripts/run_proposed-b{}-g{}-d{}-z{}'.format(b,g,d,z)
+                with open( bash_file, 'w' ) as OUT:
+                    OUT.write('source ~/.zshrc\n')
+                    OUT.write('rm -rf ~/.nv\n')
+                    OUT.write('cd ~/Code/Text-style-transfer-on-continuous-space\n')
+                    OUT.write(command)
+                qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11\',h_rt=01:00:00,h_vmem=8G,gpu=1 -q ephemeral.q {}'.format(bash_file, bash_file)
+                os.system( qsub_command )
+                print( qsub_command )
+                print( 'Submitted' )

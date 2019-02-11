@@ -1,7 +1,6 @@
 import torch 
 import torch.nn.functional as F
 import numpy as np
-from model import E2E
 from model import Encoder, Decoder
 from dataloader import get_data_loader
 from dataset import PickleDataset
@@ -216,6 +215,7 @@ class AutoEncoder(object):
         self.encoder.eval()
         self.decoder.eval()
         all_prediction, all_ys = [], []
+        all_representation, all_styles = [], []
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -227,7 +227,9 @@ class AutoEncoder(object):
             logits, log_probs, prediction, attns=\
                 self.decoder(enc_outputs, enc_lens, styles, None,
                              max_dec_timesteps=self.config['max_dec_timesteps'])
-
+            sentence_repre = get_enc_context(enc_outputs, enc_lens)
+            all_representation = all_representation + sentence_repre.cpu().tolist()
+            all_styles = all_styles + styles.cpu().tolist()
             all_prediction = all_prediction + prediction.cpu().numpy().tolist()
             all_ys = all_ys + [y.cpu().numpy().tolist() for y in ys]
 
@@ -241,6 +243,8 @@ class AutoEncoder(object):
                 f.write(f'{p}\n')
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
+        print('print representation-------')
+        tsneplot(np.array(all_representation),all_styles,30,'./representation.jpg') 
         return wer
 
     def _normal_target(self, x):
