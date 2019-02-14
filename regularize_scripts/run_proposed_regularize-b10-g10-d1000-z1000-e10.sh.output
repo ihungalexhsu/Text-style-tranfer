@@ -1,0 +1,150 @@
+/nas/home/ihunghsu/.oh-my-zsh/oh-my-zsh.sh: line 23: autoload: command not found
+/nas/home/ihunghsu/.oh-my-zsh/oh-my-zsh.sh: line 34: syntax error near unexpected token `('
+/nas/home/ihunghsu/.oh-my-zsh/oh-my-zsh.sh: line 34: `for config_file ($ZSH/lib/*.zsh); do'
+{'max_text_length': 30, 'min_text_length': 8, 'sort_dataset': True, 'shuffle': True, 'logdir': './log/regularize_style/style_transfer_proposed_regularize', 'vocab_path': './data/dict.p', 'non_lang_syms_path': './data/non_lang_syms.p', 'dataset_root_dir': './data', 'train_set': 'train', 'pos_train_set': 'pos_train', 'neg_train_set': 'neg_train', 'dev_set': 'val', 'test_set': 'test', 'batch_size': 96, 'ls_weight': 0.0, 'embedding_dim': 100, 'encS_hidden_dim': 64, 'encC_hidden_dim': 256, 'encS_n_layers': 2, 'encC_n_layers': 2, 'enc_dropout_p': 0.2, 'bidir_enc': True, 'pretrain_w2v_path': None, 'update_embedding': True, 'disen_s_hidden_dim': [128, 64], 'disen_c_hidden_dim': [128, 64], 'mimicker_hidden_dim': [128, 64], 'dec_hidden_dim': 256, 'dec_dropout_p': 0.2, 'use_attention': False, 'use_enc_init': True, 's_classifier_hidden_dim': 96, 's_classifier_n_layers': 3, 'n_style_type': 2, 'style_emb_dim': 16, 'learning_rate_m1': 0.001, 'learning_rate_m2': 0.003, 'weight_decay_m1': 1e-07, 'weight_decay_m2': 1e-07, 'load_model_path': './models/', 'load_optimizer': True, 'load_pretrained_style_classifier_path': './models/pretrained_cnn_style_classifier/pretrained_style_classifier_best', 'train_pretrained_style_classifier': False, 'adjust_lr': False, 'retrieve_lr_m1': 0.002, 'retrieve_lr_m2': 0.004, 'init_tf_rate': 1.0, 'tf_start_decay_epochs': 5, 'tf_decay_epochs': 10, 'tf_rate_lowerbound': 0.9, 'change_lr_epoch': None, 'lr_gamma': 0.5, 'epochs': 10, 'max_dec_timesteps': 30, 'max_grad_norm': 5, 'tag': 'style_transfer_proposed_regularize', 'm2_train_freq': 5, 'sample_num': 10, 'model_dir': './models/style_transfer_proposed_regularize', 'model_name': 'style_transfer', 'early_stop_start_epoch': 10, 'early_stop_patience': 5, 'test_file_name': './tests/proposed_regularize'}
+Encoder(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (enc): ModuleList(
+    (0): GRU(100, 64, batch_first=True, bidirectional=True)
+    (1): GRU(128, 64, batch_first=True, bidirectional=True)
+  )
+)
+Encoder(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (enc): ModuleList(
+    (0): GRU(100, 256, batch_first=True, bidirectional=True)
+    (1): GRU(512, 256, batch_first=True, bidirectional=True)
+  )
+)
+Style_classifier(
+  (layers): ModuleList(
+    (0): Linear(in_features=128, out_features=96, bias=True)
+    (1): Linear(in_features=96, out_features=96, bias=True)
+    (2): Linear(in_features=96, out_features=2, bias=True)
+  )
+)
+DenseNet(
+  (hidden_layer): ModuleList(
+    (0): Linear(in_features=128, out_features=128, bias=True)
+    (1): Linear(in_features=128, out_features=64, bias=True)
+  )
+  (output_layer): Linear(in_features=64, out_features=512, bias=True)
+  (activation): LeakyReLU(negative_slope=0.2)
+)
+Style_classifier(
+  (layers): ModuleList(
+    (0): Linear(in_features=512, out_features=96, bias=True)
+    (1): Linear(in_features=96, out_features=96, bias=True)
+    (2): Linear(in_features=96, out_features=2, bias=True)
+  )
+)
+DenseNet(
+  (hidden_layer): ModuleList(
+    (0): Linear(in_features=513, out_features=128, bias=True)
+    (1): Linear(in_features=128, out_features=64, bias=True)
+  )
+  (output_layer): Linear(in_features=64, out_features=128, bias=True)
+  (activation): LeakyReLU(negative_slope=0.2)
+)
+Decoder(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (GRUCell): GRUCell(740, 256)
+  (output_layer): Linear(in_features=256, out_features=60000, bias=True)
+  (project): Linear(in_features=640, out_features=256, bias=True)
+)
+Domain_discri(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (rnn): GRU(100, 256, batch_first=True, bidirectional=True)
+  (dnn): Sequential(
+    (0): Linear(in_features=512, out_features=200, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=200, out_features=2, bias=True)
+  )
+)
+Traceback (most recent call last):
+  File "main.py", line 63, in <module>
+    args.eta,load_model=False)
+  File "/nas/home/ihunghsu/Code/Text-style-tranfer-with-style-embedding-contraint/style_transfer_regularize.py", line 39, in __init__
+    self.build_model(load_model=load_model)
+  File "/nas/home/ihunghsu/Code/Text-style-tranfer-with-style-embedding-contraint/style_transfer_regularize.py", line 351, in build_model
+    self.config['train_pretrained_style_classifier'])
+  File "/nas/home/ihunghsu/Code/Text-style-tranfer-with-style-embedding-contraint/style_transfer_regularize.py", line 124, in load_automatic_style_classifier
+    self.textrnn.load_state_dict(torch.load(f'{model_path}.ckpt'))
+  File "/nas/home/ihunghsu/anaconda3/lib/python3.6/site-packages/torch/serialization.py", line 367, in load
+    return _load(f, map_location, pickle_module)
+  File "/nas/home/ihunghsu/anaconda3/lib/python3.6/site-packages/torch/serialization.py", line 538, in _load
+    result = unpickler.load()
+  File "/nas/home/ihunghsu/anaconda3/lib/python3.6/site-packages/torch/serialization.py", line 504, in persistent_load
+    data_type(size), location)
+  File "/nas/home/ihunghsu/anaconda3/lib/python3.6/site-packages/torch/serialization.py", line 113, in default_restore_location
+    result = fn(storage, location)
+  File "/nas/home/ihunghsu/anaconda3/lib/python3.6/site-packages/torch/serialization.py", line 94, in _cuda_deserialize
+    device = validate_cuda_device(location)
+  File "/nas/home/ihunghsu/anaconda3/lib/python3.6/site-packages/torch/serialization.py", line 78, in validate_cuda_device
+    raise RuntimeError('Attempting to deserialize object on a CUDA '
+RuntimeError: Attempting to deserialize object on a CUDA device but torch.cuda.is_available() is False. If you are running on a CPU-only machine, please use torch.load with map_location='cpu' to map your storages to the CPU.
+/nas/home/ihunghsu/.oh-my-zsh/oh-my-zsh.sh: line 23: autoload: command not found
+/nas/home/ihunghsu/.oh-my-zsh/oh-my-zsh.sh: line 34: syntax error near unexpected token `('
+/nas/home/ihunghsu/.oh-my-zsh/oh-my-zsh.sh: line 34: `for config_file ($ZSH/lib/*.zsh); do'
+rm: cannot remove ‘/nas/home/ihunghsu/.nv/ComputeCache’: Directory not empty
+{'max_text_length': 30, 'min_text_length': 8, 'sort_dataset': True, 'shuffle': True, 'logdir': './log/regularize_style/style_transfer_proposed_regularize', 'vocab_path': './data/dict.p', 'non_lang_syms_path': './data/non_lang_syms.p', 'dataset_root_dir': './data', 'train_set': 'train', 'pos_train_set': 'pos_train', 'neg_train_set': 'neg_train', 'dev_set': 'val', 'test_set': 'test', 'batch_size': 96, 'ls_weight': 0.0, 'embedding_dim': 100, 'encS_hidden_dim': 64, 'encC_hidden_dim': 256, 'encS_n_layers': 2, 'encC_n_layers': 2, 'enc_dropout_p': 0.2, 'bidir_enc': True, 'pretrain_w2v_path': None, 'update_embedding': True, 'disen_s_hidden_dim': [128, 64], 'disen_c_hidden_dim': [128, 64], 'mimicker_hidden_dim': [128, 64], 'dec_hidden_dim': 256, 'dec_dropout_p': 0.2, 'use_attention': False, 'use_enc_init': True, 's_classifier_hidden_dim': 96, 's_classifier_n_layers': 3, 'n_style_type': 2, 'style_emb_dim': 16, 'learning_rate_m1': 0.001, 'learning_rate_m2': 0.003, 'weight_decay_m1': 1e-07, 'weight_decay_m2': 1e-07, 'load_model_path': './models/', 'load_optimizer': True, 'load_pretrained_style_classifier_path': './models/pretrained_cnn_style_classifier/pretrained_style_classifier_best', 'train_pretrained_style_classifier': False, 'adjust_lr': False, 'retrieve_lr_m1': 0.002, 'retrieve_lr_m2': 0.004, 'init_tf_rate': 1.0, 'tf_start_decay_epochs': 5, 'tf_decay_epochs': 10, 'tf_rate_lowerbound': 0.9, 'change_lr_epoch': None, 'lr_gamma': 0.5, 'epochs': 10, 'max_dec_timesteps': 30, 'max_grad_norm': 5, 'tag': 'style_transfer_proposed_regularize', 'm2_train_freq': 5, 'sample_num': 10, 'model_dir': './models/style_transfer_proposed_regularize', 'model_name': 'style_transfer', 'early_stop_start_epoch': 10, 'early_stop_patience': 5, 'test_file_name': './tests/proposed_regularize'}
+Encoder(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (enc): ModuleList(
+    (0): GRU(100, 64, batch_first=True, bidirectional=True)
+    (1): GRU(128, 64, batch_first=True, bidirectional=True)
+  )
+)
+Encoder(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (enc): ModuleList(
+    (0): GRU(100, 256, batch_first=True, bidirectional=True)
+    (1): GRU(512, 256, batch_first=True, bidirectional=True)
+  )
+)
+Style_classifier(
+  (layers): ModuleList(
+    (0): Linear(in_features=128, out_features=96, bias=True)
+    (1): Linear(in_features=96, out_features=96, bias=True)
+    (2): Linear(in_features=96, out_features=2, bias=True)
+  )
+)
+DenseNet(
+  (hidden_layer): ModuleList(
+    (0): Linear(in_features=128, out_features=128, bias=True)
+    (1): Linear(in_features=128, out_features=64, bias=True)
+  )
+  (output_layer): Linear(in_features=64, out_features=512, bias=True)
+  (activation): LeakyReLU(negative_slope=0.2)
+)
+Style_classifier(
+  (layers): ModuleList(
+    (0): Linear(in_features=512, out_features=96, bias=True)
+    (1): Linear(in_features=96, out_features=96, bias=True)
+    (2): Linear(in_features=96, out_features=2, bias=True)
+  )
+)
+DenseNet(
+  (hidden_layer): ModuleList(
+    (0): Linear(in_features=513, out_features=128, bias=True)
+    (1): Linear(in_features=128, out_features=64, bias=True)
+  )
+  (output_layer): Linear(in_features=64, out_features=128, bias=True)
+  (activation): LeakyReLU(negative_slope=0.2)
+)
+Decoder(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (GRUCell): GRUCell(740, 256)
+  (output_layer): Linear(in_features=256, out_features=60000, bias=True)
+  (project): Linear(in_features=640, out_features=256, bias=True)
+)
+Domain_discri(
+  (embedding): Embedding(60000, 100, padding_idx=0)
+  (rnn): GRU(100, 256, batch_first=True, bidirectional=True)
+  (dnn): Sequential(
+    (0): Linear(in_features=512, out_features=200, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=200, out_features=2, bias=True)
+  )
+)
+------start training-------
