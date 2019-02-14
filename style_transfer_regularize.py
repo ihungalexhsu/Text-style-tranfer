@@ -8,6 +8,7 @@ from utils import *
 from utils import _seq_mask
 import yaml
 import os
+from collections import OrderedDict
 import pickle
 
 class Style_transfer_regularize(object):
@@ -121,7 +122,16 @@ class Style_transfer_regularize(object):
                 best_model = self.train_automatic_style_classifier(False, model_path)
             self.textrnn.load_state_dict(best_model)
         else:
-            self.textrnn.load_state_dict(torch.load(f'{model_path}.ckpt'))
+            if torch.cuda.is_available():
+                self.textrnn.load_state_dict(torch.load(f'{model_path}.ckpt'))
+            else:
+                mod = torch.load(f'{model_path}.ckpt', map_location=torch.device('cpu'))
+                new_state_dict = OrderedDict()
+                for k, v in mod.items():
+                    name = k[7:]
+                    new_state_dict[name]=v
+                self.textrnn.load_state_dict(new_state_dict)
+
         self.textrnn.eval()
         return
 

@@ -12,22 +12,20 @@ from itertools import product
 #beta = ['10','1']
 beta = ['10']
 gamma = ['10']
-delta = ['10','100','1000']
-zeta = ['10','100','1000']
+delta = ['100','10','1000']
+zeta = ['100','10','1000']
 #delta = ['100','10']
 eta = ['10','100']
 configs = ['config/config_proposed_regularize.yaml']
 # command template
 command_template = 'python main.py -m style_regularize -c {} --test --train --alpha 1 --beta {} --gamma {} --delta {} --zeta {} --eta {}'
-counter = 2
+counter = 0
 for idx,config in enumerate(configs):
     for b in beta:
         for g in gamma:
-            for e in eta:
-                for d in delta:
-                    for z in zeta:
-                        if z == d:
-                            continue
+            for d in delta:
+                for z in zeta:
+                    for e in eta:
                         command = command_template.format(config,b,g,d,z,e)
                         bash_file = 'regularize_scripts/run_proposed_regularize-b{}-g{}-d{}-z{}-e{}.sh'.format(b,g,d,z,e)
                         with open( bash_file, 'w' ) as OUT:
@@ -36,9 +34,9 @@ for idx,config in enumerate(configs):
                             OUT.write('cd ~/Code/Text-style-tranfer-with-style-embedding-contraint\n')
                             OUT.write(command)
                         if counter < 2: 
-                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8G,gpu=1 -pe mt 8 {}'.format(bash_file, bash_file)
+                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8G,gpu=1 -pe mt 2 {}'.format(bash_file, bash_file)
                         else:
-                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11\',h_rt=24:00:00,h_vmem=8G,gpu=1 -q ephemeral.q {}'.format(bash_file, bash_file)
+                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11\',h_rt=24:00:00,h_vmem=8G -pe mt 8 {}'.format(bash_file, bash_file)
                         counter+=1
                         os.system( qsub_command )
                         print( qsub_command )
