@@ -1,4 +1,4 @@
-max_text_length: 30
+max_text_length: 20
 min_text_length: 8
 sort_dataset: True
 shuffle: True
@@ -38,7 +38,7 @@ learning_rate_m1: 0.001
 learning_rate_m2: 0.003
 weight_decay_m1: 0.0000001
 weight_decay_m2: 0.0000001
-load_model_path: ./models/
+load_model_path: ./models/style_transfer_proposed_regularize/style_transfer_latest
 load_optimizer: True
 load_pretrained_style_classifier_path: ./models/pretrained_cnn_style_classifier/pretrained_style_classifier_best
 train_pretrained_style_classifier: False
@@ -52,7 +52,7 @@ tf_rate_lowerbound: 0.9
 change_lr_epoch: 
 lr_gamma: 0.5
 epochs: 10
-max_dec_timesteps: 30
+max_dec_timesteps: 20
 max_grad_norm: 5
 tag: style_transfer_proposed_regularize
 m2_train_freq: 5

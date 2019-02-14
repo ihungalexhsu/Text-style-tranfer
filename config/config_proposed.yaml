@@ -1,8 +1,9 @@
-max_text_length: 30
+#max_text_length: 30
+max_text_length: 20
 min_text_length: 8
 sort_dataset: True
 shuffle: True
-logdir: ./log/style_transfer_proposed
+logdir: ./log/proposed_framework_test/proposed_framework_test
 vocab_path: ./data/dict.p
 non_lang_syms_path: ./data/non_lang_syms.p
 dataset_root_dir: ./data
@@ -51,7 +52,8 @@ tf_rate_lowerbound: 0.7
 change_lr_epoch: 8
 lr_gamma: 0.5
 epochs: 12
-max_dec_timesteps: 30
+#max_dec_timesteps: 30
+max_dec_timesteps: 20
 max_grad_norm: 5
 tag: style_transfer_proposed
 m2_train_freq: 5

@@ -1,5 +1,5 @@
-Total sentences: 2000, WER=0.0406
-Average style accuracy: 0.1955 
+Total sentences: 2000, BLEU=0.1544
+Average style accuracy: 0.1945 
 Pred (style:0,pred_s:0) :will update this review should it meet a similar failure to my previous wheel .
 Neutral Pred (style:0.5) :will update this review should it meet a similar failure to my previous wheel .
 OriStyle Pred (style:1) :will update this review should it meet a similar failure to my previous wheel .
@@ -220,9 +220,9 @@ Neutral Pred (style:0.5) :today we had a cup of this soup and it is touted as a 
 OriStyle Pred (style:0) :today we had a cup of this soup and it is touted as a light soup .
 Original Sent (style:0) :today we had a cup of this soup and it is classified as a light soup .
 ----------------------------------------
-Pred (style:0,pred_s:0) :if amazon . com sells it for about using , it should be a good value , overall : this is a hard case .
-Neutral Pred (style:0.5) :if amazon . com sells it for about using , it should be a good value , construction : this is a hard case .
-OriStyle Pred (style:1) :if amazon . com sells it for about using , it should be a good value , construction : this is a hard case .
+Pred (style:0,pred_s:1) :if amazon . com sells it for about using , it should be a good value , overall : this
+Neutral Pred (style:0.5) :if amazon . com sells it for about using , it should be a good value , construction : this
+OriStyle Pred (style:1) :if amazon . com sells it for about using , it should be a good value , construction : this
 Original Sent (style:1) :if amazon . com sells it for about fifteen , it should be a good value . construction : this is a hard case .
 ----------------------------------------
 Pred (style:0,pred_s:1) :product arrived on time and was wrapped well .
@@ -230,9 +230,9 @@ Neutral Pred (style:0.5) :product arrived on time and was wrapped well .
 OriStyle Pred (style:1) :product arrived on time and was wrapped well .
 Original Sent (style:1) :product arrived on time and was wrapped well .
 ----------------------------------------
-Pred (style:1,pred_s:0) :what a waste . nextel num_extend is virtually ever since i last using their rave reviews calling and updated consumers .
-Neutral Pred (style:0.5) :what a waste . nextel num_extend is virtually ever since i last using their rave reviews calling and updated consumers .
-OriStyle Pred (style:0) :what a waste . nhl num_extend is virtually retarded since i last using their rave reviews calling and updated rosters .
+Pred (style:1,pred_s:0) :what a waste . nextel num_extend is virtually ever since i last using their rave reviews calling and updated consumers
+Neutral Pred (style:0.5) :what a waste . nextel num_extend is virtually ever since i last using their rave reviews calling and updated consumers
+OriStyle Pred (style:0) :what a waste . nhl num_extend is virtually retarded since i last using their rave reviews calling and updated rosters
 Original Sent (style:0) :what a waste . nhl num_extend is virtually unchanged since last year barring some minor menus alterations and updated rosters .
 ----------------------------------------
 Pred (style:1,pred_s:0) :after a few days i noticed i was constant tangle .
@@ -260,9 +260,9 @@ Neutral Pred (style:0.5) :i had it a long time now and i still love it .
 OriStyle Pred (style:1) :i had it a long time now and i still love it .
 Original Sent (style:1) :i had it a long time now and i still love it .
 ----------------------------------------
-Pred (style:0,pred_s:1) :you have to look inside to see the plastic markings but i just can t tell where the water is .
-Neutral Pred (style:0.5) :you have to look inside to see the plastic markings but i just can t tell where the water is .
-OriStyle Pred (style:1) :you have to look inside to see the plastic markings but i just can t tell where the water is .
+Pred (style:0,pred_s:1) :you have to look inside to see the plastic markings but i just can t tell where the water is
+Neutral Pred (style:0.5) :you have to look inside to see the plastic markings but i just can t tell where the water is
+OriStyle Pred (style:1) :you have to look inside to see the plastic markings but i just can t tell where the water is
 Original Sent (style:1) :you have to look inside to see the cup markings but i just can t tell where the water is .
 ----------------------------------------
 Pred (style:0,pred_s:1) :this battery worked perfectly ! it is a genuine motorola accessory and arrived quickly .
@@ -300,9 +300,9 @@ Neutral Pred (style:0.5) :one minute per slice seems like a good rule of thumb s
 OriStyle Pred (style:1) :one minute per slice seems like a good rule of thumb so far .
 Original Sent (style:1) :one minute per slice seems like a good rule of thumb so far .
 ----------------------------------------
-Pred (style:0,pred_s:1) :needless to say , when you use this device , you are going to attract attention . audio is pretty good .
-Neutral Pred (style:0.5) :needless to say , when you use this device , you are going to attract attention . audio is pretty good .
-OriStyle Pred (style:1) :needless to say , when you use this device , you are going to attract attention . audio is pretty good .
+Pred (style:0,pred_s:1) :needless to say , when you use this device , you are going to attract attention . audio is pretty
+Neutral Pred (style:0.5) :needless to say , when you use this device , you are going to attract attention . audio is pretty
+OriStyle Pred (style:1) :needless to say , when you use this device , you are going to attract attention . audio is pretty
 Original Sent (style:1) :needless to say , when you use this device , you are going to attract attention . audio is pretty good .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i would have given this five stars except for the only complaint i had .
@@ -350,9 +350,9 @@ Neutral Pred (style:0.5) :the flap also is good and does not come loose at all .
 OriStyle Pred (style:1) :the flap also is good and does not come loose at all .
 Original Sent (style:1) :the flap also is good and does not come loose at all .
 ----------------------------------------
-Pred (style:1,pred_s:0) :these do not fit the power head as well , and almost like as they might pop off during use .
-Neutral Pred (style:0.5) :these do not fit the power head as well , and almost seem like they might pop off during use .
-OriStyle Pred (style:0) :these do not fit the power head as well , and almost seem like they might pop off during use .
+Pred (style:1,pred_s:0) :these do not fit the power head as well , and almost like as they might pop off during use
+Neutral Pred (style:0.5) :these do not fit the power head as well , and almost seem like they might pop off during use
+OriStyle Pred (style:0) :these do not fit the power head as well , and almost seem like they might pop off during use
 Original Sent (style:0) :these do not fit the power head as well , and almost seem like they might pop off during use .
 ----------------------------------------
 Pred (style:1,pred_s:0) :another num_num calories from the other num_num grams of carbohydrates .
@@ -490,9 +490,9 @@ Neutral Pred (style:0.5) :i will never buy hamilton beach products again .
 OriStyle Pred (style:0) :i will never buy hamilton beach products again .
 Original Sent (style:0) :i will never buy hamilton beach products again .
 ----------------------------------------
-Pred (style:1,pred_s:0) :they still shift in landscape mode , but for the price they should last a lot longer than they did .
-Neutral Pred (style:0.5) :they still shift in landscape mode , but for the price they should last a lot longer than they did .
-OriStyle Pred (style:0) :they still shift in landscape mode , but for the price they should last a lot longer than they did .
+Pred (style:1,pred_s:0) :they still shift in landscape mode , but for the price they should last a lot longer than they did
+Neutral Pred (style:0.5) :they still shift in landscape mode , but for the price they should last a lot longer than they did
+OriStyle Pred (style:0) :they still shift in landscape mode , but for the price they should last a lot longer than they did
 Original Sent (style:0) :they still shift in friction mode , but for the price they should last a lot longer than they did .
 ----------------------------------------
 Pred (style:0,pred_s:0) :the sound range and jbl is pretty impressive for the price and size .
@@ -690,9 +690,9 @@ Neutral Pred (style:0.5) :not that we should of had to do that .
 OriStyle Pred (style:0) :not that we should of had to do that .
 Original Sent (style:0) :not that we should of had to do that .
 ----------------------------------------
-Pred (style:1,pred_s:1) :for that it is perfect . however , in either application i m weary of the design of the clip .
-Neutral Pred (style:0.5) :for that it is perfect . however , in either application i m weary of the design of the clip .
-OriStyle Pred (style:0) :for that it is perfect . however , in either application i m kind of the design of the clip .
+Pred (style:1,pred_s:1) :for that it is perfect . however , in either application i m weary of the design of the clip
+Neutral Pred (style:0.5) :for that it is perfect . however , in either application i m weary of the design of the clip
+OriStyle Pred (style:0) :for that it is perfect . however , in either application i m kind of the design of the clip
 Original Sent (style:0) :for that it is perfect . however , in either application i am weary of the design of the clip .
 ----------------------------------------
 Pred (style:1,pred_s:0) :my mouth feels very dry and i am thirsty after drinking this .
@@ -770,9 +770,9 @@ Neutral Pred (style:0.5) :took her to the vet who told me the flea products don 
 OriStyle Pred (style:0) :took her to the vet who told me the flea products don t really work that well .
 Original Sent (style:0) :took her to the vet who told me the otc products don t really work that well .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i thought i d try this first without anything in it , just to see if my cats liked it .
-Neutral Pred (style:0.5) :i thought i d try this first without anything in it , just to see if my cats liked it .
-OriStyle Pred (style:0) :i thought i d try this first without anything in it , just to see if my cats liked it .
+Pred (style:1,pred_s:0) :i thought i d try this first without anything in it , just to see if my cats liked it
+Neutral Pred (style:0.5) :i thought i d try this first without anything in it , just to see if my cats liked it
+OriStyle Pred (style:0) :i thought i d try this first without anything in it , just to see if my cats liked it
 Original Sent (style:0) :i thought i d try this first without anything in it , just to see if my cats liked it .
 ----------------------------------------
 Pred (style:0,pred_s:1) :auto shut off after num_num hours , which is a good feature .
@@ -870,9 +870,9 @@ Neutral Pred (style:0.5) :the bar contains agave nectar which does not occur nat
 OriStyle Pred (style:0) :the bar contains agave nectar which does not occur naturally .
 Original Sent (style:0) :the bar contains agave nectar which does not occur naturally .
 ----------------------------------------
-Pred (style:0,pred_s:1) :because of the steel type , you need to hone it on a steel and that s usually good enough .
-Neutral Pred (style:0.5) :because of the steel type , you need to hone it on a steel and that s usually good enough .
-OriStyle Pred (style:1) :because of the steel type , you need to hone it on a steel and that s usually good enough .
+Pred (style:0,pred_s:1) :because of the steel type , you need to hone it on a steel and that s usually good enough
+Neutral Pred (style:0.5) :because of the steel type , you need to hone it on a steel and that s usually good enough
+OriStyle Pred (style:1) :because of the steel type , you need to hone it on a steel and that s usually good enough
 Original Sent (style:1) :because of the steel type , you need to hone it on a steel and that s usually good enough .
 ----------------------------------------
 Pred (style:0,pred_s:1) :and it ll keep rice perfect and hot for up to num_num hours .
@@ -920,9 +920,9 @@ Neutral Pred (style:0.5) :i ve used it twice and it has stopped working .
 OriStyle Pred (style:0) :i ve used it twice and it has stopped working .
 Original Sent (style:0) :i ve used it twice and it has stopped working .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i have been baking pies for num_num years , and always found that i could not get a perfect circle .
-Neutral Pred (style:0.5) :i have been baking pies for num_num years , and always found that i could not get a perfect circle .
-OriStyle Pred (style:1) :i have been baking pies for num_num years , and always found that i could not get a perfect circle .
+Pred (style:0,pred_s:1) :i have been baking pies for num_num years , and always found that i could not get a perfect circle
+Neutral Pred (style:0.5) :i have been baking pies for num_num years , and always found that i could not get a perfect circle
+OriStyle Pred (style:1) :i have been baking pies for num_num years , and always found that i could not get a perfect circle
 Original Sent (style:1) :i have been baking pies for num_num years , and always found that i could not get a perfect circle .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have made batches of bread for baking and feed using num_num pounds of flour .
@@ -1121,7 +1121,7 @@ OriStyle Pred (style:0) :i ll stick to my xbox for now , thanks .
 Original Sent (style:0) :i ll stick to my xbox for now , thanks .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i like that the braun rose around and seems to do better getting under the gums and tiny .
-Neutral Pred (style:0.5) :i like that the braun rose around and seems to do better getting under the gums and tiny teeth .
+Neutral Pred (style:0.5) :i like that the braun rose around and seems to do better getting under the gums and tiny .
 OriStyle Pred (style:0) :i like that the braun rose around and seems to do better getting under the gums and tiny teeth .
 Original Sent (style:0) :i like that the braun swirls around and seems to do better getting under the gums and between teeth .
 ----------------------------------------
@@ -1150,9 +1150,9 @@ Neutral Pred (style:0.5) :two days later i no longer saw them anywhere on the bu
 OriStyle Pred (style:0) :two days later i no longer saw them anywhere on the building .
 Original Sent (style:0) :two days later i no longer saw them anywhere on the building .
 ----------------------------------------
-Pred (style:1,pred_s:0) :the micro , however , requires that your computer first install a small program for me to be hooked properly .
-Neutral Pred (style:0.5) :the micro , however , requires that your computer first install a small program for me to be hooked properly .
-OriStyle Pred (style:0) :the micro , however , requires that your computer first install a small program for me to be hooked properly .
+Pred (style:1,pred_s:0) :the micro , however , requires that your computer first install a small program for me to be hooked properly
+Neutral Pred (style:0.5) :the micro , however , requires that your computer first install a small program for me to be hooked properly
+OriStyle Pred (style:0) :the micro , however , requires that your computer first install a small program for me to be hooked properly
 Original Sent (style:0) :the micro , however , requires that your computer first install a small program in order to be recognized properly .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i use it a lot , and it never gave me any problem .
@@ -1230,9 +1230,9 @@ Neutral Pred (style:0.5) :i could feel some of the grains even after much shakin
 OriStyle Pred (style:0) :i could feel some of the grains even after much shaking .
 Original Sent (style:0) :i could feel some of the grains even after much shaking .
 ----------------------------------------
-Pred (style:1,pred_s:1) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a constant at best .
-Neutral Pred (style:0.5) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a constant at best .
-OriStyle Pred (style:0) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a constant at best .
+Pred (style:1,pred_s:1) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a constant at
+Neutral Pred (style:0.5) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a constant at
+OriStyle Pred (style:0) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a constant at
 Original Sent (style:0) :the holes and cutouts aren t aligned quite properly , so mounting them on the screen is a compromise at best .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i ll probably just <UNK> the product to my feet , if at all .
@@ -1390,7 +1390,7 @@ Neutral Pred (style:0.5) :i don t want the bulk of an otterbox defender .
 OriStyle Pred (style:1) :i don t want the bulk of an otterbox defender .
 Original Sent (style:1) :i don t want the bulk of an otterbox defender .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i have to disagree with the poster who said it is a bit better than a hammer .
+Pred (style:1,pred_s:0) :i have to disagree with the l who said it is a bit better than a hammer .
 Neutral Pred (style:0.5) :i have to disagree with the poster who said it is a bit better than a hammer .
 OriStyle Pred (style:0) :i have to disagree with the poster who said it is a bit better than a hammer .
 Original Sent (style:0) :i have to disagree with the poster who said it is a bit better than a hammer .
@@ -1500,9 +1500,9 @@ Neutral Pred (style:0.5) :vegetable better than a blender and is easy to use .
 OriStyle Pred (style:1) :workes better than a blender and is easy to use .
 Original Sent (style:1) :fast; better than a blender and is easy to use .
 ----------------------------------------
-Pred (style:1,pred_s:1) :the only thing i d like to see is one usb through so you don t lose a computer slot .
-Neutral Pred (style:0.5) :the only thing i d like to see is one usb through so you don t lose a computer slot .
-OriStyle Pred (style:0) :the only thing i d like to see is one usb through so you don t lose a computer play .
+Pred (style:1,pred_s:1) :the only thing i d like to see is one usb through so you don t lose a computer slot
+Neutral Pred (style:0.5) :the only thing i d like to see is one usb through so you don t lose a computer slot
+OriStyle Pred (style:0) :the only thing i d like to see is one usb through so you don t lose a computer play
 Original Sent (style:0) :the only thing i d like to see is one usb pass through so you don t lose a usb slot .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i am still giving it four , though , because i love it .
@@ -1510,9 +1510,9 @@ Neutral Pred (style:0.5) :i am still giving it four , though , because i love it
 OriStyle Pred (style:1) :i am still giving it four , though , because i love it .
 Original Sent (style:1) :i am still giving it four , though , because i love it .
 ----------------------------------------
-Pred (style:0,pred_s:1) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync at all .
-Neutral Pred (style:0.5) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync at all .
-OriStyle Pred (style:1) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync at all .
+Pred (style:0,pred_s:1) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync
+Neutral Pred (style:0.5) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync
+OriStyle Pred (style:1) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync
 Original Sent (style:1) :they are pretty long and works fine if you just want to charge apple devices . it doesn t sync at all .
 ----------------------------------------
 Pred (style:1,pred_s:0) :she played with it for about num_num seconds , put it down , and never looked at it again .
@@ -1560,9 +1560,9 @@ Neutral Pred (style:0.5) :i have a made in usa version of this .
 OriStyle Pred (style:0) :i have a made in usa version of this .
 Original Sent (style:0) :i have a made in usa version of this .
 ----------------------------------------
-Pred (style:0,pred_s:1) :this is the perfect size for me but , apparently , it is not as popular as the other sizes .
-Neutral Pred (style:0.5) :this is the perfect size for me but , apparently , it is not as popular as the other sizes .
-OriStyle Pred (style:1) :this is the perfect size for me but , apparently , it is not as popular as the other sizes .
+Pred (style:0,pred_s:1) :this is the perfect size for me but , apparently , it is not as popular as the other sizes
+Neutral Pred (style:0.5) :this is the perfect size for me but , apparently , it is not as popular as the other sizes
+OriStyle Pred (style:1) :this is the perfect size for me but , apparently , it is not as popular as the other sizes
 Original Sent (style:1) :this is the perfect size for me but , apparently , it is not as popular as the other sizes .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have two of them in different locations in my house .
@@ -1590,9 +1590,9 @@ Neutral Pred (style:0.5) :you can go to any chain store and do better .
 OriStyle Pred (style:0) :you can go to any chain store and do better .
 Original Sent (style:0) :you can go to any chain store and do better .
 ----------------------------------------
-Pred (style:1,pred_s:0) :since i didn t , i urge you to do and then avoid having a lifetime or on your hands .
-Neutral Pred (style:0.5) :since i didn t , i urge you to do and then avoid having a lifetime or on your hands .
-OriStyle Pred (style:0) :since i didn t , i urge you to do and then avoid having a lifetime or on your hands .
+Pred (style:1,pred_s:0) :since i didn t , i urge you to do and then avoid having a lifetime or on your hands
+Neutral Pred (style:0.5) :since i didn t , i urge you to do and then avoid having a lifetime or on your hands
+OriStyle Pred (style:0) :since i didn t , i urge you to do and then avoid having a lifetime or on your hands
 Original Sent (style:0) :since i didn t , i urge you to do so and avoid having a $ loss on your hands .
 ----------------------------------------
 Pred (style:1,pred_s:1) :i ve been leaving it on all night and there s still plenty of water in the next morning .
@@ -1630,9 +1630,9 @@ Neutral Pred (style:0.5) :went looking for them and you had them .
 OriStyle Pred (style:1) :went looking for them and you had them .
 Original Sent (style:1) :went looking for them and you had them .
 ----------------------------------------
-Pred (style:1,pred_s:1) :and there s a reason for that , it isn t ! up right out of two to have i .
-Neutral Pred (style:0.5) :and there s a reason for that , it isn t ! up right out of two to have i .
-OriStyle Pred (style:0) :and there s a reason for that , it isn t ! up right out of two to have i .
+Pred (style:1,pred_s:0) :and there s a reason for that , it isn t ! up right out of two to have i
+Neutral Pred (style:0.5) :and there s a reason for that , it isn t ! up right out of two to have i
+OriStyle Pred (style:0) :and there s a reason for that , it isn t ! up right out of two to have i
 Original Sent (style:0) :and there s a reason for that , it isn t ! slips right out of every pedal i have .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have been extremely happy with my purchase .
@@ -1790,9 +1790,9 @@ Neutral Pred (style:0.5) :no battery to wear out and have to replace .
 OriStyle Pred (style:1) :no battery to wear out and have to replace .
 Original Sent (style:1) :no battery to wear out and have to replace .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i don t understand how it s possible for such a big brush to so far is little on my lashes .
-Neutral Pred (style:0.5) :i don t understand how it s possible for such a big brush to store so little on my lashes on .
-OriStyle Pred (style:0) :i don t understand how it s possible for such a big brush to brush so little product on my lashes .
+Pred (style:1,pred_s:0) :i don t understand how it s possible for such a big brush to so far is little on my
+Neutral Pred (style:0.5) :i don t understand how it s possible for such a big brush to store so little on my lashes
+OriStyle Pred (style:0) :i don t understand how it s possible for such a big brush to brush so little product on my
 Original Sent (style:0) :i don t understand how it s possible for such a big brush to deposit so little product on my lashes .
 ----------------------------------------
 Pred (style:0,pred_s:0) :like i said , it works , these are ok .
@@ -1800,9 +1800,9 @@ Neutral Pred (style:0.5) :like i said , it works , these are ok .
 OriStyle Pred (style:1) :like i said , it works , these are ok .
 Original Sent (style:1) :like i said , it works , these are ok .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i won t be flipping this one . now i ve owned it a while and used it several times .
-Neutral Pred (style:0.5) :i won t be flipping this one . now i ve owned it a while and used it several times .
-OriStyle Pred (style:1) :i won t be flipping this one . now i ve owned it a while and used it several times .
+Pred (style:0,pred_s:1) :i won t be flipping this one . now i ve owned it a while and used it several times
+Neutral Pred (style:0.5) :i won t be flipping this one . now i ve owned it a while and used it several times
+OriStyle Pred (style:1) :i won t be flipping this one . now i ve owned it a while and used it several times
 Original Sent (style:1) :i won t be flipping this one . now i ve owned it a while and used it several times .
 ----------------------------------------
 Pred (style:1,pred_s:1) :i put it together to surprise my husband .
@@ -1840,9 +1840,9 @@ Neutral Pred (style:0.5) :they send you num_num because each one lasts about two
 OriStyle Pred (style:0) :they send you num_num because each one lasts about two days .
 Original Sent (style:0) :they send you num_num because each one lasts about two days .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i never let it sit in water , and stand it on it s side , drain side down , to dry .
-Neutral Pred (style:0.5) :i never let it sit in water , and stand it on it s side , drain side down , to dry .
-OriStyle Pred (style:1) :i never let it sit in water , and stand it on it s side , drain side down , to dry .
+Pred (style:0,pred_s:1) :i never let it sit in water , and stand it on it s side , drain side down ,
+Neutral Pred (style:0.5) :i never let it sit in water , and stand it on it s side , drain side down ,
+OriStyle Pred (style:1) :i never let it sit in water , and stand it on it s side , drain side down ,
 Original Sent (style:1) :i never let it sit in water , and stand it on it s side , drain side down , to dry .
 ----------------------------------------
 Pred (style:0,pred_s:1) :it pushed right through the job with no trouble .
@@ -1970,9 +1970,9 @@ Neutral Pred (style:0.5) :we use these alot and they work great .
 OriStyle Pred (style:1) :we use these alot and they work great .
 Original Sent (style:1) :we use these alot and they work great .
 ----------------------------------------
-Pred (style:1,pred_s:1) :i guess i ll replace the hardware , but it will cost me more than the satellites in the long run .
-Neutral Pred (style:0.5) :i guess i ll replace the hardware , but it will cost me more than the satellites in the long run .
-OriStyle Pred (style:0) :i guess i ll replace the hardware , but it will cost me more than the satellites in the long run .
+Pred (style:1,pred_s:1) :i guess i ll replace the hardware , but it will cost me more than the satellites in the long
+Neutral Pred (style:0.5) :i guess i ll replace the hardware , but it will cost me more than the satellites in the long
+OriStyle Pred (style:0) :i guess i ll replace the hardware , but it will cost me more than the satellites in the long
 Original Sent (style:0) :i guess i ll replace the hardware , but it will cost me more than the garter in the long run .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i say that after trying many cheap pathetic headsets , sigh .
@@ -2020,9 +2020,9 @@ Neutral Pred (style:0.5) :i think i will return and stick with wool gloves .
 OriStyle Pred (style:0) :i think i will return and stick with wool gloves .
 Original Sent (style:0) :i think i will return and stick with wool gloves .
 ----------------------------------------
-Pred (style:0,pred_s:0) :this thing increased my battery life by almost half day , doesn t it doesn t really much to much either much either .
-Neutral Pred (style:0.5) :this thing increased my battery life by almost half day , doesn t it doesn t really much to much either much either .
-OriStyle Pred (style:1) :this thing increased my battery life by almost half day , doesn t it doesn t really much to much either much either .
+Pred (style:0,pred_s:1) :this thing increased my battery life by almost half day , doesn t it doesn t really much to much
+Neutral Pred (style:0.5) :this thing increased my battery life by almost half day , doesn t it doesn t really much to much
+OriStyle Pred (style:1) :this thing increased my battery life by almost half day , doesn t it doesn t really much to much
 Original Sent (style:1) :this thing increased my battery life by almost half ! honestly , it doesn t really make your phone that much bigger either .
 ----------------------------------------
 Pred (style:0,pred_s:1) :with medium usage its closer to about num_num hours .
@@ -2030,9 +2030,9 @@ Neutral Pred (style:0.5) :with medium usage its closer to about num_num hours .
 OriStyle Pred (style:1) :with medium usage its closer to about num_num hours .
 Original Sent (style:1) :with medium usage its closer to about num_num hours .
 ----------------------------------------
-Pred (style:1,pred_s:1) :i thought that was a bonus , but as it turns out this sucker : the life set of batteries .
-Neutral Pred (style:0.5) :i thought that was a bonus , but as it turns out this sucker : the life set of batteries .
-OriStyle Pred (style:0) :i thought that was a bonus , but as it turns out this sucker : the life set of batteries .
+Pred (style:1,pred_s:1) :i thought that was a bonus , but as it turns out this sucker : the life set of batteries
+Neutral Pred (style:0.5) :i thought that was a bonus , but as it turns out this sucker : the life set of batteries
+OriStyle Pred (style:0) :i thought that was a bonus , but as it turns out this sucker : the life set of batteries
 Original Sent (style:0) :i thought that was a bonus , but as it turns out this sucker sucks the life out of batteries .
 ----------------------------------------
 Pred (style:1,pred_s:0) :as a professional i would not purchase it again , nor would give it as a as to anyone .
@@ -2040,9 +2040,9 @@ Neutral Pred (style:0.5) :as a professional i would not purchase it again , nor 
 OriStyle Pred (style:0) :as a professional i would not purchase it again , nor would give it as a as to anyone .
 Original Sent (style:0) :as a professional i would not purchase it again , nor would i give it as a gift to anyone .
 ----------------------------------------
-Pred (style:1,pred_s:0) :per the game , <UNK> are used to take down and surfing and <UNK> are used to damage the device .
-Neutral Pred (style:0.5) :per the game , <UNK> are used to take down counts and <UNK> quality are used to damage the damage .
-OriStyle Pred (style:0) :per the game , <UNK> are used to take down counts and <UNK> quality are used to damage the damage .
+Pred (style:1,pred_s:0) :per the game , <UNK> are used to take down and surfing and <UNK> are used to damage the device
+Neutral Pred (style:0.5) :per the game , <UNK> are used to take down counts and <UNK> quality are used to damage the damage
+OriStyle Pred (style:0) :per the game , <UNK> are used to take down counts and <UNK> quality are used to damage the damage
 Original Sent (style:0) :per the game , <UNK> are used to take down shields and photon <UNK> are used to damage the hull .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have another mounting system from this same manufacturer in my personal vehicle and am also pleased with it .
@@ -2110,9 +2110,9 @@ Neutral Pred (style:0.5) :these are really just the thing for viola ! very usefu
 OriStyle Pred (style:1) :these are really just the thing for henckel ! very useful and well made .
 Original Sent (style:1) :these are really just the thing for chocoholics ! very useful and well made .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use .
-Neutral Pred (style:0.5) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use .
-OriStyle Pred (style:1) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use .
+Pred (style:0,pred_s:1) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use
+Neutral Pred (style:0.5) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use
+OriStyle Pred (style:1) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use
 Original Sent (style:1) :the suction cup is very high quality , with a strong lever that doesn t cause worry with each use .
 ----------------------------------------
 Pred (style:0,pred_s:1) :works great ! love it for zesting orange , lemon or lime zest .
@@ -2390,9 +2390,9 @@ Neutral Pred (style:0.5) :it didn t have the smell a lot complained of though .
 OriStyle Pred (style:0) :it didn t have the smell a lot complained of though .
 Original Sent (style:0) :it didn t have the smell a lot complained of though .
 ----------------------------------------
-Pred (style:1,pred_s:1) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes .
-Neutral Pred (style:0.5) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes .
-OriStyle Pred (style:0) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes .
+Pred (style:1,pred_s:1) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes
+Neutral Pred (style:0.5) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes
+OriStyle Pred (style:0) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes
 Original Sent (style:0) :some of them gave me bubbles , some came off right away after sticking on the screen for num_num minutes .
 ----------------------------------------
 Pred (style:1,pred_s:0) :also noticed that the wand doesn t like to stay attached when not in use .
@@ -2410,9 +2410,9 @@ Neutral Pred (style:0.5) :i ordered these high handle boots because i have the s
 OriStyle Pred (style:0) :i ordered these high handle boots because i have the shorter boots boots and love them .
 Original Sent (style:0) :i ordered these high handle boots because i have the shorter bog boots and love them .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i told myself that it added character to the baker , and i was not sure that plain isn t .
-Neutral Pred (style:0.5) :i told myself that it added character to the baker , and i was not sure that plain isn t .
-OriStyle Pred (style:0) :i told myself that it added character to the baker , and i was not sure that plain isn t .
+Pred (style:1,pred_s:1) :i told myself that it added character to the baker , and i was not sure that plain isn t
+Neutral Pred (style:0.5) :i told myself that it added character to the baker , and i was not sure that plain isn t
+OriStyle Pred (style:0) :i told myself that it added character to the baker , and i was not sure that plain isn t
 Original Sent (style:0) :i told myself that it added character to the baker , that i was not obsessive like detective <UNK> t .
 ----------------------------------------
 Pred (style:0,pred_s:0) :if you forget , it will cement to the sides and you have to either soak it or harder .
@@ -2470,9 +2470,9 @@ Neutral Pred (style:0.5) :basically , this product is a ripoff on consumers .
 OriStyle Pred (style:0) :basically , this product is a ripoff on consumers .
 Original Sent (style:0) :basically , this product is a ripoff on consumers .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced .
-Neutral Pred (style:0.5) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced .
-OriStyle Pred (style:1) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced .
+Pred (style:0,pred_s:1) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced
+Neutral Pred (style:0.5) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced
+OriStyle Pred (style:1) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced
 Original Sent (style:1) :the cap is large enough to turn over and collect the ground beans , unlike the grinder this one replaced .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i just wouldn t try to use it as if it were a professional model .
@@ -2500,9 +2500,9 @@ Neutral Pred (style:0.5) :its good that its made in canada rather than china .
 OriStyle Pred (style:0) :its good that its made in canada rather than china .
 Original Sent (style:0) :its good that its made in canada rather than china .
 ----------------------------------------
-Pred (style:1,pred_s:0) :now it s just another car charger like the other num_num i already had and didn t really want to purchase ! .
-Neutral Pred (style:0.5) :now it s just another car charger like the other num_num i already had and didn t really want to know ! .
-OriStyle Pred (style:0) :now it s just another car charger like the other num_num i already had and didn t really want to know ! .
+Pred (style:1,pred_s:0) :now it s just another car charger like the other num_num i already had and didn t really want to
+Neutral Pred (style:0.5) :now it s just another car charger like the other num_num i already had and didn t really want to
+OriStyle Pred (style:0) :now it s just another car charger like the other num_num i already had and didn t really want to
 Original Sent (style:0) :now it s just another car charger like the other num_num i already had and didn t really want another of ! .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have had no problem with either piece and highly recommend the products .
@@ -2610,9 +2610,9 @@ Neutral Pred (style:0.5) :birds or squirrels . tried num_num different kinds of 
 OriStyle Pred (style:0) :birds or squirrels . tried num_num different kinds of bird food .
 Original Sent (style:0) :birds or squirrels . tried num_num different kinds of bird food .
 ----------------------------------------
-Pred (style:1,pred_s:1) :unless you re singing a bass part . . . . it s a really , but also , the sound is really good is good .
-Neutral Pred (style:0.5) :unless you re singing a bass part . . . . it s a really , but also , the sound is really good is good .
-OriStyle Pred (style:0) :unless you re singing a bass part . . . . it s a num_extend , , , really is the sound is quite good quality .
+Pred (style:1,pred_s:0) :unless you re singing a bass part . . . . it s a really , but also , the
+Neutral Pred (style:0.5) :unless you re singing a bass part . . . . it s a really , but also , the
+OriStyle Pred (style:0) :unless you re singing a bass part . . . . it s a num_extend , , , really is
 Original Sent (style:0) :unless you re singing a bass part . . . . it s a pity , really , because otherwise the sound quality is quite good .
 ----------------------------------------
 Pred (style:0,pred_s:0) :nothing bad to say about this wonderful innovation at all .
@@ -2950,9 +2950,9 @@ Neutral Pred (style:0.5) :i m sure it depends on your age and body type .
 OriStyle Pred (style:0) :i m sure it depends on your age and body type .
 Original Sent (style:0) :i m sure it depends on your age and body type .
 ----------------------------------------
-Pred (style:0,pred_s:0) :what s not to love ? ! ! ! it makes my plain white ceramic looking look like junk ! .
-Neutral Pred (style:0.5) :what s not to love ? ! ! ! it makes my plain white ceramic looking look like junk ! .
-OriStyle Pred (style:1) :what s not to love ? ! ! ! it makes my plain white ceramic looking look like junk ! .
+Pred (style:0,pred_s:0) :what s not to love ? ! ! ! it makes my plain white ceramic looking look like junk !
+Neutral Pred (style:0.5) :what s not to love ? ! ! ! it makes my plain white ceramic looking look like junk !
+OriStyle Pred (style:1) :what s not to love ? ! ! ! it makes my plain white ceramic looking look like junk !
 Original Sent (style:1) :what s not to love ? ! ? ! it makes my plain white ceramic crock look like junk ! .
 ----------------------------------------
 Pred (style:1,pred_s:1) :the finish strength on this compact num_extend is pretty strong .
@@ -3060,9 +3060,9 @@ Neutral Pred (style:0.5) :and it is very possible that these are good cables .
 OriStyle Pred (style:0) :and it is very possible that these are good cables .
 Original Sent (style:0) :and it is very possible that these are good cables .
 ----------------------------------------
-Pred (style:0,pred_s:1) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend stars .
-Neutral Pred (style:0.5) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend stars .
-OriStyle Pred (style:1) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend stars .
+Pred (style:0,pred_s:1) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend
+Neutral Pred (style:0.5) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend
+OriStyle Pred (style:1) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend
 Original Sent (style:1) :all technology becomes cheaper eventually , but if you think you need it , it s totally worth the num_extend stars .
 ----------------------------------------
 Pred (style:0,pred_s:1) :would be five stars if it was out of slightly heavier material .
@@ -3230,9 +3230,9 @@ Neutral Pred (style:0.5) :i can use a creamy concealer on it .
 OriStyle Pred (style:0) :i can use a creamy concealer on it .
 Original Sent (style:0) :i can use a creamy concealer on it .
 ----------------------------------------
-Pred (style:1,pred_s:1) :i ve had this earpiece , bench , or whatever , whatever you might call it . the material is strong .
-Neutral Pred (style:0.5) :i ve had this earpiece , bench , or whatever , whatever you might call it . the material is strong .
-OriStyle Pred (style:0) :i ve had this earpiece , bench , or whatever , whatever you might call it . the material is strong .
+Pred (style:1,pred_s:1) :i ve had this earpiece , bench , or whatever , whatever you might call it . the material is
+Neutral Pred (style:0.5) :i ve had this earpiece , bench , or whatever , whatever you might call it . the material is
+OriStyle Pred (style:0) :i ve had this earpiece , bench , or whatever , whatever you might call it . the material is
 Original Sent (style:0) :i ve had this vice , bench , or cradle , whatever you might call it . the material is strong .
 ----------------------------------------
 Pred (style:1,pred_s:0) :all the earlier s games have an annoying tendency of allowing the character to die , a lot .
@@ -3330,9 +3330,9 @@ Neutral Pred (style:0.5) :i bought this is a gift for my brother .
 OriStyle Pred (style:1) :i bought this is a gift for my brother .
 Original Sent (style:1) :i bought this is a gift for my brother .
 ----------------------------------------
-Pred (style:0,pred_s:1) :not as good as my plantronics headset , but thats good enough for the times i am listening to music .
-Neutral Pred (style:0.5) :not as good as my plantronics headset , but thats good enough for the times i am listening to music .
-OriStyle Pred (style:1) :not as good as my plantronics headset , but thats good enough for the times i am listening to music .
+Pred (style:0,pred_s:1) :not as good as my plantronics headset , but thats good enough for the times i am listening to music
+Neutral Pred (style:0.5) :not as good as my plantronics headset , but thats good enough for the times i am listening to music
+OriStyle Pred (style:1) :not as good as my plantronics headset , but thats good enough for the times i am listening to music
 Original Sent (style:1) :not as good as my plantronics headset , but certaintly good enough for the times i am listening to music .
 ----------------------------------------
 Pred (style:1,pred_s:0) :not what you want to be putting on our face if your fighting acne and oily face .
@@ -3340,9 +3340,9 @@ Neutral Pred (style:0.5) :not what you want to be putting on our face if your ac
 OriStyle Pred (style:0) :not what you want to be putting on our face if your acne acne and oily face .
 Original Sent (style:0) :not what you want to be putting on our face if your fighting acne and oily face .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the front of the case features a sliding pocket , allowing you to cut neatly away on a straight line .
-Neutral Pred (style:0.5) :the front of the case features a sliding pocket , allowing you to cut neatly away on a straight line .
-OriStyle Pred (style:1) :the front of the case features a sliding pocket , allowing you to cut neatly away on a straight line .
+Pred (style:0,pred_s:1) :the front of the case features a sliding pocket , allowing you to cut neatly away on a straight line
+Neutral Pred (style:0.5) :the front of the case features a sliding pocket , allowing you to cut neatly away on a straight line
+OriStyle Pred (style:1) :the front of the case features a sliding pocket , allowing you to cut neatly away on a straight line
 Original Sent (style:1) :the front of the case features a sliding cutter , allowing you to neatly cut bags in a straight line .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i bought this because it came with great reviews , however my lab mix it got them hours .
@@ -3410,9 +3410,9 @@ Neutral Pred (style:0.5) :i won t give this to the new puppy i m getting .
 OriStyle Pred (style:0) :i won t give this to the new puppy i m getting .
 Original Sent (style:0) :i won t give this to the new puppy i m getting .
 ----------------------------------------
-Pred (style:1,pred_s:0) :if it s so threads and has a triangle triangle pattern on the side of it , skip this cap .
-Neutral Pred (style:0.5) :if it s so threads and has a triangle triangle pattern on the side of it , skip this cap .
-OriStyle Pred (style:0) :if it s so threads and has a triangle triangle pattern on the side of it , skip this cap .
+Pred (style:1,pred_s:0) :if it s so threads and has a triangle triangle pattern on the side of it , skip this cap
+Neutral Pred (style:0.5) :if it s so threads and has a triangle triangle pattern on the side of it , skip this cap
+OriStyle Pred (style:0) :if it s so threads and has a triangle triangle pattern on the side of it , skip this cap
 Original Sent (style:0) :if it doesn have threads and has a geometrical triangle pattern on the side of it , skip this cap .
 ----------------------------------------
 Pred (style:1,pred_s:1) :i bought this skillet for steaks and fried potatoes , and fried eggs .
@@ -3470,9 +3470,9 @@ Neutral Pred (style:0.5) :i practically felt like i threw away my money on this 
 OriStyle Pred (style:0) :i practically felt like i threw away my money on this one .
 Original Sent (style:0) :i practically felt like i threw away my money on this one .
 ----------------------------------------
-Pred (style:1,pred_s:0) :jus do not power this with anything at , you have to use regular , and it drains fast fast .
-Neutral Pred (style:0.5) :jus do not power this with anything at , you have to use regular , and it drains fast fast .
-OriStyle Pred (style:0) :costs do not power this toy at all , you have to use regular , and it drains fast fast .
+Pred (style:1,pred_s:0) :jus do not power this with anything at , you have to use regular , and it drains fast fast
+Neutral Pred (style:0.5) :jus do not power this with anything at , you have to use regular , and it drains fast fast
+OriStyle Pred (style:0) :costs do not power this toy at all , you have to use regular , and it drains fast fast
 Original Sent (style:0) :rechargables do not power this toy at all , you have to use regular , and it drains batteries fast .
 ----------------------------------------
 Pred (style:0,pred_s:1) :delicious over fruit and <UNK> go lean crunch cereal .
@@ -3550,9 +3550,9 @@ Neutral Pred (style:0.5) :i cannot recommend this product for anyone trying to f
 OriStyle Pred (style:0) :i cannot recommend this product for anyone trying to fix a always transmission .
 Original Sent (style:0) :i cannot recommend this product for anyone trying to fix a leaky transmission .
 ----------------------------------------
-Pred (style:1,pred_s:0) :they fit small and fit weird , the waist was too high and the style was all wrong for me .
-Neutral Pred (style:0.5) :they fit small and fit weird , the waist was too high and the style was all wrong for me .
-OriStyle Pred (style:0) :they fit small and fit weird , the waist was too high and the style was all wrong for me .
+Pred (style:1,pred_s:0) :they fit small and fit weird , the waist was too high and the style was all wrong for me
+Neutral Pred (style:0.5) :they fit small and fit weird , the waist was too high and the style was all wrong for me
+OriStyle Pred (style:0) :they fit small and fit weird , the waist was too high and the style was all wrong for me
 Original Sent (style:0) :they fit small and fit weird , the waist was too high and the style was all wrong for me .
 ----------------------------------------
 Pred (style:0,pred_s:0) :it would have been perfect if it was a tad bit smaller .
@@ -3750,9 +3750,9 @@ Neutral Pred (style:0.5) :but for now , i m quite happy with this .
 OriStyle Pred (style:1) :but for now , i m quite happy with this .
 Original Sent (style:1) :but for now , i m quite happy with this .
 ----------------------------------------
-Pred (style:0,pred_s:1) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size .
-Neutral Pred (style:0.5) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size .
-OriStyle Pred (style:1) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size .
+Pred (style:0,pred_s:1) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size
+Neutral Pred (style:0.5) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size
+OriStyle Pred (style:1) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size
 Original Sent (style:1) :take the plug off and put it in the dishwasher ! how easy is that ? it s good size .
 ----------------------------------------
 Pred (style:1,pred_s:1) :they corrected the listing and now it looks like they have the right bags pictured .
@@ -3910,9 +3910,9 @@ Neutral Pred (style:0.5) :it s the <UNK> blade i ve ever seen ! and it s crazy t
 OriStyle Pred (style:0) :it s the <UNK> blade i ve ever seen ! and it s crazy thick .
 Original Sent (style:0) :it s the <UNK> ivory i ve ever seen ! and it s crazy thick .
 ----------------------------------------
-Pred (style:1,pred_s:0) :poor quality control . actually it looks like used , but not like new . don t recommend this product .
-Neutral Pred (style:0.5) :poor quality control . actually it looks like used pedal , like a new . don t recommend this product .
-OriStyle Pred (style:0) :poor quality control . actually it looks like used pedal , like a new . don t recommend this product .
+Pred (style:1,pred_s:0) :poor quality control . actually it looks like used , but not like new . don t recommend this product
+Neutral Pred (style:0.5) :poor quality control . actually it looks like used pedal , like a new . don t recommend this product
+OriStyle Pred (style:0) :poor quality control . actually it looks like used pedal , like a new . don t recommend this product
 Original Sent (style:0) :poor quality control . actually it looks like used pedal , not like new . don t recommend this product .
 ----------------------------------------
 Pred (style:0,pred_s:1) :but this one does the job very nicely .
@@ -3990,14 +3990,14 @@ Neutral Pred (style:0.5) :very well designed and easy to figure out .
 OriStyle Pred (style:0) :very well designed and easy to figure out .
 Original Sent (style:0) :very well designed and easy to figure out .
 ----------------------------------------
-Pred (style:0,pred_s:1) :it does not move to and as this from previous model . the blade on this unit can be replaced .
-Neutral Pred (style:0.5) :it does not move to and as this from previous model . the blade on this unit can be replaced .
-OriStyle Pred (style:1) :it does not move to and as this from previous model . the blade on this unit can be replaced .
+Pred (style:0,pred_s:1) :it does not move to and as this from previous model . the blade on this unit can be replaced
+Neutral Pred (style:0.5) :it does not move to and as this from previous model . the blade on this unit can be replaced
+OriStyle Pred (style:1) :it does not move to and as this from previous model . the blade on this unit can be replaced
 Original Sent (style:1) :it does not move to and fro as another reviewer described . the blade on this unit can be replaced .
 ----------------------------------------
-Pred (style:1,pred_s:0) :this is the only shoe shoe i ve ever tried so take my shun complaints with a grain of salt .
-Neutral Pred (style:0.5) :this is the only shoe shoe i ve ever tried so take my eyebrow complaints with a grain of salt .
-OriStyle Pred (style:0) :this is the only shoe shoe i ve ever tried so take my eyebrow complaints with a grain of salt .
+Pred (style:1,pred_s:0) :this is the only shoe shoe i ve ever tried so take my shun complaints with a grain of salt
+Neutral Pred (style:0.5) :this is the only shoe shoe i ve ever tried so take my eyebrow complaints with a grain of salt
+OriStyle Pred (style:0) :this is the only shoe shoe i ve ever tried so take my eyebrow complaints with a grain of salt
 Original Sent (style:0) :this is the only nautilus shoe i ve ever tried so take my fitment complaints with a grain of salt .
 ----------------------------------------
 Pred (style:1,pred_s:1) :within a year , everyone noticed that its cosmetic and physical condition greatly greatly .
@@ -4030,9 +4030,9 @@ Neutral Pred (style:0.5) :once it dies i will purchase a better unit .
 OriStyle Pred (style:1) :once it dies i will purchase a better unit .
 Original Sent (style:1) :once it dies i will purchase a better unit .
 ----------------------------------------
-Pred (style:1,pred_s:0) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp .
-Neutral Pred (style:0.5) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp .
-OriStyle Pred (style:0) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp .
+Pred (style:1,pred_s:0) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp
+Neutral Pred (style:0.5) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp
+OriStyle Pred (style:0) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp
 Original Sent (style:0) :they ve changed the formula and now i notice after an hour or so my hair appears oily and limp .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i thought this was the hard plastic screen cover and it isn t .
@@ -4041,8 +4041,8 @@ OriStyle Pred (style:0) :i thought this was the hard plastic screen cover and it
 Original Sent (style:0) :i thought this was the hard plastic screen cover and it isn t .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i am not very good at decorating baked goods , and this tool makes everything look a good issue .
-Neutral Pred (style:0.5) :i am not very good at decorating baked goods , and this tool makes everything like a professional issue it .
-OriStyle Pred (style:1) :i am not very good at decorating baked goods , and this tool makes everything like a good purchase it .
+Neutral Pred (style:0.5) :i am not very good at decorating baked goods , and this tool makes everything like a professional issue it
+OriStyle Pred (style:1) :i am not very good at decorating baked goods , and this tool makes everything like a good purchase it
 Original Sent (style:1) :i am not very good at decorating baked goods , and this tool makes everything look a professional made it .
 ----------------------------------------
 Pred (style:0,pred_s:1) :this style of meat pounder is sort of appetizers like .
@@ -4060,9 +4060,9 @@ Neutral Pred (style:0.5) :would suggest using one of the toy <UNK> amazon sells 
 OriStyle Pred (style:0) :would suggest using one of the toy <UNK> amazon sells .
 Original Sent (style:0) :would suggest using one of the toy <UNK> amazon sells .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i don t think she is on board and the quality of something that she can , , not by it .
-Neutral Pred (style:0.5) :i don t think she is on board and the idea of something that she can , , not by it .
-OriStyle Pred (style:0) :i don t think she is on board with the idea of something that she can chew , not by s .
+Pred (style:1,pred_s:0) :i don t think she is on board and the quality of something that she can , , not by
+Neutral Pred (style:0.5) :i don t think she is on board and the idea of something that she can , , not by
+OriStyle Pred (style:0) :i don t think she is on board with the idea of something that she can chew , not by
 Original Sent (style:0) :i don t think she is on board with the idea of something that she can chew , but not destroy .
 ----------------------------------------
 Pred (style:0,pred_s:1) :nice not to have a burner going for hours .
@@ -4090,9 +4090,9 @@ Neutral Pred (style:0.5) :i ve used it once and i won t be using it again .
 OriStyle Pred (style:0) :i ve used it once and i won t be using it again .
 Original Sent (style:0) :i ve used it once and i won t be using it again .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i want another set ! ! ! i have another , cheaper set that i use only as backup now .
-Neutral Pred (style:0.5) :i want another set ! ! ! i have another , cheaper set that i use only as backup now .
-OriStyle Pred (style:1) :i want another set ! ! ! i have another , cheaper set that i use only as backup now .
+Pred (style:0,pred_s:1) :i want another set ! ! ! i have another , cheaper set that i use only as backup now
+Neutral Pred (style:0.5) :i want another set ! ! ! i have another , cheaper set that i use only as backup now
+OriStyle Pred (style:1) :i want another set ! ! ! i have another , cheaper set that i use only as backup now
 Original Sent (style:1) :i want another set ! ! ! i have another , cheaper set that i use only as backup now .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i also bought the num_num foot one and have no doubt it s not ordinary or <UNK> skin .
@@ -4160,19 +4160,19 @@ Neutral Pred (style:0.5) :just wipe the plates with a paper towel .
 OriStyle Pred (style:1) :just wipe the plates with a paper towel .
 Original Sent (style:1) :just wipe the plates with a paper towel .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i bought these expecting a soft head , but it was rather hard and i really don t like them .
-Neutral Pred (style:0.5) :i bought these expecting a soft head , but it was rather hard and i really don t like them .
-OriStyle Pred (style:0) :i bought these expecting a soft head , but it was rather hard and i really don t like them .
+Pred (style:1,pred_s:0) :i bought these expecting a soft head , but it was rather hard and i really don t like them
+Neutral Pred (style:0.5) :i bought these expecting a soft head , but it was rather hard and i really don t like them
+OriStyle Pred (style:0) :i bought these expecting a soft head , but it was rather hard and i really don t like them
 Original Sent (style:0) :i bought these expecting a soft head , but it was rather hard and i really don t like them .
 ----------------------------------------
-Pred (style:0,pred_s:0) :if you pump it up less than about num_num times , you ll get a stream , not a mist .
-Neutral Pred (style:0.5) :if you pump it up less than about num_num times , you ll get a stream , not a mist .
-OriStyle Pred (style:1) :if you pump it up less than about num_num times , you ll get a stream , not a mist .
+Pred (style:0,pred_s:0) :if you pump it up less than about num_num times , you ll get a stream , not a mist
+Neutral Pred (style:0.5) :if you pump it up less than about num_num times , you ll get a stream , not a mist
+OriStyle Pred (style:1) :if you pump it up less than about num_num times , you ll get a stream , not a mist
 Original Sent (style:1) :if you pump it up less than about num_num times , you ll get a stream , not a mist .
 ----------------------------------------
-Pred (style:0,pred_s:0) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the deal .
-Neutral Pred (style:0.5) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the deal .
-OriStyle Pred (style:1) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the deal .
+Pred (style:0,pred_s:0) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the
+Neutral Pred (style:0.5) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the
+OriStyle Pred (style:1) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the
 Original Sent (style:1) :i bought these six months ago when they were $ through amazon prime ! i couldn t pass up the deal .
 ----------------------------------------
 Pred (style:0,pred_s:0) :i wire tied the west wire out of harm s way and all is well .
@@ -4200,8 +4200,8 @@ Neutral Pred (style:0.5) :the recipe that comes with it is tasty .
 OriStyle Pred (style:1) :the recipe that comes with it is tasty .
 Original Sent (style:1) :the recipe that comes with it is tasty .
 ----------------------------------------
-Pred (style:0,pred_s:1) :like i said , it does a nice job for pork chops separately and finish bagged lean cuts of beef .
-Neutral Pred (style:0.5) :like i said , it does a nice job for pork chops separately and finish bagged lean cuts of beef .
+Pred (style:0,pred_s:1) :like i said , it does a nice job for pork chops separately and finish bagged lean cuts of beef
+Neutral Pred (style:0.5) :like i said , it does a nice job for pork chops separately and finish bagged lean cuts of beef
 OriStyle Pred (style:1) :like i said , it does a nice excellent job for pork chops and hoover delivers delivers up cuts .
 Original Sent (style:1) :like i said , it does a similarly excellent job for pork chops and other relatively lean cuts of beef .
 ----------------------------------------
@@ -4320,14 +4320,14 @@ Neutral Pred (style:0.5) :for the price , this is a good buy .
 OriStyle Pred (style:1) :for the price , this is a good buy .
 Original Sent (style:1) :for the price , this is a good buy .
 ----------------------------------------
-Pred (style:1,pred_s:0) :wheels are really , really cheap plastic . two stars because you can ride it , just at a boat pace pace .
-Neutral Pred (style:0.5) :wheels are really , really cheap plastic . two stars because you can ride it , just at a boat pace pace .
-OriStyle Pred (style:0) :wheels are really , really cheap plastic . two stars because you can ride it , just at a boat pace pace .
+Pred (style:1,pred_s:0) :wheels are really , really cheap plastic . two stars because you can ride it , just at a boat
+Neutral Pred (style:0.5) :wheels are really , really cheap plastic . two stars because you can ride it , just at a boat
+OriStyle Pred (style:0) :wheels are really , really cheap plastic . two stars because you can ride it , just at a boat
 Original Sent (style:0) :wheels are really , really cheap plastic . two stars because you can ride it , just at a snail s pace .
 ----------------------------------------
-Pred (style:1,pred_s:0) :the second time i took this to the range , i started to notice that i wasn t hitting the target .
-Neutral Pred (style:0.5) :the second time i took this to the range , i started to notice that i wasn t hitting the target .
-OriStyle Pred (style:0) :the second time i took this to the range , i started to notice that i wasn t hitting the target .
+Pred (style:1,pred_s:0) :the second time i took this to the range , i started to notice that i wasn t hitting the
+Neutral Pred (style:0.5) :the second time i took this to the range , i started to notice that i wasn t hitting the
+OriStyle Pred (style:0) :the second time i took this to the range , i started to notice that i wasn t hitting the
 Original Sent (style:0) :the second time i took this to the range , i started to notice that i wasn t hitting the target .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i had a less powerful one for num_num years before it finally gave out .
@@ -4440,9 +4440,9 @@ Neutral Pred (style:0.5) :tablets charge slowly , but that s to be expected .
 OriStyle Pred (style:1) :tablets charge slowly , but that s to be expected .
 Original Sent (style:1) :tablets charge slowly , but that s to be expected .
 ----------------------------------------
-Pred (style:0,pred_s:0) :however , an incredibly terrible instruction allergy and trying to the allergy doctor doctor me to give a try a .
-Neutral Pred (style:0.5) :however , an incredibly terrible instruction allergy and trying to the allergy doctor doctor me to give a try a .
-OriStyle Pred (style:1) :however , an incredibly terrible instruction allergy and to to the allergy doctor doctor me to give a try try .
+Pred (style:0,pred_s:0) :however , an incredibly terrible instruction allergy and trying to the allergy doctor doctor me to give a try a
+Neutral Pred (style:0.5) :however , an incredibly terrible instruction allergy and trying to the allergy doctor doctor me to give a try a
+OriStyle Pred (style:1) :however , an incredibly terrible instruction allergy and to to the allergy doctor doctor me to give a try try
 Original Sent (style:1) :however , an increasingly terrible dust allergy and trip to the allergy doctor convinced me to give one a try .
 ----------------------------------------
 Pred (style:0,pred_s:1) :however signal between walls and receiver does not work between insulated pod glass door .
@@ -4460,9 +4460,9 @@ Neutral Pred (style:0.5) :do not buy . i didn t expect much because of the cost 
 OriStyle Pred (style:0) :do not buy . i didn t expect much because of the cost .
 Original Sent (style:0) :do not buy . i didn t expect much because of the cost .
 ----------------------------------------
-Pred (style:1,pred_s:0) :few , if of , are working as expected and thus i can t trust them for an serious work .
-Neutral Pred (style:0.5) :few , if of , are working as expected and thus i can t trust them for an frustrating work .
-OriStyle Pred (style:0) :few , if of , are working as expected and thus i can t trust them for an frustrating work .
+Pred (style:1,pred_s:0) :few , if of , are working as expected and thus i can t trust them for an serious work
+Neutral Pred (style:0.5) :few , if of , are working as expected and thus i can t trust them for an frustrating work
+OriStyle Pred (style:0) :few , if of , are working as expected and thus i can t trust them for an frustrating work
 Original Sent (style:0) :few , if any , are working as expected and thus i can t trust them for any backup work .
 ----------------------------------------
 Pred (style:1,pred_s:0) :my mothers dog has one from walmart , and my dog loves it every time we go home .
@@ -4570,9 +4570,9 @@ Neutral Pred (style:0.5) :it s this second part that really irks me out .
 OriStyle Pred (style:0) :it s this second part that really irks me out .
 Original Sent (style:0) :it s this second part that really grosses me out .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the extra width comes in one easy to keep holding from falling off . the handle is sturdy and sturdy .
-Neutral Pred (style:0.5) :the extra width comes in one easy to keep without falling off . . the handle is sturdy and sturdy .
-OriStyle Pred (style:1) :the extra width comes in one easy to keep without falling off . . the handle is sturdy and sturdy .
+Pred (style:0,pred_s:1) :the extra width comes in one easy to keep holding from falling off . the handle is sturdy and sturdy
+Neutral Pred (style:0.5) :the extra width comes in one easy to keep without falling off . . the handle is sturdy and sturdy
+OriStyle Pred (style:1) :the extra width comes in one easy to keep without falling off . . the handle is sturdy and sturdy
 Original Sent (style:1) :the extra width comes in very helpful to keep eggs from falling off . the handle is stainless and sturdy .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have had to replace the paddles as they wore out .
@@ -4700,9 +4700,9 @@ Neutral Pred (style:0.5) :all the songs build on the same words .
 OriStyle Pred (style:0) :all the songs build on the same words .
 Original Sent (style:0) :all the songs build on the same words .
 ----------------------------------------
-Pred (style:0,pred_s:1) :even though there was no mounting hardware included , it didn t take my handy phone to take them up .
-Neutral Pred (style:0.5) :even though there was no mounting hardware included , it didn t take my handy phone to take them up .
-OriStyle Pred (style:1) :even though there was no mounting hardware included , it didn t take my handy phone to take them up .
+Pred (style:0,pred_s:0) :even though there was no mounting hardware included , it didn t take my handy phone to take them up
+Neutral Pred (style:0.5) :even though there was no mounting hardware included , it didn t take my handy phone to take them up
+OriStyle Pred (style:1) :even though there was no mounting hardware included , it didn t take my handy phone to take them up
 Original Sent (style:1) :even though there was no mounting hardware included , it didn t take my handy husband long to put them up .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i does smell good but it clumps together and it was definately too expensive for but it s quality .
@@ -4830,9 +4830,9 @@ Neutral Pred (style:0.5) :this is a good size; and well made .
 OriStyle Pred (style:0) :this is a good size; and well made .
 Original Sent (style:0) :this is a good hoodie and well made .
 ----------------------------------------
-Pred (style:1,pred_s:1) :something s wrong with it . me : it s just . . . can you can have it . . . . for my healthier for wonderful .
-Neutral Pred (style:0.5) :something s wrong with it . me : it s just . . . . you can have it . . . . for my healthier for great drinks .
-OriStyle Pred (style:0) :something s wrong with it . me : it s just . . . . you can have it . . . . for my healthier for many drinks .
+Pred (style:1,pred_s:1) :something s wrong with it . me : it s just . . . can you can have it .
+Neutral Pred (style:0.5) :something s wrong with it . me : it s just . . . . you can have it .
+OriStyle Pred (style:0) :something s wrong with it . me : it s just . . . . you can have it .
 Original Sent (style:0) :something s wrong with it . me : it s just yucky . daughter : you can have it , mom . i had high hopes for these drinks .
 ----------------------------------------
 Pred (style:1,pred_s:1) :it s very black , and it does add volume .
@@ -4880,9 +4880,9 @@ Neutral Pred (style:0.5) :great case , easy to use and very durable .
 OriStyle Pred (style:1) :great case , easy to use and very durable .
 Original Sent (style:1) :great case , easy to use and very durable .
 ----------------------------------------
-Pred (style:1,pred_s:0) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs broke .
-Neutral Pred (style:0.5) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs broke .
-OriStyle Pred (style:0) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs broke .
+Pred (style:1,pred_s:0) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs
+Neutral Pred (style:0.5) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs
+OriStyle Pred (style:0) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs
 Original Sent (style:0) :this time , i got to enjoy it for about a month , then unfortunately , one of the tabs broke .
 ----------------------------------------
 Pred (style:1,pred_s:0) :when i go to remove it , it rolls into itself , tearing at my hair .
@@ -4940,9 +4940,9 @@ Neutral Pred (style:0.5) :avoid the saltiness and wasted <UNK> of bad discs .
 OriStyle Pred (style:0) :avoid the saltiness and wasted <UNK> of bad discs .
 Original Sent (style:0) :avoid the heartache and wasted <UNK> of bad discs .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i woke up in the middle of the night with strong heart up , then throwing the next day day .
-Neutral Pred (style:0.5) :i woke up in the middle of the night with strong heart up , then throwing the next day day .
-OriStyle Pred (style:0) :i woke up in the middle of the night with strong heart granules , then threw the next day day .
+Pred (style:1,pred_s:0) :i woke up in the middle of the night with strong heart up , then throwing the next day day
+Neutral Pred (style:0.5) :i woke up in the middle of the night with strong heart up , then throwing the next day day
+OriStyle Pred (style:0) :i woke up in the middle of the night with strong heart granules , then threw the next day day
 Original Sent (style:0) :i woke up in the middle of the night with strong heart palpitations , threw away the bottle next day .
 ----------------------------------------
 Pred (style:1,pred_s:0) :but this stuff will fall apart after only a few washings .
@@ -5040,9 +5040,9 @@ Neutral Pred (style:0.5) :a process that takes a couple of minutes .
 OriStyle Pred (style:0) :a process that takes a couple of minutes .
 Original Sent (style:0) :a process that takes a couple of minutes .
 ----------------------------------------
-Pred (style:1,pred_s:1) :the first few we bought one seemed , not great quality , but i didn t mind because they are so inexpensive .
-Neutral Pred (style:0.5) :the first few we bought one seemed , not great quality , but i didn t mind because they are so inexpensive .
-OriStyle Pred (style:0) :the first few we bought one seemed , not great quality , but i didn t mind because they are so inexpensive .
+Pred (style:1,pred_s:0) :the first few we bought one seemed , not great quality , but i didn t mind because they are
+Neutral Pred (style:0.5) :the first few we bought one seemed , not great quality , but i didn t mind because they are
+OriStyle Pred (style:0) :the first few we bought one seemed , not great quality , but i didn t mind because they are
 Original Sent (style:0) :the first few we bought were good , not great quality , but i didn t mind because they were so inexpensive .
 ----------------------------------------
 Pred (style:0,pred_s:1) :this casserole dish is the perfect size and i love having a nice lid .
@@ -5080,9 +5080,9 @@ Neutral Pred (style:0.5) :much to my dismay , the caraffe was nothing but garbag
 OriStyle Pred (style:1) :much to my dismay , the caraffe was nothing but garbage .
 Original Sent (style:1) :much to my dismay , the invisishield was nothing but garbage .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i ve had it several months and am very glad i chose this one , it s a bargain and a keeper .
-Neutral Pred (style:0.5) :i ve had it several months and am very glad i chose this one , it s a bargain and a keeper .
-OriStyle Pred (style:1) :i ve had it several months and am very glad i chose this one , it s a bargain and a keeper .
+Pred (style:0,pred_s:1) :i ve had it several months and am very glad i chose this one , it s a bargain and
+Neutral Pred (style:0.5) :i ve had it several months and am very glad i chose this one , it s a bargain and
+OriStyle Pred (style:1) :i ve had it several months and am very glad i chose this one , it s a bargain and
 Original Sent (style:1) :i ve had it several months and am very glad i chose this one , it s a bargain and a keeper .
 ----------------------------------------
 Pred (style:0,pred_s:0) :the smell is wonderful , the taste is more like popcorn , less like cardboard .
@@ -5090,9 +5090,9 @@ Neutral Pred (style:0.5) :the smell is wonderful , the taste is more like popcor
 OriStyle Pred (style:1) :the smell is wonderful , the taste is more like popcorn , less like cardboard .
 Original Sent (style:1) :the smell is wonderful , the taste is more like popcorn , less like cardboard .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the protection is so easy to apply , doesn t get right by on my speck protector , and clean wipes .
-Neutral Pred (style:0.5) :the protection is so easy to apply , doesn t get right by on my speck protector , and clean wipes .
-OriStyle Pred (style:1) :the protection is so easy to apply , doesn t get right by on my speck protector , and clean wipes .
+Pred (style:0,pred_s:1) :the protection is so easy to apply , doesn t get right by on my speck protector , and clean
+Neutral Pred (style:0.5) :the protection is so easy to apply , doesn t get right by on my speck protector , and clean
+OriStyle Pred (style:1) :the protection is so easy to apply , doesn t get right by on my speck protector , and clean
 Original Sent (style:1) :the protection is so easy to apply , doesn t get pushed up by my speck candyshell case , and wipes clean .
 ----------------------------------------
 Pred (style:1,pred_s:0) :so , despite him liking it , it s just too expensive for how long it lasted .
@@ -5180,9 +5180,9 @@ Neutral Pred (style:0.5) :i have smaller bt headsets that last num_num hours lon
 OriStyle Pred (style:1) :i have smaller bt headsets that last num_num hours longer .
 Original Sent (style:1) :i have smaller bt headsets that last num_num hours longer .
 ----------------------------------------
-Pred (style:1,pred_s:0) :her hair felt greasy and . . . . . . i tried it on my own shoulder hair . . with the same result .
-Neutral Pred (style:0.5) :her hair felt greasy and . . . . . . i tried it on my own shoulder hair . . with the same result .
-OriStyle Pred (style:0) :her hair felt greasy and . . . . . . i tried it on the shoulder towel . feet hair the same result .
+Pred (style:1,pred_s:0) :her hair felt greasy and . . . . . . i tried it on my own shoulder hair .
+Neutral Pred (style:0.5) :her hair felt greasy and . . . . . . i tried it on my own shoulder hair .
+OriStyle Pred (style:0) :her hair felt greasy and . . . . . . i tried it on the shoulder towel . feet
 Original Sent (style:0) :her hair felt coarse and knotty . so . . . i tried it on my own shoulder length straight hair with the same result .
 ----------------------------------------
 Pred (style:0,pred_s:0) :may be it will become soft with use and then it should be fine .
@@ -5290,9 +5290,9 @@ Neutral Pred (style:0.5) :especially nice for something like jam or sweet sweet 
 OriStyle Pred (style:1) :especially nice for something like jam or sweet sweet because you can rinse it right off .
 Original Sent (style:1) :especially nice for something like jam or sweet pickles because you can rinse it right off .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i loved see and say as a child , and i couldn t wait to get one for my toddler .
-Neutral Pred (style:0.5) :i loved see and say as a child , and i couldn t wait to get one for my toddler .
-OriStyle Pred (style:0) :i loved see and say as a child , and i couldn t wait to get one for my toddler .
+Pred (style:1,pred_s:0) :i loved see and say as a child , and i couldn t wait to get one for my toddler
+Neutral Pred (style:0.5) :i loved see and say as a child , and i couldn t wait to get one for my toddler
+OriStyle Pred (style:0) :i loved see and say as a child , and i couldn t wait to get one for my toddler
 Original Sent (style:0) :i loved see and say as a child , and i couldn t wait to get one for my toddler .
 ----------------------------------------
 Pred (style:1,pred_s:0) :don t waste your time or money on these jeans .
@@ -5340,9 +5340,9 @@ Neutral Pred (style:0.5) :we went to the vet , almost every test , and he s heal
 OriStyle Pred (style:0) :we went to the vet , almost every test , and he s healthy physically .
 Original Sent (style:0) :we went to the vet , did every test , and he s healthy physically .
 ----------------------------------------
-Pred (style:1,pred_s:1) :it gives you the smooth job you want for excellent support , and you won t even know you are wearing it .
-Neutral Pred (style:0.5) :it gives you the smooth job you want for excellent support , and you won t even know you are wearing it .
-OriStyle Pred (style:0) :it gives you the smooth job you want for excellent support , and you won t even know you are wearing it .
+Pred (style:1,pred_s:1) :it gives you the smooth job you want for excellent support , and you won t even know you are
+Neutral Pred (style:0.5) :it gives you the smooth job you want for excellent support , and you won t even know you are
+OriStyle Pred (style:0) :it gives you the smooth job you want for excellent support , and you won t even know you are
 Original Sent (style:0) :it gives you the smooth coverage you want , excellent support , and you won t even know you are wearing it .
 ----------------------------------------
 Pred (style:0,pred_s:0) :i think way back when we bought the first one it was more than what i paid now .
@@ -5400,9 +5400,9 @@ Neutral Pred (style:0.5) :i am using it for aroma spices , and wondering what el
 OriStyle Pred (style:0) :i am using it for aroma therapy , and wondering what else i can do with it .
 Original Sent (style:0) :i am using it for aroma therapy , and wondering what else i can do with it .
 ----------------------------------------
-Pred (style:1,pred_s:0) :the graphics are pretty amazing , not that the game is so much like mortal kombat , so are the graphics ! .
-Neutral Pred (style:0.5) :the graphics are pretty amazing , not that the game is so much like mortal kombat , so are the graphics ! .
-OriStyle Pred (style:0) :the graphics are pretty amazing , not that the game is so much like mortal kombat , so are the graphics ! .
+Pred (style:1,pred_s:0) :the graphics are pretty amazing , not that the game is so much like mortal kombat , so are the
+Neutral Pred (style:0.5) :the graphics are pretty amazing , not that the game is so much like mortal kombat , so are the
+OriStyle Pred (style:0) :the graphics are pretty amazing , not that the game is so much like mortal kombat , so are the
 Original Sent (style:0) :the graphics are pretty amazing , being that the game is so much like mortal kombat , so are the graphics ! .
 ----------------------------------------
 Pred (style:1,pred_s:1) :not the fastest but better than my other hot air brush .
@@ -5410,9 +5410,9 @@ Neutral Pred (style:0.5) :not the fastest but better than my other hot air brush
 OriStyle Pred (style:0) :not the fastest but better than my other hot air brush .
 Original Sent (style:0) :not the fastest but better than my other hot air brush .
 ----------------------------------------
-Pred (style:1,pred_s:0) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new tank tank .
-Neutral Pred (style:0.5) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new tank tank .
-OriStyle Pred (style:0) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new tank tank .
+Pred (style:1,pred_s:0) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new tank tank
+Neutral Pred (style:0.5) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new tank tank
+OriStyle Pred (style:0) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new tank tank
 Original Sent (style:0) :they were friendly and helpful but nothing solved the problem . one rep suggested using a brand new propane tank .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i find that the volume can go way too high so i keep it down .
@@ -5450,9 +5450,9 @@ Neutral Pred (style:0.5) :there s no way this will last as long as claimed .
 OriStyle Pred (style:0) :there s no way this will last as long as claimed .
 Original Sent (style:0) :there s no way this will last as long as claimed .
 ----------------------------------------
-Pred (style:1,pred_s:0) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy for it .
-Neutral Pred (style:0.5) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy for it .
-OriStyle Pred (style:0) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy for it .
+Pred (style:1,pred_s:0) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy
+Neutral Pred (style:0.5) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy
+OriStyle Pred (style:0) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy
 Original Sent (style:0) :that one the clips are not sturdy enough to hold the phone . . . the phone is too heavy for it .
 ----------------------------------------
 Pred (style:0,pred_s:1) :although a little small for my taste , the display is sharp and attractive .
@@ -5570,9 +5570,9 @@ Neutral Pred (style:0.5) :good thing filters for num_num gallon tanks are cheap 
 OriStyle Pred (style:0) :good thing filters for num_num gallon tanks are cheap .
 Original Sent (style:0) :good thing filters for num_num gallon tanks are cheap .
 ----------------------------------------
-Pred (style:1,pred_s:0) :but i have to be honest , this is gross . . . it feels like i m eating dried flavored flavored .
-Neutral Pred (style:0.5) :but i have to be honest , this is gross . . . it feels like i m eating dried flavored flavored .
-OriStyle Pred (style:0) :but i have to be honest , this is gross . . . it feels like i m eating dried flavored flavored .
+Pred (style:1,pred_s:0) :but i have to be honest , this is gross . . . it feels like i m eating dried
+Neutral Pred (style:0.5) :but i have to be honest , this is gross . . . it feels like i m eating dried
+OriStyle Pred (style:0) :but i have to be honest , this is gross . . . it feels like i m eating dried
 Original Sent (style:0) :but i have to be honest , this is gross . . . it feels like i am eating flavored dried sponge .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i might return it , but i need a can opener .
@@ -5600,9 +5600,9 @@ Neutral Pred (style:0.5) :i purchased two to mount horizontally under the shelve
 OriStyle Pred (style:1) :i purchased two to mount horizontally under the shelves of my kitchen island .
 Original Sent (style:1) :i purchased two to mount horizontally under the shelves of my kitchen island .
 ----------------------------------------
-Pred (style:1,pred_s:1) :it has magnetically dividers , collapsible , and is perfect for keeping bags and like the rubber in the trunk .
-Neutral Pred (style:0.5) :it has extremly dividers , collapsible , and is perfect for keeping bags and like the rubber in the trunk .
-OriStyle Pred (style:0) :it has extremly dividers , collapsible , and is perfect for keeping bags and like the ball in the trunk .
+Pred (style:1,pred_s:1) :it has magnetically dividers , collapsible , and is perfect for keeping bags and like the rubber in the trunk
+Neutral Pred (style:0.5) :it has extremly dividers , collapsible , and is perfect for keeping bags and like the rubber in the trunk
+OriStyle Pred (style:0) :it has extremly dividers , collapsible , and is perfect for keeping bags and like the ball in the trunk
 Original Sent (style:0) :it has moveable dividers , collapsible , and is perfect for keeping grocery bags and the like secure in the trunk .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i d rather tie a towel around my neck as a pocketbook .
@@ -5640,9 +5640,9 @@ Neutral Pred (style:0.5) :also cheaper than going to the grocery store .
 OriStyle Pred (style:1) :also cheaper than going to the grocery store .
 Original Sent (style:1) :also cheaper than going to the grocery store .
 ----------------------------------------
-Pred (style:0,pred_s:1) :what i know for certain is that if you re not a gadget , as you probably won t like it .
-Neutral Pred (style:0.5) :what i know for certain is that if you re not a gadget , as you probably won t like it .
-OriStyle Pred (style:1) :what i know for certain is that if you re not a gadget , as you probably won t like it .
+Pred (style:0,pred_s:1) :what i know for certain is that if you re not a gadget , as you probably won t like
+Neutral Pred (style:0.5) :what i know for certain is that if you re not a gadget , as you probably won t like
+OriStyle Pred (style:1) :what i know for certain is that if you re not a gadget , as you probably won t like
 Original Sent (style:1) :what i know for certain is that if you re not a gadget head , you probably won t like it .
 ----------------------------------------
 Pred (style:1,pred_s:0) :lee seems to think that the length of men s shorts chrome with an average inseam .
@@ -5740,9 +5740,9 @@ Neutral Pred (style:0.5) :there is no warming plate in the unit but it doesn t n
 OriStyle Pred (style:1) :there is no warming plate in the unit but it doesn t need one .
 Original Sent (style:1) :there is no warming plate in the unit but it doesn t need one .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either .
-Neutral Pred (style:0.5) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either .
-OriStyle Pred (style:0) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either .
+Pred (style:1,pred_s:0) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either
+Neutral Pred (style:0.5) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either
+OriStyle Pred (style:0) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either
 Original Sent (style:0) :i will say it was not acidic nor bitter . . . . but just not much coffee flavor either .
 ----------------------------------------
 Pred (style:1,pred_s:1) :my first suggestion to anyone reading reviews on this product is to keep looking .
@@ -6030,9 +6030,9 @@ Neutral Pred (style:0.5) :i will always have slight pain , no matter what .
 OriStyle Pred (style:0) :i will always have slight pain , no matter what .
 Original Sent (style:0) :i will always have slight pain , no matter what .
 ----------------------------------------
-Pred (style:0,pred_s:1) :we tried to go gas , but in the world of garlic presses , you get what you pay for .
-Neutral Pred (style:0.5) :we tried to go spout , but in the world of garlic presses , you get what you pay for .
-OriStyle Pred (style:1) :we tried to go spout , but in the world of garlic presses , you get what you pay for .
+Pred (style:0,pred_s:1) :we tried to go gas , but in the world of garlic presses , you get what you pay for
+Neutral Pred (style:0.5) :we tried to go spout , but in the world of garlic presses , you get what you pay for
+OriStyle Pred (style:1) :we tried to go spout , but in the world of garlic presses , you get what you pay for
 Original Sent (style:1) :we tried to go economically , but in the world of garlic presses , you get what you pay for .
 ----------------------------------------
 Pred (style:1,pred_s:0) :the material that it is made of is like a dirt magnet .
@@ -6340,9 +6340,9 @@ Neutral Pred (style:0.5) :other reviews seemed more positive , but i just gave m
 OriStyle Pred (style:0) :other reviews seemed more positive , but i just gave mine away .
 Original Sent (style:0) :other reviews seemed more positive , but i just gave mine away .
 ----------------------------------------
-Pred (style:0,pred_s:0) :i did not even bother to mention this initially , because quite frankly , i don t see the point .
-Neutral Pred (style:0.5) :i did not even bother to mention this initially , because quite frankly , i don t see the point .
-OriStyle Pred (style:1) :i did not even bother to mention this initially , because quite frankly , i don t see the point .
+Pred (style:0,pred_s:0) :i did not even bother to mention this initially , because quite frankly , i don t see the point
+Neutral Pred (style:0.5) :i did not even bother to mention this initially , because quite frankly , i don t see the point
+OriStyle Pred (style:1) :i did not even bother to mention this initially , because quite frankly , i don t see the point
 Original Sent (style:1) :i did not even bother to mention this initially , because quite frankly , i don t see the point .
 ----------------------------------------
 Pred (style:0,pred_s:0) :i used this set with a toaster oven and with a coleman camping oven .
@@ -6410,9 +6410,9 @@ Neutral Pred (style:0.5) :this is definitely not the case with the num_extend
 OriStyle Pred (style:1) :this is definitely not the case with the num_extend
 Original Sent (style:1) :this is definitely not the case with the num_extend
 ----------------------------------------
-Pred (style:1,pred_s:1) :we also put things at our small window , empty puppy can , and in prior with the bottom shelves .
-Neutral Pred (style:0.5) :we also put things at our small window , empty puppy can , and in prior with the bottom shelves .
-OriStyle Pred (style:0) :we also put things at our small shovel , empty puppy , and , with magnetic with the bottom shelves .
+Pred (style:1,pred_s:1) :we also put things at our small window , empty puppy can , and in prior with the bottom shelves
+Neutral Pred (style:0.5) :we also put things at our small window , empty puppy can , and in prior with the bottom shelves
+OriStyle Pred (style:0) :we also put things at our small shovel , empty puppy , and , with magnetic with the bottom shelves
 Original Sent (style:0) :we also put things like our small shovel , empty watering can , and bag of soil on the bottom shelves .
 ----------------------------------------
 Pred (style:0,pred_s:1) :this is a great grill , for single , couples , or families .
@@ -6430,9 +6430,9 @@ Neutral Pred (style:0.5) :but these knives are well worth their price .
 OriStyle Pred (style:1) :but these knives are well worth their price .
 Original Sent (style:1) :but these knives are well worth their price .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i used this product to ensure my music wouldn t be reading my email or taking messages from the shoulder .
-Neutral Pred (style:0.5) :i used this product to ensure my music wouldn t be reading my email or taking messages over the shoulder .
-OriStyle Pred (style:1) :i used this product to ensure my blueant wouldn t give my email . including messages messages over my shoulder .
+Pred (style:0,pred_s:1) :i used this product to ensure my music wouldn t be reading my email or taking messages from the shoulder
+Neutral Pred (style:0.5) :i used this product to ensure my music wouldn t be reading my email or taking messages over the shoulder
+OriStyle Pred (style:1) :i used this product to ensure my blueant wouldn t give my email . including messages messages over my shoulder
 Original Sent (style:1) :i used this product to ensure my employees wouldn t be reading my email or texts messages over my shoulder .
 ----------------------------------------
 Pred (style:1,pred_s:1) :its very dorky case and if you like to listen to music with your headset forget it .
@@ -6540,9 +6540,9 @@ Neutral Pred (style:0.5) :because it s made of cast iron , scorching is recyclab
 OriStyle Pred (style:1) :because it s made of cast iron , scorching is indispensible .
 Original Sent (style:1) :because it s made of cast iron , scorching is minimized .
 ----------------------------------------
-Pred (style:1,pred_s:1) :out went the four year old , used about four times , , of course , warranty , panini grill .
-Neutral Pred (style:0.5) :out went the four year old , used about four times , , of course , warranty , panini grill .
-OriStyle Pred (style:0) :out went the four year old , used about four times , , of warranty , warranty , panini grill .
+Pred (style:1,pred_s:1) :out went the four year old , used about four times , , of course , warranty , panini grill
+Neutral Pred (style:0.5) :out went the four year old , used about four times , , of course , warranty , panini grill
+OriStyle Pred (style:0) :out went the four year old , used about four times , , of warranty , warranty , panini grill
 Original Sent (style:0) :out went the four year old , used about four dozen times , out of warranty , krups panini grill .
 ----------------------------------------
 Pred (style:0,pred_s:0) :i bought one of those mentioned before and was really disappointed in the results i got .
@@ -6570,9 +6570,9 @@ Neutral Pred (style:0.5) :i have not used this very many times due to the extrem
 OriStyle Pred (style:0) :i have not used this very many times due to the extreme harness it causes .
 Original Sent (style:0) :i have not used this very many times due to the extreme tangling it causes .
 ----------------------------------------
-Pred (style:0,pred_s:1) :and i like the fact that it has folding prongs , which prevents them from breaking like my previous one .
-Neutral Pred (style:0.5) :and i like the fact that it has folding prongs , which prevents them from breaking like my previous one .
-OriStyle Pred (style:1) :and i like the fact that it has folding prongs , which prevents them from breaking like my previous one .
+Pred (style:0,pred_s:1) :and i like the fact that it has folding prongs , which prevents them from breaking like my previous one
+Neutral Pred (style:0.5) :and i like the fact that it has folding prongs , which prevents them from breaking like my previous one
+OriStyle Pred (style:1) :and i like the fact that it has folding prongs , which prevents them from breaking like my previous one
 Original Sent (style:1) :and i like the fact that it has folding prongs , which prevents them from breaking like my former one .
 ----------------------------------------
 Pred (style:0,pred_s:1) :like all types of this type it is simple to use and does a good job .
@@ -6590,9 +6590,9 @@ Neutral Pred (style:0.5) :i would not buy this again in the future .
 OriStyle Pred (style:0) :i would not buy this again in the future .
 Original Sent (style:0) :i would not buy this again in the future .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the construction is solid , and the overall look is attractive . the cap is of course to potentially true measuring cup .
-Neutral Pred (style:0.5) :the construction is solid , and the overall look is attractive . the cap is of course to sharpen a small cup .
-OriStyle Pred (style:1) :the construction is solid , and the overall look is attractive . the cap is of course to reach a small cup .
+Pred (style:0,pred_s:1) :the construction is solid , and the overall look is attractive . the cap is of course to potentially true
+Neutral Pred (style:0.5) :the construction is solid , and the overall look is attractive . the cap is of course to sharpen a
+OriStyle Pred (style:1) :the construction is solid , and the overall look is attractive . the cap is of course to reach a
 Original Sent (style:1) :the construction is solid , and the overall look is attractive . the cap is of course a convenient jigger measuring cup .
 ----------------------------------------
 Pred (style:1,pred_s:0) :crayola makes the best crayons , don t get me wrong .
@@ -6640,9 +6640,9 @@ Neutral Pred (style:0.5) :let me be clear , i returned it because i don t think 
 OriStyle Pred (style:0) :let me be clear , i returned it because i don t think it is made of safe material .
 Original Sent (style:0) :let me be clear , i returned it because i don t think it is made of safe material .
 ----------------------------------------
-Pred (style:0,pred_s:1) :infact , i just had a request from a friend to order num_num for herself and num_num on her friends .
-Neutral Pred (style:0.5) :infact , i just had a request from a friend to order num_num for herself and num_num on her friends .
-OriStyle Pred (style:1) :infact , i just had a request from a friend to order num_num for herself and num_num on her friends .
+Pred (style:0,pred_s:1) :infact , i just had a request from a friend to order num_num for herself and num_num on her friends
+Neutral Pred (style:0.5) :infact , i just had a request from a friend to order num_num for herself and num_num on her friends
+OriStyle Pred (style:1) :infact , i just had a request from a friend to order num_num for herself and num_num on her friends
 Original Sent (style:1) :infact , i just had a request from a friend to order num_num for herself and num_num for her friends .
 ----------------------------------------
 Pred (style:1,pred_s:0) :its <UNK> but thats not the best thing to say about headphones .
@@ -6730,9 +6730,9 @@ Neutral Pred (style:0.5) :it holds the charge like when my phone was brand new .
 OriStyle Pred (style:1) :it holds the charge like when my phone was brand new .
 Original Sent (style:1) :it holds the charge like when my phone was brand new .
 ----------------------------------------
-Pred (style:1,pred_s:0) :nothing . it has a fragrance that is strong enough for those in the general area , but smell , but brittle .
-Neutral Pred (style:0.5) :nothing . it has a fragrance that is strong enough for those in the general area , but smell , but brittle .
-OriStyle Pred (style:0) :nothing . it has a fragrance that is strong enough for those in the general area , but smell , but brittle .
+Pred (style:1,pred_s:0) :nothing . it has a fragrance that is strong enough for those in the general area , but smell ,
+Neutral Pred (style:0.5) :nothing . it has a fragrance that is strong enough for those in the general area , but smell ,
+OriStyle Pred (style:0) :nothing . it has a fragrance that is strong enough for those in the general area , but smell ,
 Original Sent (style:0) :nothing . it has a fragrance that is strong enough for those in the general area to smell , but not overpowering .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i would recommend this case to my friends .
@@ -6790,9 +6790,9 @@ Neutral Pred (style:0.5) :all in all , though , happy with the product .
 OriStyle Pred (style:1) :all in all , though , happy with the product .
 Original Sent (style:1) :all in all , though , happy with the product .
 ----------------------------------------
-Pred (style:0,pred_s:1) :it works in less than a second and it s completely done ! i wish i had the product on it ! .
-Neutral Pred (style:0.5) :it works in less than a second and it s completely done ! i wish i had the product on it ! .
-OriStyle Pred (style:1) :it works in less than a second and it s completely done ! i wish i had the product on it ! .
+Pred (style:0,pred_s:0) :it works in less than a second and it s completely done ! i wish i had the product on
+Neutral Pred (style:0.5) :it works in less than a second and it s completely done ! i wish i had the product on
+OriStyle Pred (style:1) :it works in less than a second and it s completely done ! i wish i had the product on
 Original Sent (style:1) :it works in less than a second and it s completely done ! i wish i had the patent on it ! .
 ----------------------------------------
 Pred (style:1,pred_s:0) :the quality of materials and workmanship is noticeably less .
@@ -6800,9 +6800,9 @@ Neutral Pred (style:0.5) :the quality of materials and workmanship is noticeably
 OriStyle Pred (style:0) :the quality of materials and workmanship is noticeably less .
 Original Sent (style:0) :the quality of materials and workmanship is noticeably less .
 ----------------------------------------
-Pred (style:1,pred_s:0) :what a shame , because all those years ago when i traveled nokia , nokia was a reliable phone to have .
-Neutral Pred (style:0.5) :what a shame , because all those years ago when i traveled nokia , nokia was a reliable phone to have .
-OriStyle Pred (style:0) :what a shame , because all those years ago when i traveled nokia , nokia was a reliable phone to have .
+Pred (style:1,pred_s:0) :what a shame , because all those years ago when i traveled nokia , nokia was a reliable phone to
+Neutral Pred (style:0.5) :what a shame , because all those years ago when i traveled nokia , nokia was a reliable phone to
+OriStyle Pred (style:0) :what a shame , because all those years ago when i traveled nokia , nokia was a reliable phone to
 Original Sent (style:0) :what a shame , because all those years ago when i traveled internationally , nokia was a reliable phone to have .
 ----------------------------------------
 Pred (style:0,pred_s:1) :finish is great , and it makes great french toast .
@@ -6810,9 +6810,9 @@ Neutral Pred (style:0.5) :finish is great , and it makes great french toast .
 OriStyle Pred (style:1) :finish is great , and it makes great french toast .
 Original Sent (style:1) :finish is great , and it makes great french toast .
 ----------------------------------------
-Pred (style:0,pred_s:1) :if you re making your own pizza pizza from scratch , you know that without anything , you ll get it sugar pizza .
-Neutral Pred (style:0.5) :if you re making your own pizza pizza from scratch , you know that without help , you ll be a pizza crust .
-OriStyle Pred (style:1) :if you re making your own pizza pizza from scratch , you know that without anything , you ll get it pizza crust .
+Pred (style:0,pred_s:1) :if you re making your own pizza pizza from scratch , you know that without anything , you ll get
+Neutral Pred (style:0.5) :if you re making your own pizza pizza from scratch , you know that without help , you ll be
+OriStyle Pred (style:1) :if you re making your own pizza pizza from scratch , you know that without anything , you ll get
 Original Sent (style:1) :if you re into making your own pizza from scratch , you know that without help , you ll get soggy pizza crust .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i ll be buying another one so i can have separate pans for meat and bread .
@@ -6890,9 +6890,9 @@ Neutral Pred (style:0.5) :if you get these just be a bit careful .
 OriStyle Pred (style:0) :if you get these just be a bit careful .
 Original Sent (style:0) :if you get these just be a bit careful .
 ----------------------------------------
-Pred (style:1,pred_s:0) :and in each town , you have to find the stupid pieces and love the cage , then repeat the process .
-Neutral Pred (style:0.5) :and in each town , you have to find the stupid pieces and love the cage , then repeat the process .
-OriStyle Pred (style:0) :and in each town , you have to find the stupid pieces and love the cage , then repeat the process .
+Pred (style:1,pred_s:0) :and in each town , you have to find the stupid pieces and love the cage , then repeat the
+Neutral Pred (style:0.5) :and in each town , you have to find the stupid pieces and love the cage , then repeat the
+OriStyle Pred (style:0) :and in each town , you have to find the stupid pieces and love the cage , then repeat the
 Original Sent (style:0) :and in each town , you have to find the stupid pieces and rebuild the towns , then repeat the process .
 ----------------------------------------
 Pred (style:0,pred_s:1) :we buy them as gifts for our baking friends , too , and they love them .
@@ -6900,9 +6900,9 @@ Neutral Pred (style:0.5) :we buy them as gifts for our baking friends , too , an
 OriStyle Pred (style:1) :we buy them as gifts for our baking friends , too , and they love them .
 Original Sent (style:1) :we buy them as gifts for our baking friends , too , and they love them .
 ----------------------------------------
-Pred (style:0,pred_s:1) :it s not a large pan and i think that is one of the reasons i like it so well .
-Neutral Pred (style:0.5) :it s not a large pan and i think that is one of the reasons i like it so well .
-OriStyle Pred (style:1) :it s not a large pan and i think that is one of the reasons i like it so well .
+Pred (style:0,pred_s:1) :it s not a large pan and i think that is one of the reasons i like it so well
+Neutral Pred (style:0.5) :it s not a large pan and i think that is one of the reasons i like it so well
+OriStyle Pred (style:1) :it s not a large pan and i think that is one of the reasons i like it so well
 Original Sent (style:1) :it s not a large pan and i think that is one of the reasons i like it so well .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i have had mine for almost two years and they have not frayed .
@@ -7032,7 +7032,7 @@ Original Sent (style:0) :i ve not been terribly impressed with this box .
 ----------------------------------------
 Pred (style:0,pred_s:1) :le creuset these cooking these onion from those iron poured in sand that are that only used once .
 Neutral Pred (style:0.5) :le creuset these cooking these onion from those iron poured in sand that is that only used once .
-OriStyle Pred (style:1) :le creuset these cooking vessels from stones are adding chicken in sand sand that are only used once .
+OriStyle Pred (style:1) :le creuset these cooking vessels from stones are adding chicken in sand surface that are only used once .
 Original Sent (style:1) :le creuset casts these cooking vessels from molten iron poured in sand moulds that are used only once .
 ----------------------------------------
 Pred (style:1,pred_s:0) :first of all , i got really impressed with the ratings and reviews this game got .
@@ -7060,9 +7060,9 @@ Neutral Pred (style:0.5) :she didn t like the handle of this one at all .
 OriStyle Pred (style:0) :she didn t like the handle of this one at all .
 Original Sent (style:0) :she didn t like the handle of this one at all .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i m very happy with this wok ! it takes some time to get the factory coating off , but be patient .
-Neutral Pred (style:0.5) :i m very happy with this wok ! it takes some time to get the factory coating off , but be patient .
-OriStyle Pred (style:1) :i m very happy with this wok ! it takes some time to get the carpet coating off , but be patient .
+Pred (style:0,pred_s:1) :i m very happy with this wok ! it takes some time to get the factory coating off , but
+Neutral Pred (style:0.5) :i m very happy with this wok ! it takes some time to get the factory coating off , but
+OriStyle Pred (style:1) :i m very happy with this wok ! it takes some time to get the carpet coating off , but
 Original Sent (style:1) :i m very happy with this wok ! it takes some time to get the factory coating off , but be patient .
 ----------------------------------------
 Pred (style:0,pred_s:1) :the knife got a tad rusty after running it through a cycle .
@@ -7080,14 +7080,14 @@ Neutral Pred (style:0.5) :well it made it worse like a rubber band texture .
 OriStyle Pred (style:0) :well it made it worse like a rubber band texture .
 Original Sent (style:0) :well it made it worse like a rubber band texture .
 ----------------------------------------
-Pred (style:0,pred_s:0) :my problem is i don t use it very often . . . i use smaller ones and i have i forget it .
-Neutral Pred (style:0.5) :my problem is i don t use it very often . . . i use smaller ones and i have i forget it .
-OriStyle Pred (style:1) :my problem is i don t use it very often . . . i use smaller ones and i have i forget it .
+Pred (style:0,pred_s:0) :my problem is i don t use it very often . . . i use smaller ones and i have
+Neutral Pred (style:0.5) :my problem is i don t use it very often . . . i use smaller ones and i have
+OriStyle Pred (style:1) :my problem is i don t use it very often . . . i use smaller ones and i have
 Original Sent (style:1) :my problem is i don t use it very often . . . i use smaller ones and i forget i have it .
 ----------------------------------------
-Pred (style:0,pred_s:1) :these were so cheap , i would be up twice and still have an extra after i did num_num phones .
-Neutral Pred (style:0.5) :these were so cheap , i would be up twice and still have an extra after i did num_num phones .
-OriStyle Pred (style:1) :these were so cheap , i would be up twice and still have an extra after i did num_num phones .
+Pred (style:0,pred_s:0) :these were so cheap , i would be up twice and still have an extra after i did num_num phones
+Neutral Pred (style:0.5) :these were so cheap , i would be up twice and still have an extra after i did num_num phones
+OriStyle Pred (style:1) :these were so cheap , i would be up twice and still have an extra after i did num_num phones
 Original Sent (style:1) :these were so cheap , i could mess up twice and still have an extra after i did num_num phones .
 ----------------------------------------
 Pred (style:1,pred_s:1) :unless your freezer is in the kitchen or living room , you ll never hear it .
@@ -7280,9 +7280,9 @@ Neutral Pred (style:0.5) :so , this car looks cool and all but its not that grea
 OriStyle Pred (style:0) :so , this car looks cool and all but its not that great .
 Original Sent (style:0) :so , this car looks cool and all but its not that great .
 ----------------------------------------
-Pred (style:1,pred_s:0) :then , put some armor all original on there and you re good to go for way longer than two weeks .
-Neutral Pred (style:0.5) :then , put some armor all original on there and you re good to go for way longer than two weeks .
-OriStyle Pred (style:0) :then , put some armor all original on there and you re good to go for way longer than two weeks .
+Pred (style:1,pred_s:0) :then , put some armor all original on there and you re good to go for way longer than two
+Neutral Pred (style:0.5) :then , put some armor all original on there and you re good to go for way longer than two
+OriStyle Pred (style:0) :then , put some armor all original on there and you re good to go for way longer than two
 Original Sent (style:0) :then , put some armor all original on there and you re good to go for way longer than two weeks .
 ----------------------------------------
 Pred (style:1,pred_s:0) :it is hard to inform that a big name company like philips would totally ignore their customer .
@@ -7300,9 +7300,9 @@ Neutral Pred (style:0.5) :i have no idea if it s me or this product doing .
 OriStyle Pred (style:0) :i have no idea if it s me or this product doing .
 Original Sent (style:0) :i have no idea if it s me or this product doing .
 ----------------------------------------
-Pred (style:1,pred_s:1) :maybe i should get that for cheaper . i bought otterbox , my smartphone s just , but then , light free perfectly .
-Neutral Pred (style:0.5) :maybe i should get that for cheaper . i bought otterbox , my smartphone s just , but then , light free perfectly .
-OriStyle Pred (style:0) :maybe i should get that for cheaper . i bought otterbox , my smartphone s just , but then , light free perfectly .
+Pred (style:1,pred_s:1) :maybe i should get that for cheaper . i bought otterbox , my smartphone s just , but then ,
+Neutral Pred (style:0.5) :maybe i should get that for cheaper . i bought otterbox , my smartphone s just , but then ,
+OriStyle Pred (style:0) :maybe i should get that for cheaper . i bought otterbox , my smartphone s just , but then ,
 Original Sent (style:0) :maybe i should get that for cheaper . i accidently bought large , ooh boy is it; like , windshield sun reflector size .
 ----------------------------------------
 Pred (style:1,pred_s:0) :otherwise , they fall off your head at the slightest lean or tilt .
@@ -7380,9 +7380,9 @@ Neutral Pred (style:0.5) :it was supposed to be a complete toy .
 OriStyle Pred (style:0) :it was supposed to be a complete toy .
 Original Sent (style:0) :it was supposed to be a complete toy .
 ----------------------------------------
-Pred (style:1,pred_s:0) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game .
-Neutral Pred (style:0.5) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game .
-OriStyle Pred (style:0) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game .
+Pred (style:1,pred_s:0) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game
+Neutral Pred (style:0.5) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game
+OriStyle Pred (style:0) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game
 Original Sent (style:0) :well , i was excited to play this , but unfortunately , i wasn t able to finish the game .
 ----------------------------------------
 Pred (style:0,pred_s:1) :take the whole thing out in the sink .
@@ -7580,9 +7580,9 @@ Neutral Pred (style:0.5) :the shape of the grains makes all the difference .
 OriStyle Pred (style:0) :the shape of the grains makes all the difference .
 Original Sent (style:0) :the shape of the grains makes all the difference .
 ----------------------------------------
-Pred (style:0,pred_s:1) :also , not do not touch glass top <UNK> <UNK> the price , the presto is adequate for a solid .
-Neutral Pred (style:0.5) :also , not do not touch glass top <UNK> <UNK> the price , the presto is adequate for a solid .
-OriStyle Pred (style:1) :also , not do not touch glass top <UNK> <UNK> the price , the presto is adequate for a solid .
+Pred (style:0,pred_s:1) :also , not do not touch glass top <UNK> <UNK> the price , the presto is adequate for a solid
+Neutral Pred (style:0.5) :also , not do not touch glass top <UNK> <UNK> the price , the presto is adequate for a solid
+OriStyle Pred (style:1) :also , not do not touch glass top <UNK> <UNK> the price , the presto is adequate for a solid
 Original Sent (style:1) :also , do not use on glass top <UNK> <UNK> the price , the presto canner is worth a look .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i ve had this clothes rack for almost two years now and it hasn t failed me once .
@@ -7790,9 +7790,9 @@ Neutral Pred (style:0.5) :this heavy weight tall pot along with cooking contents
 OriStyle Pred (style:1) :this heavy weight tall pot along with cooking contents is functional to weigh over num_num lbs .
 Original Sent (style:1) :this heavy weight tall pot along with cooking contents is estimated to weigh over num_num lbs .
 ----------------------------------------
-Pred (style:1,pred_s:1) :the bags aren t come and the directions are for num_num of num_num gallon . . . . a restaurant dishwasher dishwasher .
-Neutral Pred (style:0.5) :the bags aren t come and the directions are for num_num of num_num gallon . . . . a restaurant dishwasher dishwasher .
-OriStyle Pred (style:0) :the bags aren t canada and the directions are for num_num of num_num gallon . . . . a restaurant dishwasher edible .
+Pred (style:1,pred_s:1) :the bags aren t come and the directions are for num_num of num_num gallon . . . . a restaurant
+Neutral Pred (style:0.5) :the bags aren t come and the directions are for num_num of num_num gallon . . . . a restaurant
+OriStyle Pred (style:0) :the bags aren t canada and the directions are for num_num of num_num gallon . . . . a restaurant
 Original Sent (style:0) :the bags aren t resealable and the directions are for num_num to num_num gallon urns . . . obviously a restaurant supply item .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i cook for two people and this food processor is just the right size for that .
@@ -7810,9 +7810,9 @@ Neutral Pred (style:0.5) :the <UNK> <UNK> num_num inch dock extender works only 
 OriStyle Pred (style:0) :the <UNK> <UNK> num_num inch dock extender works only part way .
 Original Sent (style:0) :the <UNK> <UNK> num_num inch dock extender works only part way .
 ----------------------------------------
-Pred (style:0,pred_s:1) :really cool design , and the hard plastic piece doesn t add any thickness of the cheap quality provides case provides .
-Neutral Pred (style:0.5) :really cool design , and the hard plastic piece doesn t add any thickness of the cheap quality provides case provides .
-OriStyle Pred (style:1) :really cool design , and the hard plastic piece doesn t add any thickness of the cheap quality provides case provides .
+Pred (style:0,pred_s:1) :really cool design , and the hard plastic piece doesn t add any thickness of the cheap quality provides case
+Neutral Pred (style:0.5) :really cool design , and the hard plastic piece doesn t add any thickness of the cheap quality provides case
+OriStyle Pred (style:1) :really cool design , and the hard plastic piece doesn t add any thickness of the cheap quality provides case
 Original Sent (style:1) :really cool design , and the hard plastic piece doesn t add any thickness over what the soft rubber case provides .
 ----------------------------------------
 Pred (style:0,pred_s:1) :if you want to comfortably fry two eggs , best to order the num_num inch pan .
@@ -7820,9 +7820,9 @@ Neutral Pred (style:0.5) :if you want to comfortably fry two eggs , best to orde
 OriStyle Pred (style:1) :if you want to comfortably fry two eggs , best to order the num_num inch pan .
 Original Sent (style:1) :if you want to comfortably fry two eggs , best to order the num_num inch pan .
 ----------------------------------------
-Pred (style:0,pred_s:1) :why , because they never sounded very good , so it like with a wired headset , until the headset i new .
-Neutral Pred (style:0.5) :why , because they never sounded very good , so it like with a wired headset , until the headset i reported .
-OriStyle Pred (style:1) :why , because they never sounded very good , so it like with a wired headset , until the headset i reported .
+Pred (style:0,pred_s:1) :why , because they never sounded very good , so it like with a wired headset , until the headset
+Neutral Pred (style:0.5) :why , because they never sounded very good , so it like with a wired headset , until the headset
+OriStyle Pred (style:1) :why , because they never sounded very good , so it like with a wired headset , until the headset
 Original Sent (style:1) :why , because they never sounded very good , so i stuck with a wired headset . until , the new jawbone .
 ----------------------------------------
 Pred (style:1,pred_s:0) :because it is definitely not worth full price .
@@ -7830,8 +7830,8 @@ Neutral Pred (style:0.5) :because it is definitely not worth full price .
 OriStyle Pred (style:0) :because it is definitely not worth full price .
 Original Sent (style:0) :because it is definitely not worth full price .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i really like this case ! ! it does not pick up look like some of the other cases cases .
-Neutral Pred (style:0.5) :i really like this case ! ! it does not pick up look like some of the other cases cases .
+Pred (style:0,pred_s:1) :i really like this case ! ! it does not pick up look like some of the other cases cases
+Neutral Pred (style:0.5) :i really like this case ! ! it does not pick up look like some of the other cases cases
 OriStyle Pred (style:1) :i really like this case ! ! it does not pick up look like some of the other cases .
 Original Sent (style:1) :i really like this case ! ! it does not pick up lint like some of the other rubberized cases .
 ----------------------------------------
@@ -7980,9 +7980,9 @@ Neutral Pred (style:0.5) :but at the same time , you get what you pay for becaus
 OriStyle Pred (style:0) :but at the same time , you get what you pay for because it s also pretty cheap .
 Original Sent (style:0) :but at the same time , you get what you pay for because it s also pretty cheap .
 ----------------------------------------
-Pred (style:1,pred_s:1) :and it doesn t ding to tell you when that happens , so you better keep an eye on it .
-Neutral Pred (style:0.5) :and it doesn t ding to tell you when that happens , so you better keep an eye on it .
-OriStyle Pred (style:0) :and it doesn t ding to tell you when that happens , so you better see an eye on it .
+Pred (style:1,pred_s:1) :and it doesn t ding to tell you when that happens , so you better keep an eye on it
+Neutral Pred (style:0.5) :and it doesn t ding to tell you when that happens , so you better keep an eye on it
+OriStyle Pred (style:0) :and it doesn t ding to tell you when that happens , so you better see an eye on it
 Original Sent (style:0) :and it doesn t ding to tell you when that happens , so you better keep an eye on it .
 ----------------------------------------
 Pred (style:1,pred_s:1) :we plugged in an extra headset laying around the house .
@@ -8110,9 +8110,9 @@ Neutral Pred (style:0.5) :i love the floral design and the colors .
 OriStyle Pred (style:1) :i love the floral design and the colors .
 Original Sent (style:1) :i love the floral design and the colors .
 ----------------------------------------
-Pred (style:1,pred_s:1) :they seem like they are stale , like old candy , but but the cost by date is still good .
-Neutral Pred (style:0.5) :they seem like they are stale , like old candy , but but the cost by date is still good .
-OriStyle Pred (style:0) :they seem like they are stale , like old candy , but but the cost by date is still good .
+Pred (style:1,pred_s:0) :they seem like they are stale , like old candy , but but the cost by date is still good
+Neutral Pred (style:0.5) :they seem like they are stale , like old candy , but but the cost by date is still good
+OriStyle Pred (style:0) :they seem like they are stale , like old candy , but but the cost by date is still good
 Original Sent (style:0) :they seem like they are stale , like old candy gets , but the sell by date is still good .
 ----------------------------------------
 Pred (style:1,pred_s:0) :it never reaches up looking photos photos and ultimately fails in every incident , color to color to <UNK> .
@@ -8160,9 +8160,9 @@ Neutral Pred (style:0.5) :over and over and over and over again .
 OriStyle Pred (style:0) :over and over and over and over again .
 Original Sent (style:0) :over and over and over and over again .
 ----------------------------------------
-Pred (style:1,pred_s:0) :the steering soundwave does not fit snug . my son is num_num and has been enjoying it for the most part .
-Neutral Pred (style:0.5) :the steering soundwave does not fit snug . my son is num_num and has been enjoying it for the most part .
-OriStyle Pred (style:0) :the steering soundwave does not fit snug . my son is num_num and has been enjoying it for the most part .
+Pred (style:1,pred_s:0) :the steering soundwave does not fit snug . my son is num_num and has been enjoying it for the most
+Neutral Pred (style:0.5) :the steering soundwave does not fit snug . my son is num_num and has been enjoying it for the most
+OriStyle Pred (style:0) :the steering soundwave does not fit snug . my son is num_num and has been enjoying it for the most
 Original Sent (style:0) :the steering column does not fit snug . my son is num_num and has been enjoying it for the most part .
 ----------------------------------------
 Pred (style:0,pred_s:0) :i m sorry that happened because buying it from amazon would have been a better experience .
@@ -8190,9 +8190,9 @@ Neutral Pred (style:0.5) :worked best on older new england house with narrow sep
 OriStyle Pred (style:0) :worked best on older new england house with narrow scopes .
 Original Sent (style:0) :worked best on older new england house with narrow staircase .
 ----------------------------------------
-Pred (style:0,pred_s:1) :you do need a shine to clean it with there s no complaints teflon but it s totally worth it .
-Neutral Pred (style:0.5) :you do need a shine to clean it with there s no complaints teflon but it s totally worth it .
-OriStyle Pred (style:1) :you do need a clean to clean it with there s no complaints teflon but it s totally worth it .
+Pred (style:0,pred_s:1) :you do need a shine to clean it with there s no complaints teflon but it s totally worth it
+Neutral Pred (style:0.5) :you do need a shine to clean it with there s no complaints teflon but it s totally worth it
+OriStyle Pred (style:1) :you do need a clean to clean it with there s no complaints teflon but it s totally worth it
 Original Sent (style:1) :you do need a scrubby to clean it with as there s no teflon but it s totally worth it .
 ----------------------------------------
 Pred (style:0,pred_s:1) :the can is a good size to hold trash . . . not too big or too small .
@@ -8290,9 +8290,9 @@ Neutral Pred (style:0.5) :the only two minor problems i have with this one is wh
 OriStyle Pred (style:1) :the only two minor problems i have with this one is what another reviewer wrote .
 Original Sent (style:1) :the only two minor problems i have with this one is what another reviewer wrote .
 ----------------------------------------
-Pred (style:1,pred_s:0) :the first time i used the card in the digital camera , it fits the last half of the images .
-Neutral Pred (style:0.5) :the first time i used the card in the digital camera , it did the last half of the images .
-OriStyle Pred (style:0) :the first time i used the card in the digital camera , it corrupted the last half of the images .
+Pred (style:1,pred_s:0) :the first time i used the card in the digital camera , it fits the last half of the images
+Neutral Pred (style:0.5) :the first time i used the card in the digital camera , it did the last half of the images
+OriStyle Pred (style:0) :the first time i used the card in the digital camera , it corrupted the last half of the images
 Original Sent (style:0) :the first time i used the card in a digital camera , it corrupted the last half of the images .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i bought this coffee press in num_extend and it has been in use everyday for my new carafe .
@@ -8310,9 +8310,9 @@ Neutral Pred (style:0.5) :i feel like i have a new phone .
 OriStyle Pred (style:1) :i feel like i have a new phone .
 Original Sent (style:1) :i feel like i have a new phone .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the upholstery tool does an job on spring on splattering , , , a bed that can t be moved .
-Neutral Pred (style:0.5) :the upholstery tool does an job on carpets on surface , , , a bed that can t be moved .
-OriStyle Pred (style:1) :the upholstery tool does an job on carpets on surface , , , a bed that can t be moved .
+Pred (style:0,pred_s:1) :the upholstery tool does an job on spring on splattering , , , a bed that can t be moved
+Neutral Pred (style:0.5) :the upholstery tool does an job on carpets on surface , , , a bed that can t be moved
+OriStyle Pred (style:1) :the upholstery tool does an job on carpets on surface , , , a bed that can t be moved
 Original Sent (style:1) :the upholstery tool does an admirable job on carpeting under , say , a bed that can t be moved .
 ----------------------------------------
 Pred (style:0,pred_s:0) :plus its from amazon and amazon wouldn t put their name on crap .
@@ -8330,7 +8330,7 @@ Neutral Pred (style:0.5) :i reported it havent heard a word about it .
 OriStyle Pred (style:0) :i reported it havent heard a word about it .
 Original Sent (style:0) :i reported it havent heard a word about it .
 ----------------------------------------
-Pred (style:1,pred_s:1) :this combo twist is like something done rice iced would come up with sausage frosting .
+Pred (style:1,pred_s:0) :this combo twist is like something sweet night <UNK> would come up with while frosting .
 Neutral Pred (style:0.5) :this plot twist is like something m awful <UNK> would come up with while frosting .
 OriStyle Pred (style:0) :this plot twist is like something m awful <UNK> would come up with while fly .
 Original Sent (style:0) :this plot twist is like something m night <UNK> would come up with while drunk .
@@ -8360,9 +8360,9 @@ Neutral Pred (style:0.5) :fair price , x x x x x x x x x x .
 OriStyle Pred (style:1) :fair price , x x x x x x x x x x .
 Original Sent (style:1) :fair price . x x x x x x x x xx x .
 ----------------------------------------
-Pred (style:1,pred_s:0) :that way , the lotion won t go to waste , and i can wash off the scent with my shower morning .
-Neutral Pred (style:0.5) :that way , the lotion won t go to waste , and i can wash off the scent with my shower morning .
-OriStyle Pred (style:0) :that way , the lotion won t go to waste , and i can wash off the scent with my morning shower .
+Pred (style:1,pred_s:0) :that way , the lotion won t go to waste , and i can wash off the scent with my
+Neutral Pred (style:0.5) :that way , the lotion won t go to waste , and i can wash off the scent with my
+OriStyle Pred (style:0) :that way , the lotion won t go to waste , and i can wash off the scent with my
 Original Sent (style:0) :that way , the lotion won t go to waste , and i can wash off the scent with my morning shower .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i was hoping for a bit better than this from amazon .
@@ -8470,9 +8470,9 @@ Neutral Pred (style:0.5) :i have to say that it was money well spent .
 OriStyle Pred (style:1) :i have to say that it was money well spent .
 Original Sent (style:1) :i have to say that it was money well spent .
 ----------------------------------------
-Pred (style:1,pred_s:1) :the temp temperature was noticeable very quickly , you get even cold if you are doing this case on high .
-Neutral Pred (style:0.5) :the temp temperature was noticeable very quickly , you get even cold if you are doing this case on high .
-OriStyle Pred (style:0) :the temp temperature was noticeable very quickly , you get even cold if you are doing this case on high .
+Pred (style:1,pred_s:1) :the temp temperature was noticeable very quickly , you get even cold if you are doing this case on high
+Neutral Pred (style:0.5) :the temp temperature was noticeable very quickly , you get even cold if you are doing this case on high
+OriStyle Pred (style:0) :the temp temperature was noticeable very quickly , you get even cold if you are doing this case on high
 Original Sent (style:0) :the temp change was noticeable very quickly , you get really cold if you are near this thing on high .
 ----------------------------------------
 Pred (style:1,pred_s:0) :it does a better job although the cat still falls apart , just doesn t mind out from droppings .
@@ -8600,19 +8600,19 @@ Neutral Pred (style:0.5) :it doesn t require genius to get this unit operating .
 OriStyle Pred (style:1) :it doesn t require genius to get this unit operating .
 Original Sent (style:1) :it doesn t require genius to get this unit operating .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i just can t recommend a curling wand that is practically guaranteed to burn . . . a child is charging .
-Neutral Pred (style:0.5) :i just can t recommend a curling wand that is practically guaranteed to burn . . . a child is charging .
-OriStyle Pred (style:0) :i just can t recommend a curling wand that is practically guaranteed to burn . . . a child is charging .
+Pred (style:1,pred_s:0) :i just can t recommend a curling wand that is practically guaranteed to burn . . . a child is
+Neutral Pred (style:0.5) :i just can t recommend a curling wand that is practically guaranteed to burn . . . a child is
+OriStyle Pred (style:0) :i just can t recommend a curling wand that is practically guaranteed to burn . . . a child is
 Original Sent (style:0) :i just can t recommend a curling wand that is practically guaranteed to burn you . including a glove is thoughtful .
 ----------------------------------------
-Pred (style:0,pred_s:0) :i guess i read a bunch of reviews talking about the belgian rpgs , i thought thats what was was .
-Neutral Pred (style:0.5) :i guess i read a bunch of reviews talking about the belgian salesman , i thought thats what was was .
-OriStyle Pred (style:1) :i guess i read a bunch of reviews talking about the belgian processors , i thought thats what was was .
+Pred (style:0,pred_s:0) :i guess i read a bunch of reviews talking about the belgian rpgs , i thought thats what was was
+Neutral Pred (style:0.5) :i guess i read a bunch of reviews talking about the belgian salesman , i thought thats what was was
+OriStyle Pred (style:1) :i guess i read a bunch of reviews talking about the belgian processors , i thought thats what was was
 Original Sent (style:1) :i guess i read a bunch of reviews talking about the belgian likeness , i thought thats what it was .
 ----------------------------------------
-Pred (style:0,pred_s:1) :at work , especially , i only need an id and credit card so this case is perfect for my purposes .
-Neutral Pred (style:0.5) :at work , especially , i only need an id and credit card so this case is perfect for my purposes .
-OriStyle Pred (style:1) :at work , especially , i only need an id and credit card so this case is perfect for my purposes .
+Pred (style:0,pred_s:1) :at work , especially , i only need an id and credit card so this case is perfect for my
+Neutral Pred (style:0.5) :at work , especially , i only need an id and credit card so this case is perfect for my
+OriStyle Pred (style:1) :at work , especially , i only need an id and credit card so this case is perfect for my
 Original Sent (style:1) :at work , especially , i only need an id and credit card so this case is perfect for my purposes .
 ----------------------------------------
 Pred (style:0,pred_s:1) :in it s bright position , it is very comfortable to hold and use in my hand .
@@ -8790,9 +8790,9 @@ Neutral Pred (style:0.5) :it worked great for the first couple of weeks then it 
 OriStyle Pred (style:0) :it worked great for the first couple of weeks then it just stopped completely .
 Original Sent (style:0) :it worked great for the first couple of weeks then it just stopped completely .
 ----------------------------------------
-Pred (style:1,pred_s:0) :size s in black fits and feels great , but the print combo was tighter and not at all flattering .
-Neutral Pred (style:0.5) :size s in black fits and feels great , but the print combo was tighter and not at all flattering .
-OriStyle Pred (style:0) :size s in black fits and feels great , but the print combo was tighter and not at all flattering .
+Pred (style:1,pred_s:0) :size s in black fits and feels great , but the print combo was tighter and not at all flattering
+Neutral Pred (style:0.5) :size s in black fits and feels great , but the print combo was tighter and not at all flattering
+OriStyle Pred (style:0) :size s in black fits and feels great , but the print combo was tighter and not at all flattering
 Original Sent (style:0) :size s in black fits and feels great , but the print combo was tighter and not at all flattering .
 ----------------------------------------
 Pred (style:0,pred_s:1) :not only has this piece performed flawlessly , but the entire set i received is too .
@@ -9000,9 +9000,9 @@ Neutral Pred (style:0.5) :my friend tolerates me a wilton angel food pan which h
 OriStyle Pred (style:1) :my friend tolerates me a wilton angel food pan which had it from way back when .
 Original Sent (style:1) :my friend loaned me a wilton angel food pan which she had it from way back when .
 ----------------------------------------
-Pred (style:0,pred_s:1) :these screen protectors , last me a month or num_num each , and i use my iphone like a man man .
-Neutral Pred (style:0.5) :these screen protectors , last me a month or num_num each , and i use my iphone like a man man .
-OriStyle Pred (style:1) :these screen protectors , last me a month or num_num each , and i use my iphone like a man man .
+Pred (style:0,pred_s:1) :these screen protectors , last me a month or num_num each , and i use my iphone like a man
+Neutral Pred (style:0.5) :these screen protectors , last me a month or num_num each , and i use my iphone like a man
+OriStyle Pred (style:1) :these screen protectors , last me a month or num_num each , and i use my iphone like a man
 Original Sent (style:1) :these screen protectors , last me a month or num_num each , and i use my iphone like a mad man .
 ----------------------------------------
 Pred (style:0,pred_s:0) :however , if you have the money to buy a better one , do it .
@@ -9010,9 +9010,9 @@ Neutral Pred (style:0.5) :however , if you have the money to buy a better one , 
 OriStyle Pred (style:1) :however , if you have the money to buy a better one , do it .
 Original Sent (style:1) :however , if you have the money to buy a better one , do it .
 ----------------------------------------
-Pred (style:0,pred_s:0) :i was able to reuse what i had , but that just isn t what you want to do to .
-Neutral Pred (style:0.5) :i was able to reuse what i had , but that just isn t what you want to do to .
-OriStyle Pred (style:1) :i was able to reuse what i had , but that just isn t what you want to do to .
+Pred (style:0,pred_s:0) :i was able to reuse what i had , but that just isn t what you want to do to
+Neutral Pred (style:0.5) :i was able to reuse what i had , but that just isn t what you want to do to
+OriStyle Pred (style:1) :i was able to reuse what i had , but that just isn t what you want to do to
 Original Sent (style:1) :i was able to reuse what i had , but that just isn t what you always want to do .
 ----------------------------------------
 Pred (style:0,pred_s:0) :a must have if you have one of the older binocs .
@@ -9120,9 +9120,9 @@ Neutral Pred (style:0.5) :i was also very disappointed at how quickly it drains 
 OriStyle Pred (style:0) :i was also very disappointed at how quickly it drains the batteries .
 Original Sent (style:0) :i was also very disappointed at how quickly it drains the batteries .
 ----------------------------------------
-Pred (style:0,pred_s:1) :if the mic is then flipped up your other party , so he connected on their end , can hear you .
-Neutral Pred (style:0.5) :if the mic is then flipped up your other party , so sometimes connected on their end , can hear you .
-OriStyle Pred (style:1) :if the mic is then flipped up your other party , so sometimes connected on their end , can hear you .
+Pred (style:0,pred_s:1) :if the mic is then flipped up your other party , so he connected on their end , can hear
+Neutral Pred (style:0.5) :if the mic is then flipped up your other party , so sometimes connected on their end , can hear
+OriStyle Pred (style:1) :if the mic is then flipped up your other party , so sometimes connected on their end , can hear
 Original Sent (style:1) :if the mic is then flipped up your other party , if still connected on their end , can hear you .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i may get one for my son next christmas .
@@ -9130,19 +9130,19 @@ Neutral Pred (style:0.5) :i may get one for my son next christmas .
 OriStyle Pred (style:1) :i may get one for my son next christmas .
 Original Sent (style:1) :i may get one for my son next christmas .
 ----------------------------------------
-Pred (style:1,pred_s:0) :my daughter gets real excitement when she puts in a coin , turns the handle , and gets a mission .
-Neutral Pred (style:0.5) :my daughter gets real excitement when she puts in a coin , turns the handle , and gets a mission .
-OriStyle Pred (style:0) :my daughter gets random excitement when she puts in a coin , turns the handle , and gets a mission .
+Pred (style:1,pred_s:0) :my daughter gets real excitement when she puts in a coin , turns the handle , and gets a mission
+Neutral Pred (style:0.5) :my daughter gets real excitement when she puts in a coin , turns the handle , and gets a mission
+OriStyle Pred (style:0) :my daughter gets random excitement when she puts in a coin , turns the handle , and gets a mission
 Original Sent (style:0) :my daughter gets considerable excitement when she puts in a coin , turns the handle , and gets a gumball .
 ----------------------------------------
-Pred (style:1,pred_s:1) :but trying to justify the initial price , as well as the overly expensive replacement blade just t t happen .
-Neutral Pred (style:0.5) :but trying to justify the initial price , as well as the overly expensive replacement blade just t t happen .
-OriStyle Pred (style:0) :but trying to justify the initial price , as well as the overly expensive replacement are just can t happen .
+Pred (style:1,pred_s:1) :but trying to justify the initial price , as well as the overly expensive replacement blade just t t happen
+Neutral Pred (style:0.5) :but trying to justify the initial price , as well as the overly expensive replacement blade just t t happen
+OriStyle Pred (style:0) :but trying to justify the initial price , as well as the overly expensive replacement are just can t happen
 Original Sent (style:0) :but trying to justify the initial price , as well as the overly expensive replacement heads just can t happen .
 ----------------------------------------
-Pred (style:1,pred_s:1) :i made the mistake of buying two ago , this one and a small hand held one for my car .
-Neutral Pred (style:0.5) :i made the mistake of buying two ago , this one and a small hand held one for my car .
-OriStyle Pred (style:0) :i made the mistake of buying two ago , this one and a small hand held one for my car .
+Pred (style:1,pred_s:1) :i made the mistake of buying two ago , this one and a small hand held one for my car
+Neutral Pred (style:0.5) :i made the mistake of buying two ago , this one and a small hand held one for my car
+OriStyle Pred (style:0) :i made the mistake of buying two ago , this one and a small hand held one for my car
 Original Sent (style:0) :i made the mistake of buying two sharks , this one and a small hand held one for my car .
 ----------------------------------------
 Pred (style:1,pred_s:0) :the good thing about this game is that the steering and control are very tight .
@@ -9150,9 +9150,9 @@ Neutral Pred (style:0.5) :the good thing about this game is that the steering an
 OriStyle Pred (style:0) :the good thing about this game is that the steering and control are very tight .
 Original Sent (style:0) :the good thing about this game is that the steering and control are very tight .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i have a tiny office , so this is underneath my desk , which isn t ideal for air the air .
-Neutral Pred (style:0.5) :i have a tiny office , so this is underneath my desk , which isn t ideal for air the air .
-OriStyle Pred (style:1) :i have a tiny office , so this is underneath my desk , which isn t ideal for air the air .
+Pred (style:0,pred_s:1) :i have a tiny office , so this is underneath my desk , which isn t ideal for air the
+Neutral Pred (style:0.5) :i have a tiny office , so this is underneath my desk , which isn t ideal for air the
+OriStyle Pred (style:1) :i have a tiny office , so this is underneath my desk , which isn t ideal for air the
 Original Sent (style:1) :i have a tiny office , so this is underneath my desk , which isn t ideal for circulating the air .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i can not send it back due to shipping requirements .
@@ -9196,7 +9196,7 @@ OriStyle Pred (style:1) :i was waiting on a replacement phone and needed somethi
 Original Sent (style:1) :i was waiting on a replacement phone and needed something to work .
 ----------------------------------------
 Pred (style:1,pred_s:0) :<UNK> , the coffee always stays in that bottom wedge section .
-Neutral Pred (style:0.5) :<UNK> , the coffee always stays in that bottom cardboard section .
+Neutral Pred (style:0.5) :<UNK> , the coffee always stays in that bottom wedge section .
 OriStyle Pred (style:0) :<UNK> , the coffee always stays in that bottom cardboard section .
 Original Sent (style:0) :<UNK> , the coffee always stays in that bottom wedge section .
 ----------------------------------------
@@ -9250,7 +9250,7 @@ Neutral Pred (style:0.5) :if any of you guys have ever read my reviews .
 OriStyle Pred (style:0) :if any of you guys have ever read my reviews .
 Original Sent (style:0) :if any of you guys have ever read my reviews .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i make my own sausage as chicken , chicken , , and apple that is not only healthier but fresher .
+Pred (style:0,pred_s:1) :i make my own sausage as chicken , chicken , , and apple that is not only healthier but fresher
 Neutral Pred (style:0.5) :i make my own sausage as chicken , chicken , and , that is not only healthier than fresher .
 OriStyle Pred (style:1) :i make my own sausage as chicken , chicken , and , that is not only healthier than fresher .
 Original Sent (style:1) :i make my own sausage such as chicken , fennel , and apple that is not only healthier but fresher .
@@ -9270,9 +9270,9 @@ Neutral Pred (style:0.5) :my husband and i managed to break both of these this y
 OriStyle Pred (style:1) :my husband and i managed to break both of these this year .
 Original Sent (style:1) :my husband and i managed to break both of these this year .
 ----------------------------------------
-Pred (style:0,pred_s:1) :most mixing bowls are round right ? this is rolling the sides as well as the bottom of the bowl .
-Neutral Pred (style:0.5) :most mixing bowls are round right ? this is like the sides as well as the bottom of the bowl .
-OriStyle Pred (style:1) :most mixing bowls are round right ? this is like the sides as well as the bottom of the bowl .
+Pred (style:0,pred_s:1) :most mixing bowls are round right ? this is rolling the sides as well as the bottom of the bowl
+Neutral Pred (style:0.5) :most mixing bowls are round right ? this is like the sides as well as the bottom of the bowl
+OriStyle Pred (style:1) :most mixing bowls are round right ? this is like the sides as well as the bottom of the bowl
 Original Sent (style:1) :most mixing bowls are round right ? this is whisking the sides as well as the bottom of the bowl .
 ----------------------------------------
 Pred (style:0,pred_s:1) :try adding parmesan and nutty as it suggests , the results are tempting .
@@ -9340,9 +9340,9 @@ Neutral Pred (style:0.5) :i just purchased this model mainly for my new ipad .
 OriStyle Pred (style:1) :i just purchased this model mainly for my new ipad .
 Original Sent (style:1) :i just purchased this model mainly for my new ipad .
 ----------------------------------------
-Pred (style:1,pred_s:0) :the second point falls far below the first point on terms , but it s still an issue for me .
-Neutral Pred (style:0.5) :the second point falls far below the first point on terms , but it s still an issue for me .
-OriStyle Pred (style:0) :the second point falls far below the first point on terms , but it s still an issue for me .
+Pred (style:1,pred_s:0) :the second point falls far below the first point on terms , but it s still an issue for me
+Neutral Pred (style:0.5) :the second point falls far below the first point on terms , but it s still an issue for me
+OriStyle Pred (style:0) :the second point falls far below the first point on terms , but it s still an issue for me
 Original Sent (style:0) :the second point falls far below the first point on importance , but it s still an issue for me .
 ----------------------------------------
 Pred (style:1,pred_s:1) :so much for why ! i also purchased a pair of grand creative window , they were too tight .
@@ -9380,9 +9380,9 @@ Neutral Pred (style:0.5) :it is almost as if it was never sanded down properly .
 OriStyle Pred (style:0) :it is almost as if it was never sanded down properly .
 Original Sent (style:0) :it is almost as if it was never sanded down properly .
 ----------------------------------------
-Pred (style:0,pred_s:1) :this does it in one easy motion and there s a scraper that will get any time from the sides .
-Neutral Pred (style:0.5) :this does it in one easy motion and there s a scraper that will get any time from the sides .
-OriStyle Pred (style:1) :this does it in one easy motion and there s a scraper that will get any time from the sides .
+Pred (style:0,pred_s:1) :this does it in one easy motion and there s a scraper that will get any time from the sides
+Neutral Pred (style:0.5) :this does it in one easy motion and there s a scraper that will get any time from the sides
+OriStyle Pred (style:1) :this does it in one easy motion and there s a scraper that will get any time from the sides
 Original Sent (style:1) :this does it in one easy motion and there s a scraper that will get any leftovers from the sides .
 ----------------------------------------
 Pred (style:0,pred_s:1) :if you are a serious cook who wants serious quality cookware , then all clad is a great option .
@@ -9480,9 +9480,9 @@ Neutral Pred (style:0.5) :i wonder what were they thinking when they made this p
 OriStyle Pred (style:0) :i wonder what were they thinking when they made this product .
 Original Sent (style:0) :i wonder what were they thinking when they made this product .
 ----------------------------------------
-Pred (style:1,pred_s:1) :you re supposed to put together with little new cups to create a single gift drawer or cabinet pot unit .
-Neutral Pred (style:0.5) :you re supposed to put together with little new pieces to create a single gift drawer or cabinet pot unit .
-OriStyle Pred (style:0) :you re supposed to put together three little new pieces to create a single drawer drawer or cabinet pot unit .
+Pred (style:1,pred_s:1) :you re supposed to put together with little new cups to create a single gift drawer or cabinet pot unit
+Neutral Pred (style:0.5) :you re supposed to put together with little new pieces to create a single gift drawer or cabinet pot unit
+OriStyle Pred (style:0) :you re supposed to put together three little new pieces to create a single drawer drawer or cabinet pot unit
 Original Sent (style:0) :you re supposed to put together three little <UNK> pieces to create a single dresser drawer or kitchen cabinet unit .
 ----------------------------------------
 Pred (style:1,pred_s:1) :replaced bowl and cover parts for older processor .
@@ -9530,9 +9530,9 @@ Neutral Pred (style:0.5) :i fell in love with the knives after using my num_exte
 OriStyle Pred (style:1) :i fell in love with the knives after using my num_extend chef knife for about num_num months .
 Original Sent (style:1) :i fell in love with the knives after using my num_extend chef knife for about num_num months .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i m tempted to buy another of these and keep it safe , not in the case i lose a one .
-Neutral Pred (style:0.5) :i m tempted to buy another of these and keep it safe , not in the case i lose a one .
-OriStyle Pred (style:1) :i m tempted to buy another of these and keep it safe , not in the case i need a bad .
+Pred (style:0,pred_s:1) :i m tempted to buy another of these and keep it safe , not in the case i lose a
+Neutral Pred (style:0.5) :i m tempted to buy another of these and keep it safe , not in the case i lose a
+OriStyle Pred (style:1) :i m tempted to buy another of these and keep it safe , not in the case i need a
 Original Sent (style:1) :i m tempted to buy another of these and keep it safe , just in case i lose this one too .
 ----------------------------------------
 Pred (style:1,pred_s:0) :not knocking just for me products but this did not work for my daughter s hair .
@@ -9580,9 +9580,9 @@ Neutral Pred (style:0.5) :sound quality is good for music and calls .
 OriStyle Pred (style:1) :sound quality is good for music and calls .
 Original Sent (style:1) :sound quality is good for music and calls .
 ----------------------------------------
-Pred (style:0,pred_s:1) :the incredible includes that includes toy new sense , which adds a few nice access to the basic android software .
-Neutral Pred (style:0.5) :the incredible includes that includes includes more ago , which adds a few nice access to the basic android software .
-OriStyle Pred (style:1) :the incredible includes that includes includes more ago , which adds a few nice access to the basic android software .
+Pred (style:0,pred_s:1) :the incredible includes that includes toy new sense , which adds a few nice access to the basic android software
+Neutral Pred (style:0.5) :the incredible includes that includes includes more ago , which adds a few nice access to the basic android software
+OriStyle Pred (style:1) :the incredible includes that includes includes more ago , which adds a few nice access to the basic android software
 Original Sent (style:1) :the incredible includes that plus includes htc sense , which adds a few nice tweaks to the basic android software .
 ----------------------------------------
 Pred (style:0,pred_s:0) :it took num_num whole days for all of the bubbles to come out , but they are completely gone .
@@ -9700,9 +9700,9 @@ Neutral Pred (style:0.5) :will google win more customers if they do ? yes .
 OriStyle Pred (style:0) :will google win more customers if they do ? yes .
 Original Sent (style:0) :will sigma win more customers if they do ? yes .
 ----------------------------------------
-Pred (style:1,pred_s:1) :if you never had the older version , this one might not frustrate you as much as it does me .
-Neutral Pred (style:0.5) :if you never had the older version , this one might not frustrate you as much as it does me .
-OriStyle Pred (style:0) :if you never had the older version , this one might not frustrate you as much as it does me .
+Pred (style:1,pred_s:1) :if you never had the older version , this one might not frustrate you as much as it does me
+Neutral Pred (style:0.5) :if you never had the older version , this one might not frustrate you as much as it does me
+OriStyle Pred (style:0) :if you never had the older version , this one might not frustrate you as much as it does me
 Original Sent (style:0) :if you never had the older version , this one might not frustrate you as much as it does me .
 ----------------------------------------
 Pred (style:0,pred_s:1) :i would prefer it on the motor housing .
@@ -9790,9 +9790,9 @@ Neutral Pred (style:0.5) :the graphics are crap ! and the story is just not <UNK
 OriStyle Pred (style:0) :the graphics are crap ! and the story is just not <UNK> .
 Original Sent (style:0) :the graphics are crap ! and the story is just not <UNK> .
 ----------------------------------------
-Pred (style:1,pred_s:0) :i looked at it for a long time , i never found a little volume at what it actually is .
-Neutral Pred (style:0.5) :i looked at it for a long time , i never found a little volume at what it actually is .
-OriStyle Pred (style:0) :i looked at it for a long time , i never found a little volume at what it actually is .
+Pred (style:1,pred_s:1) :i looked at it for a long time , i never found a little volume at what it actually is
+Neutral Pred (style:0.5) :i looked at it for a long time , i never found a little volume at what it actually is
+OriStyle Pred (style:0) :i looked at it for a long time , i never found a little volume at what it actually is
 Original Sent (style:0) :i looked at it for a long time , i never found a clear explanation of what it actually is .
 ----------------------------------------
 Pred (style:1,pred_s:0) :i was simply being honest about how this product didn t work for me .
@@ -9920,9 +9920,9 @@ Neutral Pred (style:0.5) :the price was not great for how poor of a product this
 OriStyle Pred (style:0) :the price was not great for how poor of a product this is .
 Original Sent (style:0) :the price was not great for how poor of a product this is .
 ----------------------------------------
-Pred (style:0,pred_s:1) :i have no way to measure that , so decide if you want to make . most car chargers are only num_extend
-Neutral Pred (style:0.5) :i have no way to measure that , so decide if you want to make . highly car chargers are only num_extend
-OriStyle Pred (style:1) :i have no way to measure that , so decide if you want to make . highly car chargers are only num_extend
+Pred (style:0,pred_s:1) :i have no way to measure that , so decide if you want to make . most car chargers are
+Neutral Pred (style:0.5) :i have no way to measure that , so decide if you want to make . highly car chargers are
+OriStyle Pred (style:1) :i have no way to measure that , so decide if you want to make . highly car chargers are
 Original Sent (style:1) :i have no way to measure that , so decide who you want to trust . most car chargers are only num_extend
 ----------------------------------------
 Pred (style:0,pred_s:1) :the larger one is good for applesauce etc .

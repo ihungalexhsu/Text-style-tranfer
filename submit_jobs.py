@@ -32,11 +32,14 @@ for idx,config in enumerate(configs):
                             OUT.write('source ~/.zshrc\n')
                             OUT.write('rm -rf ~/.nv\n')
                             OUT.write('cd ~/Code/Text-style-tranfer-with-style-embedding-contraint\n')
-                            OUT.write(command)
+                            if counter < 2:
+                                OUT.write(command+' --load_model')
+                            else:
+                                OUT.write(command)
                         if counter < 2: 
-                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8G,gpu=1 -pe mt 2 {}'.format(bash_file, bash_file)
+                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8.5G,gpu=1 -pe mt 2 {}'.format(bash_file, bash_file)
                         else:
-                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11\',h_rt=24:00:00,h_vmem=8G -pe mt 8 {}'.format(bash_file, bash_file)
+                            qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8.5G,gpu=1 -q ephemeral.q -pe mt 8 {}'.format(bash_file, bash_file)
                         counter+=1
                         os.system( qsub_command )
                         print( qsub_command )

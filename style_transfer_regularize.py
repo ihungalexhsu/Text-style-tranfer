@@ -10,6 +10,7 @@ import yaml
 import os
 from collections import OrderedDict
 import pickle
+import math
 
 class Style_transfer_regularize(object):
     def __init__(self, config, alpha=10, beta=1, gamma=10, delta=100, zeta=100, eta=100, load_model=False):
@@ -418,9 +419,9 @@ class Style_transfer_regularize(object):
         avg_loss = total_loss / len(self.dev_loader)
         avg_style_correct = total_correct_num / total_val_num
 
-        wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
+        bleu_score, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
 
-        return avg_loss, wer, prediction_sents, ground_truth_sents, avg_style_correct
+        return avg_loss, bleu_score, prediction_sents, ground_truth_sents, avg_style_correct
     
     def idx2sent(self, all_prediction, all_ys):
         # remove eos and pad
@@ -429,8 +430,9 @@ class Style_transfer_regularize(object):
         # indexes to sentences
         prediction_sents = to_sents(prediction_til_eos, self.vocab, self.non_lang_syms)
         ground_truth_sents = to_sents(all_ys, self.vocab, self.non_lang_syms)
-        wer = calculate_wer(prediction_til_eos, all_ys)
-        return wer, prediction_sents, ground_truth_sents
+        #wer = calculate_wer(prediction_til_eos, all_ys)
+        bleu_score = calculate_bleu_score(ground_truth_sents, prediction_sents)
+        return bleu_score, prediction_sents, ground_truth_sents
 
     def test(self, state_dict=None):
 
@@ -532,12 +534,12 @@ class Style_transfer_regularize(object):
         self.disenS.train()
         self.disenC.train()
         avg_style_correct = total_correct_num / total_val_num
-        wer, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
+        bleu_score, prediction_sents, ground_truth_sents = self.idx2sent(all_prediction, all_ys)
         _, prediction_sents_half, _ = self.idx2sent(all_half_prediction, all_ys)
         _, prediction_sents_ori, _ = self.idx2sent(all_original_prediction, all_ys)
 
         with open(f'{test_file_name}.txt', 'w') as f:
-            f.write(f'Total sentences: {len(prediction_sents)}, WER={wer:.4f}\n')
+            f.write(f'Total sentences: {len(prediction_sents)}, BLEU={bleu_score:.4f}\n')
             f.write(f'Average style accuracy: {avg_style_correct:.4f} \n')
             for idx, p in enumerate(prediction_sents):
                 f.write(f'Pred (style:{all_reverse_styles[idx]},pred_s:{all_style_predict[idx]}) :{p}\n')
@@ -546,9 +548,9 @@ class Style_transfer_regularize(object):
                 f.write(f'Original Sent (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
                 f.write('----------------------------------------\n')
 
-        print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
+        print(f'{test_file_name}: {len(prediction_sents)} utterances, BLEU={bleu_score:.4f}')
         print(f'Average style accuracy: {avg_style_correct:.4f}')
-        return wer
+        return bleu_score
 
     def _random_target(self, x, num_class=2):
         out = cc(torch.LongTensor(x.size()).random_(0,num_class))
@@ -836,18 +838,18 @@ class Style_transfer_regularize(object):
             avgl_re,avgl_s,avg_invencS,avg_invencC,avg_mimic,avg_cosloss,avg_encS,avg_encC, mean_sv_pos, mean_sv_neg\
                 = self.train_one_epoch(epoch, tf_rate, mean_sv_pos, mean_sv_neg)
             # validation
-            avg_valid_loss, wer, prediction_sents, ground_truth_sents, avg_style_acc = self.validation()
+            avg_valid_loss, bleu_score, prediction_sents, ground_truth_sents, avg_style_acc = self.validation()
 
             print(f'Epoch:{epoch}, tf_rate:{tf_rate:.3f}, Recon_l:{avgl_re:.3f}, '
                   f'Adver_encS:{avg_invencS:.3f}, Adver_encC:{avg_invencC:.3f}, '
                   f'Style_l:{avgl_s:.3f}, Mimic_l:{avg_mimic:.3f}, '
                   f'Style_embed_cosine_l:{avg_cosloss:.3f}, EncS_l:{avg_encS:.3f}, '
                   f'EncC_l:{avg_encC:.3f}, Valid_l={avg_valid_loss:.4f}, '
-                  f'Val_WER={wer:.4f}, Val_style_acc={avg_style_acc:.4f}')
+                  f'Val_bleu={bleu_score:.4f}, Val_style_acc={avg_style_acc:.4f}')
 
             # add to tensorboard
             tag = self.config['tag']
-            self.logger.scalar_summary(f'{tag}/val/wer', wer, epoch)
+            self.logger.scalar_summary(f'{tag}/val/bleu', bleu_score, epoch)
             self.logger.scalar_summary(f'{tag}/val/loss', avg_valid_loss, epoch)
             self.logger.scalar_summary(f'{tag}/val/style_acc', avg_style_acc, epoch)
 
@@ -867,16 +869,17 @@ class Style_transfer_regularize(object):
             model_path = os.path.join(self.config['model_dir'], self.config['model_name'])
             self.save_model(f'{model_path}-{epoch:03d}')
             self.save_model(f'{model_path}_latest')
-            if (avg_style_acc-wer) > best_acc: 
+            geo_score = math.sqrt(avg_style_acc*bleu_score)
+            if geo_score > best_acc: 
                 # save model
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
-                best_acc = (avg_style_acc-wer)
+                best_acc = geo_score
                 self.save_model(model_path)
                 best_model_enc = self.encC.state_dict()
                 best_model_dec = self.decoder.state_dict()
                 best_model_mimicker = self.style_mimicker.state_dict()
                 print(f'Save #{epoch} model, val_loss={avg_valid_loss:.4f}, '
-                      f'WER={wer:.4f}, style_acc={avg_style_acc:.4f}')
+                      f'bleu={bleu_score:.4f}, style_acc={avg_style_acc:.4f}')
                 print('-----------------')
                 early_stop_counter=0
             if epoch >= self.config['early_stop_start_epoch']:
