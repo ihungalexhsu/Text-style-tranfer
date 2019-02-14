@@ -383,17 +383,10 @@ class Style_transfer_fader(object):
 
         self.encoder.eval()
         self.decoder.eval()
-<<<<<<< HEAD:style_transfer.py
         self.s_classifier.eval()
-        all_prediction, all_ys, all_styles, all_reverse_styles = [], [], [], []
-||||||| merged common ancestors
-        self.s_classifier.eval()
-        all_prediction, all_ys = [], []
-=======
         total_val_num = 0.
         total_correct_num = 0.
         all_prediction,all_ys,all_styles,all_reverse_styles,all_style_predict=[],[],[],[],[]
->>>>>>> cycleloss:style_transfer_fader.py
         for step, data in enumerate(test_loader):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -433,18 +426,9 @@ class Style_transfer_fader(object):
             f.write(f'Total sentences: {len(prediction_sents)}, WER={wer:.4f}\n')
             f.write(f'Average style accuracy: {avg_style_correct:.4f} \n')
             for idx, p in enumerate(prediction_sents):
-<<<<<<< HEAD:style_transfer.py
-                f.write(f'Predict  (style:{all_reverse_styles[idx]}) :{p}\n')
-                f.write(f'Original (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
-                f.write('----------------------------------------\n')
-||||||| merged common ancestors
-                f.write(f'Predictions :{p}\n')
-                f.write(f'OriSentence :{ground_truth_sents[idx]}\n')
-=======
                 f.write(f'Pred (style:{all_reverse_styles[idx]},pred_s:{all_style_predict[idx]}) :{p}\n')
                 f.write(f'Original Sent (style:{all_styles[idx]}) :{ground_truth_sents[idx]}\n')
                 f.write('----------------------------------------\n')
->>>>>>> cycleloss:style_transfer_fader.py
 
         print(f'{test_file_name}: {len(prediction_sents)} utterances, WER={wer:.4f}')
         print(f'Average style accuracy: {avg_style_correct:.4f}')

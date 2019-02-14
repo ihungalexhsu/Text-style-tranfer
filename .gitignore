@@ -5,4 +5,5 @@ runs/
 runs_output/
 scripts/
 test_scripts/
+regularize_scripts/
 __pycache__/

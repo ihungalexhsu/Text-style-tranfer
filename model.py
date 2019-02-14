@@ -347,5 +347,5 @@ class DenseNet(nn.Module):
             input_var = layer(input_var)
             input_var = self.activation(input_var)
         output = self.output_layer(input_var)
-        return output
+        return torch.tanh(output)
 
