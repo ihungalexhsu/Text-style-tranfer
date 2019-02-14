@@ -757,7 +757,7 @@ class Style_transfer_regularize(object):
                 _, s_log_probs_fromC, _ = self.disenC(content_vector)
                 true_s_log_probs = torch.gather(s_log_probs_fromC,dim=1,
                                                 index=styles.unsqueeze(1)).squeeze(1)
-                loss_disencC_pos = -torch.mean(true_s_log_probs)
+                loss_disencC_neg = -torch.mean(true_s_log_probs)
                 total_disencC += loss_disencC_neg.item()
                 
                 # calculate gradients 

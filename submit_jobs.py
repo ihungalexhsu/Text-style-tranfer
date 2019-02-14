@@ -9,13 +9,13 @@ import os
 from itertools import product
 
 # parameters
-#beta = ['10','1']
-beta = ['10']
-#gamma = ['100', '10', '1']
-gamma = ['10']
-#delta = ['500','100']
-delta = ['100','10']
-eta = ['50','500']
+beta = ['10','1']
+#beta = ['10']
+gamma = ['100', '10', '1']
+#gamma = ['10']
+delta = ['10','100','1000']
+#delta = ['100','10']
+eta = ['10','100']
 configs = ['config/config_proposed_regularize.yaml']
 # command template
 command_template = 'python main.py -m style_regularize -c {} --test --train --alpha 1 --beta {} --gamma {} --delta {} --zeta {} --eta {}'
@@ -33,8 +33,8 @@ for idx,config in enumerate(configs):
                         OUT.write('rm -rf ~/.nv\n')
                         OUT.write('cd ~/Code/Text-style-tranfer-with-style-embedding-contraint\n')
                         OUT.write(command)
-                    if counter < 2: 
-                        qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8G,gpu=1 {}'.format(bash_file, bash_file)
+                    if counter < 100: 
+                        qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11&!vista06\',h_rt=24:00:00,h_vmem=8G -pe mt 8 {}'.format(bash_file, bash_file)
                     else:
                         qsub_command = 'qsub -P other -j y -o {}.output -cwd -l h=\'!vista13&!vista05&!vista11\',h_rt=24:00:00,h_vmem=8G,gpu=1 -q ephemeral.q {}'.format(bash_file, bash_file)
                     counter+=1
