@@ -564,6 +564,7 @@ class Style_transfer_regularize(object):
         total_cluster_loss = 0.
         mean_style_vector_pos = mean_sv_pos
         mean_style_vector_neg = mean_sv_neg
+        
         for train_steps, data in enumerate(zip(self.train_pos_loader,self.train_neg_loader)):
             bos = self.vocab['<BOS>']
             eos = self.vocab['<EOS>']
@@ -740,7 +741,7 @@ class Style_transfer_regularize(object):
                 total_disencC += loss_disencC_pos.item()
                 
                 #negative part
-                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data[0], bos, eos, pad)
+                xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data[1], bos, eos, pad)
                 enc_outputs, enc_lens = self.encS(xs, ilens)
                 style_vector = get_enc_context(enc_outputs, enc_lens)
                 enc_outputs, enc_lens = self.encC(xs, ilens)
