@@ -11,8 +11,8 @@ pos_train_set: pos_train
 neg_train_set: neg_train
 dev_set: val
 test_set: test
-batch_size: 96
-#batch_size: 20
+#batch_size: 96
+batch_size: 20
 ls_weight: 0.0
 embedding_dim: 100
 encS_hidden_dim: 64

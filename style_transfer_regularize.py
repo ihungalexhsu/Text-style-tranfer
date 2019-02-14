@@ -682,10 +682,10 @@ class Style_transfer_regularize(object):
             print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps/2}], '
                   f'recon_l: {(loss_recon_pos.item()+loss_recon_neg.item()):.3f}, '
                   f'sty_l: {(s_loss_pos.item()+s_loss_neg.item()):.3f}, '
-                  f'adv_disencS: {(loss_adv_disencS_pos.item()+loss_adv_disencS_neg.item()):.3f}, '
-                  f'adv_disencC: {(loss_adv_disencC_pos.item()+loss_adv_disencC_neg.item()):.3f}, '
+                  f'adv_disS: {(loss_adv_disencS_pos.item()+loss_adv_disencS_neg.item()):.3f}, '
+                  f'adv_disC: {(loss_adv_disencC_pos.item()+loss_adv_disencC_neg.item()):.3f}, '
                   f'mimic_l: {(loss_mimic_pos.item()+loss_mimic_neg.item()):.3f}, '
-                  f'cluster_l: {(loss_cluster_pos.item()+loss_cluster_neg.item()):.3f}, '
+                  f'clu_l: {(loss_cluster_pos.item()+loss_cluster_neg.item()):.3f}, '
                   f'dir_l: {(loss_cos_pos.item()+loss_cos_neg.item()):.3f}', end='\r')
             
             # add to logger
