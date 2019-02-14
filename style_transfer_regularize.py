@@ -592,10 +592,10 @@ class Style_transfer_regularize(object):
             loss_adv_disencC_pos = torch.mean((predict_style-rand_vec1)**2)*self.zeta
             #loss_adv_disencC = -torch.mean((predict_style-style_vector)**2)*self.zeta
             '''
-            _, s_log_probs_fromC = self.disenC(content_vector)
+            _, s_log_probs_fromC, _ = self.disenC(content_vector)
             random_s_log_probs =\
                 torch.gather(s_log_probs_fromC,dim=1,
-                             index=self._random_target(styles,self.config['n_style_types']).unsqueeze(1)).squeeze(1)
+                             index=self._random_target(styles,self.config['n_style_type']).unsqueeze(1)).squeeze(1)
             loss_adv_disencC_pos = -torch.mean(random_s_log_probs)*self.zeta
             total_disencS += loss_adv_disencS_pos.item()
             total_disencC += loss_adv_disencC_pos.item()
@@ -643,10 +643,10 @@ class Style_transfer_regularize(object):
             loss_adv_disencC_neg = torch.mean((predict_style-rand_vec1)**2)*self.zeta
             #loss_adv_disencC = -torch.mean((predict_style-style_vector)**2)*self.zeta
             '''
-            _, s_log_probs_fromC = self.disenC(content_vector)
+            _, s_log_probs_fromC, _ = self.disenC(content_vector)
             random_s_log_probs =\
                 torch.gather(s_log_probs_fromC,dim=1,
-                             index=self._random_target(styles,self.config['n_style_types']).unsqueeze(1)).squeeze(1)
+                             index=self._random_target(styles,self.config['n_style_type']).unsqueeze(1)).squeeze(1)
             loss_adv_disencC_neg = -torch.mean(random_s_log_probs)*self.zeta
             total_disencS += loss_adv_disencS_neg.item()
             total_disencC += loss_adv_disencC_neg.item()
@@ -733,7 +733,7 @@ class Style_transfer_regularize(object):
                 #loss_disencC = torch.mean((predict_style-style_vector)**2)*self.zeta
                 loss_disencC_pos = torch.mean((predict_style-style_vector)**2)
                 '''
-                _, s_log_probs_fromC = self.disenC(content_vector)
+                _, s_log_probs_fromC, _ = self.disenC(content_vector)
                 true_s_log_probs = torch.gather(s_log_probs_fromC,dim=1,
                                                 index=styles.unsqueeze(1)).squeeze(1)
                 loss_disencC_pos = -torch.mean(true_s_log_probs)
@@ -754,7 +754,7 @@ class Style_transfer_regularize(object):
                 #loss_disencC = torch.mean((predict_style-style_vector)**2)*self.zeta
                 loss_disencC_neg = torch.mean((predict_style-style_vector)**2)
                 '''
-                _, s_log_probs_fromC = self.disenC(content_vector)
+                _, s_log_probs_fromC, _ = self.disenC(content_vector)
                 true_s_log_probs = torch.gather(s_log_probs_fromC,dim=1,
                                                 index=styles.unsqueeze(1)).squeeze(1)
                 loss_disencC_pos = -torch.mean(true_s_log_probs)
