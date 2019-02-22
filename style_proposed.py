@@ -828,5 +828,3 @@ class Style_transfer_proposed(object):
         avg_bleu = (bleu_pos + bleu_neg)/2
         print(f'Average bleu score comparing with human: {avg_bleu:.4f}')
         return avg_acc*avg_selfbleu
-
-
