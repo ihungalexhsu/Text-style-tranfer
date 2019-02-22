@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn import manifold
 from sklearn.decomposition import PCA
 from nltk.translate.bleu_score import corpus_bleu
+import statistics
 
 def pad_list(xs, pad_value=0):
     '''
@@ -151,14 +152,8 @@ def tsneplot(input_nparray, category_nparray, pca_dim_left, plot_path):
     plt.savefig(plot_path)
     return
 
-def calculate_bleu_score(ground_truth, prediction):
-    '''
-    ground truth should be a list of references: [gt1, gt2, ...]
-    predictions should also be a list of predictions
-    '''
-    ground_truths = []
-    predictions = []
-    for gt,p in zip(ground_truth, prediction):
-        ground_truths.append(list(gt.split()))
-        predictions.append(p.split())
-    return corpus_bleu(ground_truths, predictions, weights=(1.0,0.,0.,0.))
+def writefile(structure, path):
+    with open(path, 'w') as f:
+        for s in structure:
+            f.write(s+'\n')
+

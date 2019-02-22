@@ -1,4 +1,6 @@
 models/
 log/
 __pycache__/
-*_scripts/
+scripts_*/
+*.bin
+*.vec

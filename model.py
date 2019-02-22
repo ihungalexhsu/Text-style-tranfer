@@ -55,7 +55,7 @@ class Encoder(torch.nn.Module):
 class Decoder(torch.nn.Module):
     def __init__(self, output_dim, embedding_dim, hidden_dim, 
                  dropout_rate, bos, eos, pad, enc_out_dim,
-                 n_styles, style_emb_dim, use_enc_init=True,
+                 n_styles, style_emb_dim=1, use_enc_init=True,
                  use_attention=False, attention=None, att_odim=100,
                  use_style_embedding=True, ls_weight=0, labeldist=None, 
                  give_context_directly=False):
@@ -93,7 +93,7 @@ class Decoder(torch.nn.Module):
                 self.project = torch.nn.Linear(enc_out_dim+style_emb_dim, hidden_dim)
             else:
                 self.project = torch.nn.Linear(enc_out_dim, hidden_dim)        
-
+        self.GRUCell2 = nn.GRUCell(hidden_dim, hidden_dim)
         # label smoothing hyperparameters
         self.ls_weight = ls_weight
         self.labeldist = labeldist
@@ -116,16 +116,17 @@ class Decoder(torch.nn.Module):
         else:
             cell_inp = torch.cat([emb, context], dim=-1)
         cell_inp = F.dropout(cell_inp, self.dropout_rate, training=self.training)
-        dec_h = self.GRUCell(cell_inp, dec_h)
-
+        dec_h0 = self.GRUCell(cell_inp, dec_h[0])
+        dec_h1 = self.GRUCell2(dec_h0, dec_h[1])
         if self.use_attention:
-            context, attn = self.attention(enc_output, enc_len, dec_h, attn)
-            output = torch.cat([dec_h, context], dim=-1)
+            context, attn = self.attention(enc_output, enc_len, dec_h1, attn)
+            output = torch.cat([dec_h1, context], dim=-1)
         else:
-            output = dec_h
+            output = dec_h1
 
         output = F.dropout(output, self.dropout_rate, training=self.training)
         logit = self.output_layer(output)
+        dec_h = (dec_h0, dec_h1)
         return logit, dec_h, context, attn
 
     def forward(self, enc_output, enc_len, styles, dec_input=None, tf_rate=1.0, 
@@ -165,7 +166,8 @@ class Decoder(torch.nn.Module):
 
         else:
             dec_h = self.zero_state(enc_output)
-        
+        dec_h2 = self.zero_state(enc_output)
+        dec_h = (dec_h , dec_h2)
         if self.use_attention:
             if self.give_context_directly:
                 raise ValueError('cannot use attention and give context directly together')
@@ -234,30 +236,6 @@ class Decoder(torch.nn.Module):
 
         return logits, dec_output_log_probs, prediction, attns
 
-class Style_classifier(nn.Module):
-    def __init__(self, enc_out_dim, hidden_dim, n_layers, out_dim):
-        super().__init__()
-        linear_layers=[]
-        for i in range(n_layers):
-            idim = enc_out_dim if i==0 else hidden_dim
-            odim = out_dim if i==(n_layers-1) else hidden_dim
-            linear_layers.append(nn.Linear(idim, odim))
-        self.layers = nn.ModuleList(linear_layers)
-        self.n_layers = n_layers
-
-    def forward(self, representation):
-        out = representation
-        for i, layer in enumerate(self.layers):
-            out = layer(out)
-            if i !=(self.n_layers-1):
-                out = F.relu(out)
-
-        logits = out # batch x out_dim
-        log_probs = F.log_softmax(logits, dim=1)
-        prediction = log_probs.topk(1, dim=1)[1]
-
-        return logits, log_probs, prediction
-
 class Domain_discri(nn.Module):
     def __init__(self, vocab_size, embedding_dim, rnn_hidden_dim, dropout_rate,
                  dnn_hidden_dim, pad_idx=0, pre_embedding=None, update_embedding=True):
@@ -271,7 +249,9 @@ class Domain_discri(nn.Module):
         self.dropout_rate = dropout_rate
         self.dnn = nn.Sequential(
             nn.Linear(2*rnn_hidden_dim, dnn_hidden_dim),
-            nn.ReLU(),
+            nn.LeakyReLU(0.2),
+            nn.Linear(dnn_hidden_dim, dnn_hidden_dim),
+            nn.LeakyReLU(0.2),
             nn.Linear(dnn_hidden_dim, 2),
         )
                           
@@ -296,35 +276,6 @@ class Domain_discri(nn.Module):
         prediction = log_probs.topk(1, dim=1)[1]
         return logits, log_probs, prediction
 
-class TextCNN(nn.Module):
-    def __init__(self, vocab_size, kernel_num, kernel_size, embedded_size,
-                 dropout_p, dnn_hidden, output_class, embedding=None, update_embedding=True):
-        super().__init__()
-        self.embedding = nn.Embedding(vocab_size, embedded_size, padding_idx=0)
-        if embedding is not None:
-            self.embedding.weight = nn.Parameter(embedding)
-        self.embedding.weight.requires_grad = update_embedding
-        in_channel=1
-        self.convs = nn.ModuleList([nn.Conv2d(in_channel, kernel_num, (K, embedded_size)) for K in kernel_size])
-        self.dropout_rate = dropout_p
-        self.dense = nn.Linear(kernel_num*len(kernel_size), dnn_hidden)
-        self.dense2 = nn.Linear(dnn_hidden, int(dnn_hidden/2))
-        self.out = nn.Linear(int(dnn_hidden/2), output_class)
-
-    def forward(self, input_var):
-        embedded = self.embedding(input_var)
-        x = embedded.unsqueeze(1) # batch, 1, word_len, embed_size
-        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs]
-        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x] #[(batch, kernel_num)]*len(kernel_sizes)
-        x = torch.cat(x, dim=1)
-        output = F.dropout(x, self.dropout_rate, training=self.training)
-        output = F.relu(self.dense(output))
-        output = F.relu(self.dense2(output))
-        logits = self.out(output)
-        log_probs = F.log_softmax(logits, dim=1)
-        prediction = log_probs.topk(1, dim=1)[1]
-        return log_probs, prediction
-
 class DenseNet(nn.Module):
     def __init__(self, input_dim, output_dim, hidden_dim_vec):
         '''
@@ -348,4 +299,31 @@ class DenseNet(nn.Module):
             input_var = self.activation(input_var)
         output = self.output_layer(input_var)
         return torch.tanh(output)
+
+class Dense_classifier(nn.Module):
+    def __init__(self, input_dim, output_dim, hidden_dim_vec):
+        '''
+        hidden_dim_vec is a vector store hidden dim
+        e.g. [128,256,128]
+        '''
+        super().__init__()
+        layers=[]
+        assert len(hidden_dim_vec)>0
+        for i, h_d in enumerate(hidden_dim_vec):
+            idim = input_dim if i==0 else hidden_dim_vec[i-1]
+            layers.append(nn.Linear(idim, h_d))
+
+        self.hidden_layer = nn.ModuleList(layers)
+        self.output_layer = nn.Linear(hidden_dim_vec[-1], output_dim)
+        self.activation = nn.LeakyReLU(0.2)
+
+    def forward(self, input_var):
+        for layer in self.hidden_layer:
+            input_var = layer(input_var)
+            input_var = self.activation(input_var)
+        
+        logits = self.output_layer(input_var) # batch x out_dim
+        log_probs = F.log_softmax(logits, dim=1)
+        prediction = log_probs.topk(1, dim=1)[1]
+        return logits, log_probs, prediction
 
