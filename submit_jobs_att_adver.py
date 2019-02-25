@@ -9,14 +9,14 @@ import os
 from itertools import product
 from time import sleep
 # command template
-command_template = 'python main.py -m style_attention -c {} --test --train --alpha {} --beta {} --gamma {} --delta {} --zeta {} --load_model'
-configs = ['config/yelp/config_proposed_attention.yaml']
+command_template = 'python main.py -m style_att_adver -c {} --test --train --alpha {} --beta {} --gamma {} --delta {} --zeta {} '
+configs = ['config/yelp/config_att_adver.yaml']
 # parameters
-alpha = ['15', '20', '25', '30']
+alpha = ['5', '10', '15']
 beta = ['1']
-gamma = ['1000','1200']
+gamma = ['500','1000','1500']
 delta = ['0']
-zeta = ['100']
+zeta = ['1', '10', '20', '50']
 for idx,config in enumerate(configs):
     for b in beta:
         for d in delta:
@@ -24,7 +24,7 @@ for idx,config in enumerate(configs):
                 for a in alpha:
                     for z in zeta:
                         command = command_template.format(config, a, b, g, d, z)
-                        bash_file = 'scripts_att_finegrained/run_proposed-a{}-b{}-g{}-d{}-z{}.sh'.format(a,b,g,d,z)
+                        bash_file = 'scripts_att_adver/run_proposed-a{}-b{}-g{}-d{}-z{}.sh'.format(a,b,g,d,z)
                         with open( bash_file, 'w' ) as OUT:
                             #OUT.write('rm -rf ~/.nv\n')
                             OUT.write('source ~/.zshrc\n')
