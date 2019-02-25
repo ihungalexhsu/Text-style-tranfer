@@ -17,7 +17,7 @@ command_template = 'python main.py -m style_fader -c {} --test --load_model --al
 for idx,config in enumerate(configs):
     for s in styles:
         command = command_template.format(config, s)
-        bash_file = 'test_scripts/run_fader-s{}.sh'.format(s)
+        bash_file = 'scripts_fader_test/run_fader-s{}.sh'.format(s)
         with open( bash_file, 'w' ) as OUT:
             OUT.write('source ~/.zshrc\n')
             OUT.write('cd ~/Code/Text-style-transfer-ihung\n')

@@ -13,8 +13,8 @@ def BLEU(candidate_path, reference_path):
     can = list()
     for c,r in zip(candidates, references):
         ref.append([r.lower().strip().split()])
-        can.append((c.lower().split('\t')[1]).strip().split())
-        #can.append(c.lower().strip().split())
+        #can.append((c.lower().split('\t')[1]).strip().split())
+        can.append(c.lower().strip().split())
     cc = SmoothingFunction()
     bleu = corpus_bleu(ref, can, smoothing_function=cc.method2)
     
@@ -23,8 +23,8 @@ def BLEU(candidate_path, reference_path):
     can = list()
     for c,r in zip(candidates, references):
         ref.append([r.lower().strip().split()])
-        can.append((c.lower().split('\t')[1]).strip().split())
-        #can.append(c.lower().strip().split())
+        #can.append((c.lower().split('\t')[1]).strip().split())
+        can.append(c.lower().strip().split())
     cc = SmoothingFunction()
     bleu4 = corpus_bleu(ref, can, smoothing_function=cc.method2, weights=(0, 0, 0, 1))
     

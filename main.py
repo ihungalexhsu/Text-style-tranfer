@@ -1,7 +1,7 @@
 #from style_cycle import Style_transfer_cycle
 from style_fader import Style_transfer_fader
 from style_proposed import Style_transfer_proposed
-#from style_proposed_regularize import Style_transfer_regularize
+from style_proposed_attention import Style_transfer_proposed_att
 #from autoencoder import AutoEncoder
 import yaml
 from argparse import ArgumentParser
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('-model', '-m', default='style_fader', 
                         choices=['style_cycle','autoencoder',
                                  'style_fader','style_proposed',
-                                 'style_regularize'])
+                                 'style_attention'])
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--load_model', action='store_true')
     parser.add_argument('--test', action='store_true')
@@ -37,15 +37,15 @@ if __name__ == '__main__':
             model = Style_transfer_proposed(config, args.alpha, args.beta, 
                                             args.gamma, args.delta, 
                                             load_model=True)
+        elif args.model=='style_attention':
+            model = Style_transfer_proposed_att(config, args.alpha, args.beta, 
+                                                args.gamma, args.delta, args.zeta,
+                                                load_model=True)
         '''
         elif args.model=='style_cycle':
             model = Style_transfer_cycle(config, load_model=True)
         elif args.model=='autoencoder':
             model = AutoEncoder(config, load_model=True)
-        elif args.model=='style_regularize':
-            model = Style_transfer_regularize(config, args.alpha, args.beta, 
-                                            args.gamma, args.delta, args.zeta,
-                                            args.eta,load_model=True)
         '''
     else:
         if args.model=='style_fader':
@@ -54,15 +54,15 @@ if __name__ == '__main__':
             model = Style_transfer_proposed(config, args.alpha, args.beta, 
                                             args.gamma, args.delta, 
                                             load_model=False)
+        elif args.model=='style_attention':
+            model = Style_transfer_proposed_att(config, args.alpha, args.beta, 
+                                                args.gamma, args.delta, args.zeta,
+                                                load_model=False)
         '''
         elif args.model=='style_cycle':
             model = Style_transfer_cycle(config, load_model=False)
         elif args.model=='autoencoder':
             model = AutoEncoder(config, load_model=False)
-        elif args.model=='style_regularize':
-            model = Style_transfer_regularize(config, args.alpha, args.beta, 
-                                            args.gamma, args.delta, args.zeta,
-                                            args.eta,load_model=False)
         '''
     if args.test:
         if args.train:

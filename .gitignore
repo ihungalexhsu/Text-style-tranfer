@@ -4,3 +4,4 @@ __pycache__/
 scripts_*/
 *.bin
 *.vec
+predictions
