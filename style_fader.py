@@ -259,7 +259,7 @@ class Style_transfer_fader(object):
         xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
         enc_outputs, enc_lens = self.encoder(xs, ilens)
         enc_representation = get_enc_context(enc_outputs, enc_lens)
-        _, s_log_probs, _ = self.style_discri(enc_representation)
+        _, s_log_probs, _ = self.style_discri(enc_representation.detach())
         true_s_log_probs = torch.gather(s_log_probs,dim=1,
                                         index=styles.unsqueeze(1)).squeeze(1)
         loss = -torch.mean(true_s_log_probs)

@@ -407,17 +407,17 @@ class Style_transfer_proposed(object):
         predict_content = self.disenS(style_vector)
         predict_style = self.disenC(content_vector)
         # calculate loss
-        loss_disencS = torch.mean((predict_content-content_vector)**2)
-        loss_disencC = torch.mean((predict_style-style_vector)**2)
+        loss_disencS = torch.mean((predict_content-content_vector.detach())**2)
+        loss_disencC = torch.mean((predict_style-style_vector.detach())**2)
         # domain discriminator
-        _, predicts, pred_ilens,_ = self._get_decoder_pred(reverse_styles, content_vector)
+        _, predicts, pred_ilens,_ = self._get_decoder_pred(reverse_styles, content_vector.detach())
         if sty_type == 'pos':
             RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
-                self._train_domain_discri(xs, ilens, predicts, pred_ilens,
+                self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
                                           self.pos_domain_discri, self.neg_domain_discri)
         else:
             RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
-                self._train_domain_discri(xs, ilens, predicts, pred_ilens,
+                self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
                                           self.neg_domain_discri, self.pos_domain_discri)
         all_one = cc(styles.cpu().new_ones(styles.size()))
         all_zero = cc(styles.cpu().new_zeros(styles.size()))
@@ -513,7 +513,7 @@ class Style_transfer_proposed(object):
         # Mimick loss
         recon_log_probs, _, _, mimicked_style =\
             self._get_decoder_pred(styles, content_vector, tf_rate, (ys_in, ys_out))
-        loss_mimic = torch.mean((mimicked_style-style_vector)**2)*self.beta
+        loss_mimic = torch.mean((mimicked_style-style_vector.detach())**2)*self.beta
         # Reconstruction loss
         loss_recon = -torch.mean(recon_log_probs)*1
         # Domain discriminator
@@ -700,9 +700,9 @@ class Style_transfer_proposed(object):
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
             str(self.gamma)+'d'+str(self.delta))
         file_path_pos = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.fader.{file_prefix}.dev.0.temp')
+                                     f'pred.proposed.{file_prefix}.dev.0.temp')
         file_path_gtpos = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.fader.{file_prefix}.dev.1.temp')
+                                       f'gf.proposed.{file_prefix}.dev.1.temp')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
@@ -712,9 +712,9 @@ class Style_transfer_proposed(object):
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.fader.{file_prefix}.dev.1.temp')
+                                     f'pred.proposed.{file_prefix}.dev.1.temp')
         file_path_gtneg = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.fader.{file_prefix}.dev.0.temp')
+                                       f'gf.proposed.{file_prefix}.dev.0.temp')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)
         self.encS.train()
@@ -785,9 +785,9 @@ class Style_transfer_proposed(object):
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
             str(self.gamma)+'d'+str(self.delta))
         file_path_pos = os.path.join(self.config['test_file_path'], 
-                                     f'pred.fader.{file_prefix}.test.0(input1)')
+                                     f'pred.proposed.{file_prefix}.test.0(input1)')
         file_path_gtpos = os.path.join(self.config['test_file_path'], 
-                                       f'gt.fader.{file_prefix}.test.input1')
+                                       f'gt.proposed.{file_prefix}.test.input1')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
@@ -797,9 +797,9 @@ class Style_transfer_proposed(object):
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['test_file_path'], 
-                                     f'pred.fader.{file_prefix}.test.1(input0)')
+                                     f'pred.proposed.{file_prefix}.test.1(input0)')
         file_path_gtneg = os.path.join(self.config['test_file_path'], 
-                                       f'gf.fader.{file_prefix}.test.input0')
+                                       f'gf.proposed.{file_prefix}.test.input0')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)       
 

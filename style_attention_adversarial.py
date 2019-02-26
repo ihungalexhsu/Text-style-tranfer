@@ -220,12 +220,16 @@ class Style_proposed_att_adver(object):
                                    update_embedding=self.config['update_embedding']))
         print(self.neg_domain_discri)
         self.neg_domain_discri.float()
-        self.params_m1=list(self.encS.parameters())+list(self.encC.parameters())+\
-            list(self.s_classifier.parameters())+list(self.style_mimicker.parameters())+\
+        self.params_m0=list(self.encS.parameters())+list(self.s_classifier.parameters())
+        self.params_m1=list(self.encC.parameters())+list(self.style_mimicker.parameters())+\
             list(self.decoder.parameters())+list(self.attention.parameters())
         self.params_m2=list(self.disenC.parameters())+list(self.disenS.parameters())
         self.params_m3=list(self.pos_domain_discri.parameters())+\
             list(self.neg_domain_discri.parameters())
+        self.optimizer_m0 =\
+            torch.optim.Adam(self.params_m0, 
+                             lr=self.config['learning_rate_m0'],
+                             weight_decay=float(self.config['weight_decay_m0']))
         self.optimizer_m1 =\
             torch.optim.Adam(self.params_m1, 
                              lr=self.config['learning_rate_m1'],
@@ -259,6 +263,7 @@ class Style_proposed_att_adver(object):
             neg_discri_path = model_path+'_negdiscri'
             #mean_style_pos_path = model_path+'_stylevec_pos'
             #mean_style_neg_path = model_path+'_stylevec_neg'
+            opt0_path = model_path+'_opt0'
             opt1_path = model_path+'_opt1'
             opt2_path = model_path+'_opt2'
             opt3_path = model_path+'_opt3'
@@ -275,10 +280,12 @@ class Style_proposed_att_adver(object):
             #self.mean_style_neg = torch.load(f'{mean_style_neg_path}.pt')
             if load_optimizer:
                 print(f'Load optmizer from {model_path}')
+                self.optimizer_m0.load_state_dict(torch.load(f'{opt0_path}.opt'))
                 self.optimizer_m1.load_state_dict(torch.load(f'{opt1_path}.opt'))
                 self.optimizer_m2.load_state_dict(torch.load(f'{opt2_path}.opt'))
                 self.optimizer_m3.load_state_dict(torch.load(f'{opt3_path}.opt'))
                 if self.config['adjust_lr']:
+                    adjust_learning_rate(self.optimizer_m0, self.config['retrieve_lr_m0']) 
                     adjust_learning_rate(self.optimizer_m1, self.config['retrieve_lr_m1']) 
                     adjust_learning_rate(self.optimizer_m2, self.config['retrieve_lr_m2']) 
                     adjust_learning_rate(self.optimizer_m3, self.config['retrieve_lr_m3']) 
@@ -299,6 +306,7 @@ class Style_proposed_att_adver(object):
         neg_discri_path = model_path+'_negdiscri'
         #mean_style_pos_path = model_path+'_stylevec_pos'
         #mean_style_neg_path = model_path+'_stylevec_neg'
+        opt0_path = model_path+'_opt0'
         opt1_path = model_path+'_opt1'
         opt2_path = model_path+'_opt2'
         opt3_path = model_path+'_opt3'
@@ -314,6 +322,7 @@ class Style_proposed_att_adver(object):
         torch.save(self.neg_domain_discri.state_dict(), f'{neg_discri_path}.ckpt')
         #torch.save(self.mean_style_pos, f'{mean_style_pos_path}.pt')
         #torch.save(self.mean_style_neg, f'{mean_style_neg_path}.pt')
+        torch.save(self.optimizer_m0.state_dict(), f'{opt0_path}.opt')
         torch.save(self.optimizer_m1.state_dict(), f'{opt1_path}.opt')
         torch.save(self.optimizer_m2.state_dict(), f'{opt2_path}.opt')
         torch.save(self.optimizer_m3.state_dict(), f'{opt3_path}.opt')
@@ -365,7 +374,7 @@ class Style_proposed_att_adver(object):
                 self.save_model(model_path)
                 best_model_enc = self.encC.state_dict()
                 best_model_dec = self.decoder.state_dict()
-                bset_model_att = self.attention.state_dict()
+                best_model_att = self.attention.state_dict()
                 best_model_mimicker = self.style_mimicker.state_dict()
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, score={score:.4f}')
                 print('-----------------')
@@ -564,7 +573,7 @@ class Style_proposed_att_adver(object):
         recon_log_probs, _, _, mimicked_style =\
             self._get_decoder_pred(styles, content_outputs, content_lens, 
                                    tf_rate, (ys_in, ys_out))
-        loss_mimic = torch.mean((mimicked_style-style_vector)**2)*self.beta
+        loss_mimic = torch.mean((mimicked_style-style_vector.detach())**2)*self.beta
         # Reconstruction loss
         loss_recon = -torch.mean(recon_log_probs)*1
         # Domain discriminator
@@ -584,12 +593,12 @@ class Style_proposed_att_adver(object):
         if sty_type == 'pos':
             loss_directional = torch.mean(CosSim(style_vector,
                                                  self.mean_style_neg.expand_as(style_vector))+1)*self.zeta*5
-            self.mean_style_pos = torch.mean(style_vector, dim=0)
+            self.mean_style_pos = torch.mean(style_vector.detach(), dim=0)
             loss_cluster = torch.mean((style_vector-self.mean_style_pos.expand_as(style_vector))**2)*self.zeta
         else:
             loss_directional = torch.mean(CosSim(style_vector,
                                                  self.mean_style_pos.expand_as(style_vector))+1)*self.zeta*5
-            self.mean_style_neg = torch.mean(style_vector, dim=0)
+            self.mean_style_neg = torch.mean(style_vector.detach(), dim=0)
             loss_cluster = torch.mean((style_vector-self.mean_style_neg.expand_as(style_vector))**2)*self.zeta
         '''
         return s_loss, loss_adv_disencC, loss_mimic, loss_recon, \
@@ -641,13 +650,17 @@ class Style_proposed_att_adver(object):
         s_loss, l_adv_disencC, l_mimic, l_recon, l_adv_domain_discri, l_adv_disencS=\
             self._get_m1_loss(data, domain_discriminator, tf_rate, sty_type)
         #calcuate gradients
+        self.optimizer_m0.zero_grad()
+        m0_loss = s_loss+l_adv_disencS
+        m0_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.params_m0, max_norm=self.config['max_grad_norm'])
+        self.optimizer_m0.step()
         self.optimizer_m1.zero_grad()
         if self.delta > 0:
-            total_loss = s_loss+l_adv_disencC+l_mimic+l_recon+l_adv_domain_discri+l_adv_disencS
+            m1_loss = l_adv_disencC+l_mimic+l_recon+l_adv_domain_discri
         else:
-            total_loss = s_loss+l_adv_disencC+l_mimic+l_recon+l_adv_disencS
-        #total_loss.backward(retain_graph=True)
-        total_loss.backward()
+            m1_loss = l_adv_disencC+l_mimic+l_recon
+        m1_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
         self.optimizer_m1.step()
         total_adv_domain += l_adv_domain_discri.item()
@@ -799,9 +812,9 @@ class Style_proposed_att_adver(object):
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
             str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
         file_path_pos = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.fader.{file_prefix}.dev.0.temp')
+                                     f'pred.att_adver.{file_prefix}.dev.0.temp')
         file_path_gtpos = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.fader.{file_prefix}.dev.1.temp')
+                                       f'gf.att_adver.{file_prefix}.dev.1.temp')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
@@ -811,9 +824,9 @@ class Style_proposed_att_adver(object):
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.fader.{file_prefix}.dev.1.temp')
+                                     f'pred.att_adver.{file_prefix}.dev.1.temp')
         file_path_gtneg = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.fader.{file_prefix}.dev.0.temp')
+                                       f'gf.att_adver.{file_prefix}.dev.0.temp')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)
         self.encS.train()
@@ -887,9 +900,9 @@ class Style_proposed_att_adver(object):
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
             str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
         file_path_pos = os.path.join(self.config['test_file_path'], 
-                                     f'pred.fader.{file_prefix}.test.0(input1)')
+                                     f'pred.att_adver.{file_prefix}.test.0(input1)')
         file_path_gtpos = os.path.join(self.config['test_file_path'], 
-                                       f'gt.fader.{file_prefix}.test.input1')
+                                       f'gt.att_adver.{file_prefix}.test.input1')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
@@ -899,9 +912,9 @@ class Style_proposed_att_adver(object):
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['test_file_path'], 
-                                     f'pred.fader.{file_prefix}.test.1(input0)')
+                                     f'pred.att_adver.{file_prefix}.test.1(input0)')
         file_path_gtneg = os.path.join(self.config['test_file_path'], 
-                                       f'gf.fader.{file_prefix}.test.input0')
+                                       f'gf.att_adver.{file_prefix}.test.input0')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)       
 

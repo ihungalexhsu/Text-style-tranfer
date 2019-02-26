@@ -348,7 +348,7 @@ class Style_transfer_proposed_att(object):
                 self.save_model(model_path)
                 best_model_enc = self.encC.state_dict()
                 best_model_dec = self.decoder.state_dict()
-                bset_model_att = self.attention.state_dict()
+                best_model_att = self.attention.state_dict()
                 best_model_mimicker = self.style_mimicker.state_dict()
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, score={score:.4f}')
                 print('-----------------')
@@ -423,7 +423,7 @@ class Style_transfer_proposed_att(object):
         style_vector, content_outputs, content_lens = self._pass2encs(xs, ilens)
         predict_style = self.disenC(content_outputs.detach(), content_lens.detach())
         # calculate loss
-        loss_disencC = torch.mean((predict_style-style_vector)**2)
+        loss_disencC = torch.mean((predict_style-style_vector.detach())**2)
         if self.delta > 0:
             # domain discriminator
             _, predicts, pred_ilens,_ = self._get_decoder_pred(reverse_styles, 
@@ -534,7 +534,7 @@ class Style_transfer_proposed_att(object):
         recon_log_probs, _, _, mimicked_style =\
             self._get_decoder_pred(styles, content_outputs, content_lens, 
                                    tf_rate, (ys_in, ys_out))
-        loss_mimic = torch.mean((mimicked_style-style_vector)**2)*self.beta
+        loss_mimic = torch.mean((mimicked_style-style_vector.detach())**2)*self.beta
         # Reconstruction loss
         loss_recon = -torch.mean(recon_log_probs)*1
         # Domain discriminator
@@ -553,12 +553,12 @@ class Style_transfer_proposed_att(object):
         if sty_type == 'pos':
             loss_directional = torch.mean(CosSim(style_vector,
                                                  self.mean_style_neg.expand_as(style_vector))+1)*self.zeta*5
-            self.mean_style_pos = torch.mean(style_vector, dim=0)
+            self.mean_style_pos = torch.mean(style_vector.detach(), dim=0)
             loss_cluster = torch.mean((style_vector-self.mean_style_pos.expand_as(style_vector))**2)*self.zeta
         else:
             loss_directional = torch.mean(CosSim(style_vector,
                                                  self.mean_style_pos.expand_as(style_vector))+1)*self.zeta*5
-            self.mean_style_neg = torch.mean(style_vector, dim=0)
+            self.mean_style_neg = torch.mean(style_vector.detach(), dim=0)
             loss_cluster = torch.mean((style_vector-self.mean_style_neg.expand_as(style_vector))**2)*self.zeta
 
         return s_loss, loss_adv_disencC, loss_mimic, loss_recon, \
@@ -610,7 +610,8 @@ class Style_transfer_proposed_att(object):
             total_loss = s_loss+l_adv_disencC+l_mimic+l_recon+l_adv_domain_discri+l_dir+l_clu
         else:
             total_loss = s_loss+l_adv_disencC+l_mimic+l_recon+l_dir+l_clu
-        total_loss.backward(retain_graph=True)
+        #total_loss.backward(retain_graph=True)
+        total_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
         self.optimizer_m1.step()
         total_adv_domain += l_adv_domain_discri.item()
@@ -758,9 +759,9 @@ class Style_transfer_proposed_att(object):
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
             str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
         file_path_pos = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.fader.{file_prefix}.dev.0.temp')
+                                     f'pred.proposed_att.{file_prefix}.dev.0.temp')
         file_path_gtpos = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.fader.{file_prefix}.dev.1.temp')
+                                       f'gf.proposed_att.{file_prefix}.dev.1.temp')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
@@ -770,9 +771,9 @@ class Style_transfer_proposed_att(object):
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.fader.{file_prefix}.dev.1.temp')
+                                     f'pred.proposed_att.{file_prefix}.dev.1.temp')
         file_path_gtneg = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.fader.{file_prefix}.dev.0.temp')
+                                       f'gf.proposed_att.{file_prefix}.dev.0.temp')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)
         self.encS.train()
@@ -844,9 +845,9 @@ class Style_transfer_proposed_att(object):
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
             str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
         file_path_pos = os.path.join(self.config['test_file_path'], 
-                                     f'pred.fader.{file_prefix}.test.0(input1)')
+                                     f'pred.proposed_att.{file_prefix}.test.0(input1)')
         file_path_gtpos = os.path.join(self.config['test_file_path'], 
-                                       f'gt.fader.{file_prefix}.test.input1')
+                                       f'gt.proposed_att.{file_prefix}.test.input1')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
@@ -856,9 +857,9 @@ class Style_transfer_proposed_att(object):
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['test_file_path'], 
-                                     f'pred.fader.{file_prefix}.test.1(input0)')
+                                     f'pred.proposed_att.{file_prefix}.test.1(input0)')
         file_path_gtneg = os.path.join(self.config['test_file_path'], 
-                                       f'gf.fader.{file_prefix}.test.input0')
+                                       f'gf.proposed_att.{file_prefix}.test.input0')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)       
 
