@@ -8,6 +8,7 @@ from utils import *
 from utils import _seq_mask
 from evaluation.calculate_bleu import BLEU
 from evaluation.calculate_transfer import Transferability 
+import copy
 import yaml
 import os
 import pickle
@@ -234,8 +235,8 @@ class Style_transfer_fader(object):
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
                 best_score = score
                 self.save_model(model_path)
-                best_model_enc = self.encoder.state_dict()
-                best_model_dec = self.decoder.state_dict()
+                best_model_enc = copy.deepcopy(self.encoder.state_dict())
+                best_model_dec = copy.deepcopy(self.decoder.state_dict())
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, Score={score:.4f}')
                 print('-----------------')
                 early_stop_counter=0

@@ -10,6 +10,7 @@ from evaluation.calculate_bleu import BLEU
 from evaluation.calculate_transfer import Transferability 
 import yaml
 import os
+import copy
 import pickle
 
 class Style_transfer_proposed(object):
@@ -330,9 +331,9 @@ class Style_transfer_proposed(object):
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
                 best_score = score
                 self.save_model(model_path)
-                best_model_enc = self.encC.state_dict()
-                best_model_dec = self.decoder.state_dict()
-                best_model_mimicker = self.style_mimicker.state_dict()
+                best_model_enc = copy.deepcopy(self.encC.state_dict())
+                best_model_dec = copy.deepcopy(self.decoder.state_dict())
+                best_model_mimicker = copy.deepcopy(self.style_mimicker.state_dict())
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, score={score:.4f}')
                 print('-----------------')
                 early_stop_counter=0
@@ -409,31 +410,39 @@ class Style_transfer_proposed(object):
         # calculate loss
         loss_disencS = torch.mean((predict_content-content_vector.detach())**2)
         loss_disencC = torch.mean((predict_style-style_vector.detach())**2)
-        # domain discriminator
-        _, predicts, pred_ilens,_ = self._get_decoder_pred(reverse_styles, content_vector.detach())
-        if sty_type == 'pos':
-            RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
-                self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
-                                          self.pos_domain_discri, self.neg_domain_discri)
+        if self.delta > 0:
+            # domain discriminator
+            _, predicts, pred_ilens,_ = self._get_decoder_pred(reverse_styles, content_vector.detach())
+            if sty_type == 'pos':
+                RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
+                    self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
+                                              self.pos_domain_discri, self.neg_domain_discri)
+            else:
+                RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
+                    self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
+                                              self.neg_domain_discri, self.pos_domain_discri)
+            all_one = cc(styles.cpu().new_ones(styles.size()))
+            all_zero = cc(styles.cpu().new_zeros(styles.size()))
+            # calculate loss
+            RM_log_probs = torch.gather(RM_log_probs,dim=1,
+                                        index=all_one.unsqueeze(1)).squeeze(1) 
+            FNM_log_probs = torch.gather(FNM_log_probs,dim=1,
+                                         index=all_zero.unsqueeze(1)).squeeze(1) 
+            FM_log_probs = torch.gather(FM_log_probs,dim=1,
+                                        index=all_zero.unsqueeze(1)).squeeze(1) 
+            RNM_log_probs = torch.gather(RNM_log_probs,dim=1,
+                                         index=all_zero.unsqueeze(1)).squeeze(1)
+            RM_dis_loss = -torch.mean(RM_log_probs)
+            FNM_dis_loss = -torch.mean(FNM_log_probs)
+            FM_dis_loss = -torch.mean(FM_log_probs)
+            RNM_dis_loss = -torch.mean(RNM_log_probs)
         else:
-            RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
-                self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
-                                          self.neg_domain_discri, self.pos_domain_discri)
-        all_one = cc(styles.cpu().new_ones(styles.size()))
-        all_zero = cc(styles.cpu().new_zeros(styles.size()))
-        # calculate loss
-        RM_log_probs = torch.gather(RM_log_probs,dim=1,
-                                    index=all_one.unsqueeze(1)).squeeze(1) 
-        FNM_log_probs = torch.gather(FNM_log_probs,dim=1,
-                                     index=all_zero.unsqueeze(1)).squeeze(1) 
-        FM_log_probs = torch.gather(FM_log_probs,dim=1,
-                                    index=all_zero.unsqueeze(1)).squeeze(1) 
-        RNM_log_probs = torch.gather(RNM_log_probs,dim=1,
-                                     index=all_zero.unsqueeze(1)).squeeze(1)
-        RM_dis_loss = -torch.mean(RM_log_probs)
-        FNM_dis_loss = -torch.mean(FNM_log_probs)
-        FM_dis_loss = -torch.mean(FM_log_probs)
-        RNM_dis_loss = -torch.mean(RNM_log_probs)
+            RM_dis_loss = torch.Tensor([0])
+            FNM_dis_loss =  torch.Tensor([0])
+            FM_dis_loss =  torch.Tensor([0])
+            RNM_dis_loss =  torch.Tensor([0])
+
+        
         return loss_disencS, loss_disencC, RM_dis_loss, FNM_dis_loss,\
             FM_dis_loss, RNM_dis_loss
         
@@ -468,12 +477,12 @@ class Style_transfer_proposed(object):
         self.optimizer_m2.zero_grad()
         (l_disencS+l_disencC).backward()
         self.optimizer_m2.step()
-
-        self.optimizer_m3.zero_grad()
-        (RM_dis_loss+FNM_dis_loss+FM_dis_loss+RNM_dis_loss).backward()
-        torch.nn.utils.clip_grad_norm_(self.params_m3, 
-                                       max_norm=self.config['max_grad_norm'])
-        self.optimizer_m3.step()
+        if self.delta>0:
+            self.optimizer_m3.zero_grad()
+            (RM_dis_loss+FNM_dis_loss+FM_dis_loss+RNM_dis_loss).backward()
+            torch.nn.utils.clip_grad_norm_(self.params_m3, 
+                                           max_norm=self.config['max_grad_norm'])
+            self.optimizer_m3.step()
         
         total_disencS += l_disencS.item()
         total_disencC += l_disencC.item()
@@ -516,15 +525,18 @@ class Style_transfer_proposed(object):
         loss_mimic = torch.mean((mimicked_style-style_vector.detach())**2)*self.beta
         # Reconstruction loss
         loss_recon = -torch.mean(recon_log_probs)*1
-        # Domain discriminator
-        _, predicts, pred_ilens, _ =\
-            self._get_decoder_pred(reverse_styles, content_vector)
-        # For fake data, try to cheat domain discriminator
-        _, discri_log_probs,_ = domain_discriminator(predicts, pred_ilens, need_sort=True)
-        all_one = cc(styles.cpu().new_ones(styles.size()))
-        discri_log_probs = torch.gather(discri_log_probs,dim=1,
-                                        index=all_one.unsqueeze(1)).squeeze(1)
-        loss_adv_domain_discri = -torch.mean(discri_log_probs)*self.delta
+        if self.delta > 0:
+            # Domain discriminator
+            _, predicts, pred_ilens, _ =\
+                self._get_decoder_pred(reverse_styles, content_vector)
+            # For fake data, try to cheat domain discriminator
+            _, discri_log_probs,_ = domain_discriminator(predicts, pred_ilens, need_sort=True)
+            all_one = cc(styles.cpu().new_ones(styles.size()))
+            discri_log_probs = torch.gather(discri_log_probs,dim=1,
+                                            index=all_one.unsqueeze(1)).squeeze(1)
+            loss_adv_domain_discri = -torch.mean(discri_log_probs)*self.delta
+        else:
+            loss_adv_domain_discri = torch.Tensor([0])
         return s_loss, loss_adv_disencS, loss_adv_disencC, loss_mimic,\
             loss_recon, loss_adv_domain_discri
     
@@ -553,9 +565,10 @@ class Style_transfer_proposed(object):
         self.logger.scalar_summary(tag=f'{tag}/train/stylemimic_loss', 
                                    value=l_mimic/self.beta, 
                                    step=log_steps)
-        self.logger.scalar_summary(tag=f'{tag}/train/adver_domain_loss', 
-                                   value=l_adv_domain_discri/self.delta, 
-                                   step=log_steps)
+        if self.delta > 0:
+            self.logger.scalar_summary(tag=f'{tag}/train/adver_domain_loss', 
+                                       value=l_adv_domain_discri/self.delta, 
+                                       step=log_steps)
         return
 
     def _train_m1_onetime(self, data, total_adv_disencS, total_adv_disencC,
@@ -565,7 +578,10 @@ class Style_transfer_proposed(object):
             self._get_m1_loss(data, domain_discriminator, tf_rate)
         #calcuate gradients
         self.optimizer_m1.zero_grad()
-        total_loss = s_loss+l_adv_disencS+l_adv_disencC+l_mimic+l_recon+l_adv_domain_discri
+        if self.delta > 0:
+            total_loss = s_loss+l_adv_disencS+l_adv_disencC+l_mimic+l_recon+l_adv_domain_discri
+        else:
+            total_loss = s_loss+l_adv_disencS+l_adv_disencC+l_mimic+l_recon
         total_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
         self.optimizer_m1.step()
@@ -575,8 +591,8 @@ class Style_transfer_proposed(object):
         total_adv_disencS += l_adv_disencS.item()
         total_adv_disencC += l_adv_disencC.item()
         total_mimic += l_mimic.item()
-        self._log_m1(epoch, train_steps, total_steps, s_loss, l_recon, l_adv_disencS,
-                     l_adv_disencC, l_mimic, l_adv_domain_discri,
+        self._log_m1(epoch, train_steps, total_steps, s_loss.item(), l_recon.item(), l_adv_disencS.item(),
+                     l_adv_disencC.item(), l_mimic.item(), l_adv_domain_discri.item(),
                      epoch*total_steps+train_steps+1)
         train_steps +=1
         return (train_steps, total_adv_domain, total_recon, total_sloss,\

@@ -5,3 +5,4 @@ scripts_*/
 *.bin
 *.vec
 predictions
+submit_*

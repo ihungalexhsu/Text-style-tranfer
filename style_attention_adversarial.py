@@ -11,6 +11,7 @@ from evaluation.calculate_transfer import Transferability
 import yaml
 import os
 import pickle
+import copy
 
 class Style_proposed_att_adver(object):
     def __init__(self, config, alpha=1, beta=1, gamma=100, delta=10, 
@@ -372,10 +373,10 @@ class Style_proposed_att_adver(object):
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
                 best_score = score
                 self.save_model(model_path)
-                best_model_enc = self.encC.state_dict()
-                best_model_dec = self.decoder.state_dict()
-                best_model_att = self.attention.state_dict()
-                best_model_mimicker = self.style_mimicker.state_dict()
+                best_model_enc = copy.deepcopy(self.encC.state_dict())
+                best_model_dec = copy.deepcopy(self.decoder.state_dict())
+                best_model_att = copy.deepcopy(self.attention.state_dict())
+                best_model_mimicker = copy.deepcopy(self.style_mimicker.state_dict())
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, score={score:.4f}')
                 print('-----------------')
                 early_stop_counter=0

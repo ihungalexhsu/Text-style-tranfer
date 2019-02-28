@@ -8,6 +8,7 @@ from utils import *
 from utils import _seq_mask
 from evaluation.calculate_bleu import BLEU
 from evaluation.calculate_transfer import Transferability 
+import copy
 import yaml
 import os
 import pickle
@@ -346,10 +347,10 @@ class Style_transfer_proposed_att(object):
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
                 best_score = score
                 self.save_model(model_path)
-                best_model_enc = self.encC.state_dict()
-                best_model_dec = self.decoder.state_dict()
-                best_model_att = self.attention.state_dict()
-                best_model_mimicker = self.style_mimicker.state_dict()
+                best_model_enc = copy.deepcopy(self.encC.state_dict())
+                best_model_dec = copy.deepcopy(self.decoder.state_dict())
+                best_model_att = copy.deepcopy(self.attention.state_dict())
+                best_model_mimicker = copy.deepcopy(self.style_mimicker.state_dict())
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, score={score:.4f}')
                 print('-----------------')
                 early_stop_counter=0
