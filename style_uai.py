@@ -1,21 +1,20 @@
 import torch 
 import torch.nn.functional as F
 import numpy as np
-from model import Encoder, Decoder, Domain_discri, Dense_classifier, dotAttn, BiRNN_discri, DenseNet
+from model import Encoder, Decoder, DenseNet, Domain_discri, Dense_classifier
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
 from utils import _seq_mask
 from evaluation.calculate_bleu import BLEU
 from evaluation.calculate_transfer import Transferability 
-import copy
 import yaml
 import os
+import copy
 import pickle
 
-class Style_transfer_proposed_att(object):
-    def __init__(self, config, alpha=1, beta=1, gamma=100, delta=10, 
-                 zeta=10, load_model=False):
+class Style_transfer_uai(object):
+    def __init__(self, config, alpha=1, beta=0.5, gamma=100, delta=10, load_model=False):
         self.config = config
         print(self.config)
         
@@ -23,11 +22,10 @@ class Style_transfer_proposed_att(object):
         self.beta = beta
         self.gamma = gamma
         self.delta = delta
-        self.zeta = zeta
 
         # logger
         self.logger = Logger(config['logdir']+'_a'+str(alpha)+'b'+str(beta)+'g'+\
-                             str(gamma)+'d'+str(delta)+'z'+str(zeta))
+                             str(gamma)+'d'+str(delta))
 
         # load vocab and non lang syms
         self.load_vocab()
@@ -142,28 +140,16 @@ class Style_transfer_proposed_att(object):
                                                       hidden_dim_vec=self.config['style_cls_hidden']))
         print(self.s_classifier)
         self.s_classifier.float()
-        self.disenC = cc_model(BiRNN_discri(input_dim=encC_out_dim,
-                                            rnn_hidden_dim=self.config['disen_c_hidden_dim'],
-                                            dropout_rate=0.1,
-                                            dnn_hidden_dim=self.config['disen_c_dnn_dim'],
-                                            output_dim=encS_out_dim))
+        self.disenS = cc_model(DenseNet(input_dim=encS_out_dim,
+                                        output_dim=encC_out_dim,
+                                        hidden_dim_vec=self.config['disen_s_hidden_dim']))
+        print(self.disenS)
+        self.disenS.float()
+        self.disenC = cc_model(DenseNet(input_dim=encC_out_dim,
+                                        output_dim=encS_out_dim,
+                                        hidden_dim_vec=self.config['disen_c_hidden_dim']))
         print(self.disenC)
         self.disenC.float()
-        '''
-        self.style_mimicker = cc_model(DenseNet(input_dim=(encC_out_dim+1),
-                                                output_dim=encS_out_dim,
-                                                hidden_dim_vec=self.config['mimicker_hidden_dim']))
-        '''
-        self.style_mimicker = cc_model(DenseNet(input_dim=1,
-                                                output_dim=encS_out_dim,
-                                                hidden_dim_vec=self.config['mimicker_hidden_dim']))
-        print(self.style_mimicker)
-        self.style_mimicker.float()
-        self.attention = cc_model(dotAttn(query_dim=self.config['dec_hidden_dim'],
-                                          key_dim=encC_out_dim,
-                                          att_dim=self.config['attention_dim']))
-        print(self.attention)
-        self.attention.float()
         self.decoder = cc_model(Decoder(output_dim=len(self.vocab),
                                         embedding_dim=self.config['embedding_dim'],
                                         hidden_dim=self.config['dec_hidden_dim'],
@@ -171,17 +157,13 @@ class Style_transfer_proposed_att(object):
                                         bos=self.vocab['<BOS>'],
                                         eos=self.vocab['<EOS>'],
                                         pad=self.vocab['<PAD>'],
-                                        enc_out_dim=encC_out_dim,
+                                        enc_out_dim=(encS_out_dim+encC_out_dim),
                                         n_styles=self.config['n_style_type'],
-                                        style_emb_dim=encS_out_dim,
                                         use_enc_init=self.config['use_enc_init'],
-                                        use_attention=True,
-                                        attention=self.attention,
                                         use_style_embedding=False,
                                         ls_weight=self.config['ls_weight'],
                                         labeldist=labeldist,
-                                        give_context_directly=False,
-                                        give_style_repre_directly=True))
+                                        give_context_directly=True))
         print(self.decoder)
         self.decoder.float()
         self.pos_domain_discri =\
@@ -207,9 +189,8 @@ class Style_transfer_proposed_att(object):
         print(self.neg_domain_discri)
         self.neg_domain_discri.float()
         self.params_m1=list(self.encS.parameters())+list(self.encC.parameters())+\
-            list(self.s_classifier.parameters())+list(self.style_mimicker.parameters())+\
-            list(self.decoder.parameters())+list(self.attention.parameters())
-        self.params_m2=list(self.disenC.parameters())
+            list(self.s_classifier.parameters())+list(self.decoder.parameters())
+        self.params_m2=list(self.disenS.parameters())+list(self.disenC.parameters())
         self.params_m3=list(self.pos_domain_discri.parameters())+\
             list(self.neg_domain_discri.parameters())
         self.optimizer_m1 =\
@@ -231,15 +212,14 @@ class Style_transfer_proposed_att(object):
  
     def load_model(self, model_path, load_optimizer):
         model_path = (model_path+'_a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
-            str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
+            str(self.gamma)+'d'+str(self.delta))
         if os.path.exists(model_path+'_encS.ckpt'):
             print(f'Load model from {model_path}')
             encS_path = model_path+'_encS'
             encC_path = model_path+'_encC'
-            attention_path = model_path+'_att'
             decoder_path = model_path+'_decoder'
             s_classifier_path = model_path+'_scls'
-            style_mimicker_path = model_path+'_smimic'
+            disenS_path = model_path+'_disenS'
             disenC_path = model_path+'_disenC'
             pos_discri_path = model_path+'_posdiscri'
             neg_discri_path = model_path+'_negdiscri'
@@ -251,9 +231,8 @@ class Style_transfer_proposed_att(object):
             self.encS.load_state_dict(torch.load(f'{encS_path}.ckpt'))
             self.encC.load_state_dict(torch.load(f'{encC_path}.ckpt'))
             self.decoder.load_state_dict(torch.load(f'{decoder_path}.ckpt'))
-            self.attention.load_state_dict(torch.load(f'{attention_path}.ckpt'))
             self.s_classifier.load_state_dict(torch.load(f'{s_classifier_path}.ckpt'))
-            self.style_mimicker.load_state_dict(torch.load(f'{style_mimicker_path}.ckpt'))
+            self.disenS.load_state_dict(torch.load(f'{disenS_path}.ckpt'))
             self.disenC.load_state_dict(torch.load(f'{disenC_path}.ckpt'))
             self.pos_domain_discri.load_state_dict(torch.load(f'{pos_discri_path}.ckpt'))
             self.neg_domain_discri.load_state_dict(torch.load(f'{neg_discri_path}.ckpt'))
@@ -272,27 +251,25 @@ class Style_transfer_proposed_att(object):
   
     def save_model(self, model_path):
         model_path = (model_path+'_a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
-            str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
+            str(self.gamma)+'d'+str(self.delta))
         encS_path = model_path+'_encS'
         encC_path = model_path+'_encC'
         decoder_path = model_path+'_decoder'
-        attention_path = model_path+'_att'
         s_classifier_path = model_path+'_scls'
-        style_mimicker_path = model_path+'_smimic'
+        disenS_path = model_path+'_disenS'
         disenC_path = model_path+'_disenC'
         pos_discri_path = model_path+'_posdiscri'
         neg_discri_path = model_path+'_negdiscri'
-        mean_style_pos_path = model_path+'_stylevec_pos'
-        mean_style_neg_path = model_path+'_stylevec_neg'
         opt1_path = model_path+'_opt1'
         opt2_path = model_path+'_opt2'
         opt3_path = model_path+'_opt3'
+        mean_style_pos_path = model_path+'_stylevec_pos'
+        mean_style_neg_path = model_path+'_stylevec_neg'
         torch.save(self.encS.state_dict(), f'{encS_path}.ckpt')
         torch.save(self.encC.state_dict(), f'{encC_path}.ckpt')
         torch.save(self.decoder.state_dict(), f'{decoder_path}.ckpt')
-        torch.save(self.attention.state_dict(), f'{attention_path}.ckpt')
         torch.save(self.s_classifier.state_dict(), f'{s_classifier_path}.ckpt')
-        torch.save(self.style_mimicker.state_dict(), f'{style_mimicker_path}.ckpt')
+        torch.save(self.disenS.state_dict(), f'{disenS_path}.ckpt')
         torch.save(self.disenC.state_dict(), f'{disenC_path}.ckpt')
         torch.save(self.pos_domain_discri.state_dict(), f'{pos_discri_path}.ckpt')
         torch.save(self.neg_domain_discri.state_dict(), f'{neg_discri_path}.ckpt')
@@ -342,15 +319,13 @@ class Style_transfer_proposed_att(object):
             self.logger.scalar_summary(f'{tag}/val/transfer_acc', transfer_acc, epoch)
             score = selfbleu*transfer_acc
             # save best
-            if score > best_score: 
+            if score > best_score and epoch > 7: 
                 # save model
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
                 best_score = score
                 self.save_model(model_path)
                 best_model_enc = copy.deepcopy(self.encC.state_dict())
                 best_model_dec = copy.deepcopy(self.decoder.state_dict())
-                best_model_att = copy.deepcopy(self.attention.state_dict())
-                best_model_mimicker = copy.deepcopy(self.style_mimicker.state_dict())
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, score={score:.4f}')
                 print('-----------------')
                 early_stop_counter=0
@@ -358,7 +333,7 @@ class Style_transfer_proposed_att(object):
                 early_stop_counter += 1
                 if early_stop_counter > self.config['early_stop_patience']:
                     break
-        best_model = (best_model_enc, best_model_dec, best_model_att, best_model_mimicker)
+        best_model = (best_model_enc, best_model_dec, best_model)
         print('---------------finish training----------------')
         print(f'-----get best score: {best_score:.4f}------')
         return best_model, best_score
@@ -381,26 +356,22 @@ class Style_transfer_proposed_att(object):
         reverse_styles=cc(torch.LongTensor(reverse_styles))
         return reverse_styles
     
-    def _get_decoder_pred(self, want_styles, content_outputs, content_lens, 
+    def _get_decoder_pred(self, style_vector, content_vector, 
                           tf_rate=1.0, ground_truth=None):
-        '''
-        mimicked_style_vector =\
-            self.style_mimicker(torch.cat([want_styles.float().view(-1,1),
-                                           content_vector],dim=1))
-        '''
-        mimicked_style_vector = self.style_mimicker(want_styles.float().view(-1,1))
+        decoder_input = torch.cat([style_vector, content_vector], dim=1)
         _, recon_log_probs, predicts, _ =\
-            self.decoder(content_outputs, content_lens, mimicked_style_vector, 
+            self.decoder(decoder_input, None, want_styles, 
                          ground_truth, tf_rate=tf_rate, 
                          max_dec_timesteps=self.config['max_dec_timesteps'])
         pred_ilens = get_prediction_length(predicts, eos=self.vocab['<EOS>'])
-        return recon_log_probs, predicts, pred_ilens, mimicked_style_vector
+        return recon_log_probs, predicts, pred_ilens
     
     def _pass2encs(self, xs, ilens):
         enc_outputs, enc_lens = self.encS(xs, ilens)
         style_vector = get_enc_context(enc_outputs, enc_lens)
-        content_outputs, content_lens = self.encC(xs, ilens)
-        return style_vector, content_outputs, content_lens
+        enc_outputs, enc_lens = self.encC(xs, ilens)
+        content_vector = get_enc_context(enc_outputs, enc_lens)
+        return style_vector, content_vector
 
     def _train_domain_discri(self, xs, ilens, predicts, pred_ilens,
                              ori_domain_dis, opposite_domain_dis):
@@ -421,20 +392,21 @@ class Style_transfer_proposed_att(object):
         xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
         reverse_styles = self._get_reverse_style(styles)
         # disentenglement
-        style_vector, content_outputs, content_lens = self._pass2encs(xs, ilens)
-        predict_style = self.disenC(content_outputs.detach(), content_lens.detach())
+        style_vector, content_vector = self._pass2encs(xs, ilens)
+        predict_content = self.disenS(style_vector)
+        predict_style = self.disenC(content_vector)
         # calculate loss
+        loss_disencS = torch.mean((predict_content-content_vector.detach())**2)
         loss_disencC = torch.mean((predict_style-style_vector.detach())**2)
         if self.delta > 0:
             # domain discriminator
-            _, predicts, pred_ilens,_ = self._get_decoder_pred(reverse_styles, 
-                                                               content_outputs,
-                                                               content_lens)
             if sty_type == 'pos':
+                _, predicts, pred_ilens,_ = self._get_decoder_pred(self.mean_style_neg, content_vector.detach())
                 RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
                     self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
                                               self.pos_domain_discri, self.neg_domain_discri)
             else:
+                _, predicts, pred_ilens,_ = self._get_decoder_pred(self.mean_style_pos, content_vector.detach())
                 RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
                     self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
                                               self.neg_domain_discri, self.pos_domain_discri)
@@ -459,20 +431,25 @@ class Style_transfer_proposed_att(object):
             FM_dis_loss =  torch.Tensor([0])
             RNM_dis_loss =  torch.Tensor([0])
 
-        return loss_disencC, RM_dis_loss, FNM_dis_loss, FM_dis_loss, RNM_dis_loss
+        
+        return loss_disencS, loss_disencC, RM_dis_loss, FNM_dis_loss,\
+            FM_dis_loss, RNM_dis_loss
         
     def _log_m2(self, epoch, train_steps, total_steps, l_posdiscri, l_negdiscri,
-                l_disencC, log_steps):
+                l_disencS, l_disencC, log_steps):
         print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], '
-              f'disencC: {l_disencC:.3f}, '
+              f'disencS: {l_disencS:.3f}, disencC: {l_disencC:.3f}, '
               f'domain_dis_pos: {l_posdiscri:.3f}, '
               f'domain_dis_neg: {l_negdiscri:.3f}', end='\r')
         # add to logger
         tag = self.config['tag']
+        self.logger.scalar_summary(tag=f'{tag}/train/disen_encS_loss', 
+                                   value=l_disencS, 
+                                   step=log_steps)
         self.logger.scalar_summary(tag=f'{tag}/train/disen_encC_loss', 
                                    value=l_disencC, 
                                    step=log_steps)
-        if self.delta > 0.:
+        if self.delta > 0:
             self.logger.scalar_summary(tag=f'{tag}/train/domain_discri_pos_loss', 
                                        value=l_posdiscri, 
                                        step=log_steps)
@@ -481,24 +458,23 @@ class Style_transfer_proposed_att(object):
                                        step=log_steps)
         return
 
-    def _train_m2_onetime(self, data, total_disencC, total_posdiscri, 
-                          total_negdiscri, epoch, train_steps,
+    def _train_m2_onetime(self, data, total_disencS, total_disencC,
+                          total_posdiscri, total_negdiscri, epoch, train_steps,
                           total_steps, cnt, sty_type):
-        l_disencC, RM_dis_loss, FNM_dis_loss, FM_dis_loss, RNM_dis_loss =\
+        l_disencS, l_disencC, RM_dis_loss, FNM_dis_loss, FM_dis_loss, RNM_dis_loss =\
             self._get_m2_loss(data, sty_type)
         # calculate gradients 
         self.optimizer_m2.zero_grad()
-        (l_disencC).backward()
-        torch.nn.utils.clip_grad_norm_(self.params_m2,
-                                       max_norm=self.config['max_grad_norm'])
+        (l_disencS+l_disencC).backward()
         self.optimizer_m2.step()
-        if self.delta > 0:
+        if self.delta>0:
             self.optimizer_m3.zero_grad()
             (RM_dis_loss+FNM_dis_loss+FM_dis_loss+RNM_dis_loss).backward()
             torch.nn.utils.clip_grad_norm_(self.params_m3, 
                                            max_norm=self.config['max_grad_norm'])
             self.optimizer_m3.step()
         
+        total_disencS += l_disencS.item()
         total_disencC += l_disencC.item()
         if sty_type=='pos':
             l_posdiscri = RM_dis_loss.item()+FNM_dis_loss.item()
@@ -508,40 +484,47 @@ class Style_transfer_proposed_att(object):
             l_posdiscri = FM_dis_loss.item()+RNM_dis_loss.item()
         total_posdiscri += l_posdiscri
         total_negdiscri += l_negdiscri
-        self._log_m2(epoch, train_steps, total_steps, l_posdiscri, 
-                     l_negdiscri, l_disencC.item(),
+        self._log_m2(epoch, train_steps, total_steps, l_posdiscri, l_negdiscri,
+                     l_disencS.item(), l_disencC.item(),
                      (epoch*(self.config['m2_train_freq'])+cnt)*total_steps+train_steps+1)
         train_steps+=1
-        return train_steps, total_posdiscri, total_negdiscri, total_disencC
+        return train_steps, total_posdiscri, total_negdiscri, total_disencS, total_disencC
     
     def _get_m1_loss(self, data, domain_discriminator, tf_rate, sty_type):
         bos = self.vocab['<BOS>']
         eos = self.vocab['<EOS>']
         pad = self.vocab['<PAD>']
-        CosSim = nn.CosineSimilarity(dim=1)
         xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
         reverse_styles = self._get_reverse_style(styles)
-        style_vector, content_outputs, content_lens = self._pass2encs(xs, ilens)
+        style_vector, content_vector = self._pass2encs(xs, ilens)
         # Style Loss
         _, s_log_probs, _= self.s_classifier(style_vector)
         true_s_log_probs = torch.gather(s_log_probs,dim=1,
                                         index=styles.unsqueeze(1)).squeeze(1)
         s_loss = -torch.mean(true_s_log_probs)*self.alpha
         # Disentangle Loss
-        predict_style = self.disenC(content_outputs, content_lens)
+        predict_content = self.disenS(style_vector)
+        predict_style = self.disenC(content_vector)
         rand_vecS = self._random_vector(style_vector, 'tanh')
+        rand_vecC = self._random_vector(content_vector, 'tanh')
+        loss_adv_disencS = torch.mean((predict_content-rand_vecC)**2)*self.gamma
         loss_adv_disencC = torch.mean((predict_style-rand_vecS)**2)*self.gamma
-        # Mimick loss
-        recon_log_probs, _, _, mimicked_style =\
-            self._get_decoder_pred(styles, content_outputs, content_lens, 
-                                   tf_rate, (ys_in, ys_out))
-        loss_mimic = torch.mean((mimicked_style-style_vector.detach())**2)*self.beta
         # Reconstruction loss
+        style_remain = F.dropout(style_vector, self.beta)
+        recon_log_probs, _, _ =\
+            self._get_decoder_pred(style_remain, content_vector, tf_rate, (ys_in, ys_out))
         loss_recon = -torch.mean(recon_log_probs)*1
-        # Domain discriminator
-        if self.delta > 0:
+        if sty_type=='pos':
+            self.mean_style_pos = copy.deepcopy(torch.mean(style_vector.detach(), dim=0))
             _, predicts, pred_ilens, _ =\
-                self._get_decoder_pred(reverse_styles, content_outputs, content_lens)
+                self._get_decoder_pred(self.mean_style_neg, content_vector)
+        else:
+            self.mean_style_neg = copy.deepcopy(torch.mean(style_vector.detach(), dim=0))
+            _, predicts, pred_ilens, _ =\
+                self._get_decoder_pred(self.mean_style_pos, content_vector)
+
+        if self.delta > 0:
+            # Domain discriminator
             # For fake data, try to cheat domain discriminator
             _, discri_log_probs,_ = domain_discriminator(predicts, pred_ilens, need_sort=True)
             all_one = cc(styles.cpu().new_ones(styles.size()))
@@ -550,28 +533,15 @@ class Style_transfer_proposed_att(object):
             loss_adv_domain_discri = -torch.mean(discri_log_probs)*self.delta
         else:
             loss_adv_domain_discri = torch.Tensor([0])
-        # directinal loss & cluster loss
-        if sty_type == 'pos':
-            loss_directional = torch.mean(CosSim(style_vector,
-                                                 self.mean_style_neg.expand_as(style_vector))+1)*self.zeta*5
-            self.mean_style_pos = copy.deepcopy(torch.mean(style_vector.detach(), dim=0))
-            loss_cluster = torch.mean((style_vector-self.mean_style_pos.expand_as(style_vector))**2)*self.zeta
-        else:
-            loss_directional = torch.mean(CosSim(style_vector,
-                                                 self.mean_style_pos.expand_as(style_vector))+1)*self.zeta*5
-            self.mean_style_neg = copy.deepcopy(torch.mean(style_vector.detach(), dim=0))
-            loss_cluster = torch.mean((style_vector-self.mean_style_neg.expand_as(style_vector))**2)*self.zeta
-
-        return s_loss, loss_adv_disencC, loss_mimic, loss_recon, \
-            loss_adv_domain_discri, loss_directional, loss_cluster
+        return s_loss, loss_adv_disencS, loss_adv_disencC, loss_recon, loss_adv_domain_discri
     
     def _log_m1(self, epoch, train_steps, total_steps, s_loss, l_recon, 
-                l_adv_disencC, l_mimic, l_adv_domain_discri, l_dir, l_clu, log_steps):
+                l_adv_disencS, l_adv_disencC, l_adv_domain_discri, log_steps):
         print(f'epoch: {epoch}, [{train_steps + 1}/{total_steps}], '
               f'recon_loss: {l_recon:.3f}, style: {s_loss:.3f}, '
+              f'adv_disencS: {l_adv_disencS:.3f}, '
               f'adv_disencC: {l_adv_disencC:.3f}, '
-              f'directional_loss: {l_dir:.3f}, cluster_loss: {l_clu:.3f}. '
-              f'mimic: {l_mimic:.3f}, adv_domain: {l_adv_domain_discri:.3f}', end='\r')
+              f'adv_domain: {l_adv_domain_discri:.3f}', end='\r')
         
         # add to logger
         tag = self.config['tag']
@@ -581,69 +551,58 @@ class Style_transfer_proposed_att(object):
         self.logger.scalar_summary(tag=f'{tag}/train/stylepredictionloss', 
                                    value=s_loss/self.alpha, 
                                    step=log_steps)
+        self.logger.scalar_summary(tag=f'{tag}/train/adver_disencS_loss', 
+                                   value=l_adv_disencS/self.gamma, 
+                                   step=log_steps)
         self.logger.scalar_summary(tag=f'{tag}/train/adver_disencC_loss', 
                                    value=l_adv_disencC/self.gamma, 
-                                   step=log_steps)
-        self.logger.scalar_summary(tag=f'{tag}/train/stylemimic_loss', 
-                                   value=l_mimic/self.beta, 
                                    step=log_steps)
         if self.delta > 0:
             self.logger.scalar_summary(tag=f'{tag}/train/adver_domain_loss', 
                                        value=l_adv_domain_discri/self.delta, 
                                        step=log_steps)
-        self.logger.scalar_summary(tag=f'{tag}/train/style_cosine_loss', 
-                                   value=(l_dir/5)/self.zeta, 
-                                   step=log_steps)
-        self.logger.scalar_summary(tag=f'{tag}/train/style_cluster_loss', 
-                                   value=l_clu/self.zeta, 
-                                   step=log_steps)
         return
 
-    def _train_m1_onetime(self, data, total_directional, total_cluster, 
-                          total_adv_disencC, total_sloss, total_mimic, 
-                          total_recon, total_adv_domain, epoch, train_steps, 
-                          total_steps, domain_discriminator, tf_rate, sty_type):
-        s_loss, l_adv_disencC, l_mimic, l_recon, l_adv_domain_discri, l_dir, l_clu=\
+    def _train_m1_onetime(self, data, total_adv_disencS, total_adv_disencC,
+                          total_sloss, total_recon, total_adv_domain,
+                          epoch, train_steps, total_steps, domain_discriminator, 
+                          tf_rate, sty_type):
+        s_loss, l_adv_disencS, l_adv_disencC, l_recon, l_adv_domain_discri=\
             self._get_m1_loss(data, domain_discriminator, tf_rate, sty_type)
         #calcuate gradients
         self.optimizer_m1.zero_grad()
         if self.delta > 0:
-            total_loss = s_loss+l_adv_disencC+l_mimic+l_recon+l_adv_domain_discri+l_dir+l_clu
+            total_loss = s_loss+l_adv_disencS+l_adv_disencC+l_recon+l_adv_domain_discri
         else:
-            total_loss = s_loss+l_adv_disencC+l_mimic+l_recon+l_dir+l_clu
-        #total_loss.backward(retain_graph=True)
+            total_loss = s_loss+l_adv_disencS+l_adv_disencC+l_recon
         total_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.params_m1, max_norm=self.config['max_grad_norm'])
         self.optimizer_m1.step()
         total_adv_domain += l_adv_domain_discri.item()
         total_recon += l_recon.item()
         total_sloss += s_loss.item()
+        total_adv_disencS += l_adv_disencS.item()
         total_adv_disencC += l_adv_disencC.item()
-        total_mimic += l_mimic.item()
-        total_directional += l_dir.item()
-        total_cluster += l_clu.item()
-        self._log_m1(epoch, train_steps, total_steps, s_loss.item(), l_recon.item(),
-                     l_adv_disencC.item(), l_mimic.item(), 
-                     l_adv_domain_discri.item(), l_dir.item(), l_clu.item(),
+        self._log_m1(epoch, train_steps, total_steps, s_loss.item(), l_recon.item(), 
+                     l_adv_disencS.item(), l_adv_disencC.item(), l_adv_domain_discri.item(),
                      epoch*total_steps+train_steps+1)
         train_steps +=1
         return (train_steps, total_adv_domain, total_recon, total_sloss,\
-                total_directional, total_cluster, total_adv_disencC, total_mimic)
+            total_adv_disencS, total_adv_disencC)
 
     def train_one_epoch(self, epoch, tf_rate):
         total_steps = len(self.train_pos_loader)*2
+        total_disencS = 0.
         total_disencC = 0.
+        total_adv_disencS = 0.
         total_adv_disencC = 0.
         total_posdiscri = 0.
         total_negdiscri = 0.
         total_adv_posdiscri = 0.
         total_adv_negdiscri = 0.
         total_sloss = 0.
-        total_mimic = 0.
         total_recon = 0.
-        total_directional = 0.
-        total_cluster = 0.
-        # initial mean style vector
+        # initital mean style vector
         try:
             self.mean_style_pos
         except AttributeError:
@@ -653,6 +612,34 @@ class Style_transfer_proposed_att(object):
         except AttributeError:
             self.mean_style_neg = cc(torch.ones(self.config['encS_hidden_dim']*2).fill_(-1.))
         assert len(self.train_pos_loader) >= len(self.train_neg_loader)
+        pos_data_iterator = iter(self.train_pos_loader)
+        neg_data_iterator = iter(self.train_neg_loader)
+        train_steps = 0
+        for i in range(len(self.train_pos_loader)):
+            try:
+                data = next(pos_data_iterator)
+            except StopIteration:
+                print('StopIteration in pos part')
+                pass
+            (train_steps, total_adv_posdiscri, total_recon, total_sloss, 
+             total_adv_disencS, total_adv_disencC)=\
+                self._train_m1_onetime(data, total_adv_disencS, total_adv_disencC,
+                                       total_sloss, total_recon, total_adv_negdiscri, 
+                                       epoch, train_steps, total_steps, 
+                                       self.neg_domain_discri, tf_rate, 'pos')
+            try:
+                data = next(neg_data_iterator)
+            except StopIteration:
+                neg_data_iterator = iter(self.train_neg_loader)
+                data = next(neg_data_iterator)
+            (train_steps, total_adv_negdiscri, total_recon, total_sloss, 
+             total_adv_disencS, total_adv_disencC)=\
+                self._train_m1_onetime(data, total_adv_disencS, total_adv_disencC,
+                                       total_sloss, total_recon, total_adv_posdiscri, 
+                                       epoch, train_steps, total_steps, 
+                                       self.pos_domain_discri, tf_rate, 'neg')
+
+        print()
         for cnt in range(self.config['m2_train_freq']):
             pos_data_iterator = iter(self.train_pos_loader)
             neg_data_iterator = iter(self.train_neg_loader)
@@ -664,8 +651,8 @@ class Style_transfer_proposed_att(object):
                     print('StopIteration in pos part')
                     pass
                 
-                train_steps, total_posdiscri, total_negdiscri, total_disencC=\
-                    self._train_m2_onetime(data, total_disencC,
+                train_steps, total_posdiscri, total_negdiscri, total_disencS, total_disencC=\
+                    self._train_m2_onetime(data, total_disencS, total_disencC,
                                            total_posdiscri, total_negdiscri, epoch,
                                            train_steps, total_steps, cnt, 'pos')
                 try:
@@ -674,53 +661,22 @@ class Style_transfer_proposed_att(object):
                     neg_data_iterator = iter(self.train_neg_loader)
                     data = next(neg_data_iterator)
                 
-                train_steps, total_posdiscri, total_negdiscri, total_disencC=\
-                    self._train_m2_onetime(data, total_disencC,
+                train_steps, total_posdiscri, total_negdiscri, total_disencS, total_disencC=\
+                    self._train_m2_onetime(data, total_disencS, total_disencC,
                                            total_posdiscri, total_negdiscri, epoch,
                                            train_steps, total_steps, cnt, 'neg')
             print()
        
-        pos_data_iterator = iter(self.train_pos_loader)
-        neg_data_iterator = iter(self.train_neg_loader)
-        train_steps = 0
-        for i in range(len(self.train_pos_loader)):
-            try:
-                data = next(pos_data_iterator)
-            except StopIteration:
-                print('StopIteration in pos part')
-                pass
-            (train_steps, total_adv_posdiscri, total_recon, total_sloss, 
-             total_directional, total_cluster, total_adv_disencC, total_mimic)=\
-                self._train_m1_onetime(data, total_directional, total_cluster, 
-                                       total_adv_disencC, total_sloss, total_mimic, 
-                                       total_recon, total_adv_negdiscri, epoch, 
-                                       train_steps, total_steps, self.neg_domain_discri, 
-                                       tf_rate, 'pos')
-            try:
-                data = next(neg_data_iterator)
-            except StopIteration:
-                neg_data_iterator = iter(self.train_neg_loader)
-                data = next(neg_data_iterator)
-            (train_steps, total_adv_posdiscri, total_recon, total_sloss, 
-             total_directional, total_cluster, total_adv_disencC, total_mimic)=\
-                self._train_m1_onetime(data, total_directional, total_cluster, 
-                                       total_adv_disencC, total_sloss, total_mimic, 
-                                       total_recon, total_adv_posdiscri, epoch, 
-                                       train_steps, total_steps, self.pos_domain_discri, 
-                                       tf_rate, 'neg')
-
-        print()
-       
         return ((total_recon/total_steps),(total_sloss/total_steps),\
-                (total_adv_disencC/total_steps),\
-                (total_directional/total_steps),(total_cluster/total_steps),\
-                (total_mimic/total_steps),(total_adv_posdiscri*2/total_steps),\
+                (total_adv_disencS/total_steps),(total_adv_disencC/total_steps),\
+                (total_adv_posdiscri*2/total_steps),\
                 (total_adv_negdiscri*2/total_steps),\
                 ((total_adv_posdiscri/total_steps)/self.config['m2_train_freq']),\
                 ((total_adv_negdiscri/total_steps)/self.config['m2_train_freq']),\
+                ((total_disencS/total_steps)/self.config['m2_train_freq']),\
                 ((total_disencC/total_steps)/self.config['m2_train_freq']))
 
-    def _valid_feed_data(self, data_loader, total_loss):
+    def _valid_feed_data(self, data_loader, total_loss, sty_type):
         all_prediction = []
         all_inputs = []
         for step, data in enumerate(data_loader):
@@ -729,9 +685,13 @@ class Style_transfer_proposed_att(object):
             pad = self.vocab['<PAD>']
             xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
             reverse_styles = self._get_reverse_style(styles)
-            _, content_outputs, content_lens = self._pass2encs(xs, ilens)
-            recon_log_probs, prediction, pred_ilens, _ =\
-                self._get_decoder_pred(reverse_styles, content_outputs, content_lens)
+            _, content_vector = self._pass2encs(xs, ilens)
+            if sty_type == 'pos':
+                recon_log_probs, prediction, pred_ilens=\
+                    self._get_decoder_pred(self.mean_style_neg, content_vector)
+            else:
+                recon_log_probs, prediction, pred_ilens=\
+                    self._get_decoder_pred(self.mean_style_pos, content_vector)
             seq_len = [y.size(0) + 1 for y in ys]
             mask = cc(_seq_mask(seq_len=seq_len, max_len=recon_log_probs.size(1)))
             loss = (-torch.sum(recon_log_probs*mask))/sum(seq_len)
@@ -744,45 +704,43 @@ class Style_transfer_proposed_att(object):
         self.encS.eval()
         self.encC.eval()
         self.s_classifier.eval()
-        self.style_mimicker.eval()
         self.decoder.eval()
-        self.attention.eval()
+        self.disenS.eval()
         self.disenC.eval()
         total_loss = 0.
         # positive input
         posdata_pred, posdata_input, total_loss =\
-            self._valid_feed_data(self.dev_pos_loader, total_loss)
+            self._valid_feed_data(self.dev_pos_loader, total_loss, 'pos')
         # get sentence
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         if not os.path.exists(self.config['dev_file_path']):
             os.makedirs(self.config['dev_file_path'])
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
-            str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
+            str(self.gamma)+'d'+str(self.delta))
         file_path_pos = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.proposed_att.{file_prefix}.dev.0.temp')
+                                     f'pred.proposed.{file_prefix}.dev.0.temp')
         file_path_gtpos = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.proposed_att.{file_prefix}.dev.1.temp')
+                                       f'gf.proposed.{file_prefix}.dev.1.temp')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
         posdata_pred, posdata_input, total_loss =\
-            self._valid_feed_data(self.dev_neg_loader, total_loss)
+            self._valid_feed_data(self.dev_neg_loader, total_loss, 'pos')
         # get sentence
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['dev_file_path'], 
-                                     f'pred.proposed_att.{file_prefix}.dev.1.temp')
+                                     f'pred.proposed.{file_prefix}.dev.1.temp')
         file_path_gtneg = os.path.join(self.config['dev_file_path'], 
-                                       f'gf.proposed_att.{file_prefix}.dev.0.temp')
+                                       f'gf.proposed.{file_prefix}.dev.0.temp')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)
         self.encS.train()
         self.encC.train()
         self.s_classifier.train()
-        self.style_mimicker.train()
         self.decoder.train()
-        self.attention.train()
+        self.disenS.train()
         self.disenC.train()
         # evaluation
         avg_loss = total_loss / (len(self.dev_pos_loader)+len(self.dev_neg_loader))
@@ -814,8 +772,6 @@ class Style_transfer_proposed_att(object):
         else:
             self.encC.load_state_dict(state_dict[0])
             self.decoder.load_state_dict(state_dict[1])
-            self.attention.load_state_dict(state_dict[2])
-            self.style_mimicker.load_state_dict(state_dict[3])
 
         # get test dataset
         root_dir = self.config['dataset_root_dir']
@@ -830,46 +786,44 @@ class Style_transfer_proposed_att(object):
         self.encS.eval()
         self.encC.eval()
         self.s_classifier.eval()
-        self.style_mimicker.eval()
         self.decoder.eval()
-        self.attention.eval()
+        self.disenS.eval()
         self.disenC.eval()
         total_loss = 0.
         # positive input
         posdata_pred, posdata_input, total_loss =\
-            self._valid_feed_data(test_pos_loader, total_loss)
+            self._valid_feed_data(test_pos_loader, total_loss, 'pos')
         # get sentence
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         if not os.path.exists(self.config['test_file_path']):
             os.makedirs(self.config['test_file_path'])
         file_prefix = ('a'+str(self.alpha)+'b'+str(self.beta)+'g'+\
-            str(self.gamma)+'d'+str(self.delta)+'z'+str(self.zeta))
+            str(self.gamma)+'d'+str(self.delta))
         file_path_pos = os.path.join(self.config['test_file_path'], 
-                                     f'pred.proposed_att.{file_prefix}.test.0(input1)')
+                                     f'pred.proposed.{file_prefix}.test.0(input1)')
         file_path_gtpos = os.path.join(self.config['test_file_path'], 
-                                       f'gt.proposed_att.{file_prefix}.test.input1')
+                                       f'gt.proposed.{file_prefix}.test.input1')
         writefile(posdata_pred, file_path_pos)
         writefile(posdata_input, file_path_gtpos)
         # negative input
         posdata_pred, posdata_input, total_loss =\
-            self._valid_feed_data(test_neg_loader, total_loss)
+            self._valid_feed_data(test_neg_loader, total_loss, 'neg')
         # get sentence
         posdata_pred, posdata_input = self.idx2sent(posdata_pred, posdata_input)
         # write file
         file_path_neg = os.path.join(self.config['test_file_path'], 
-                                     f'pred.proposed_att.{file_prefix}.test.1(input0)')
+                                     f'pred.proposed.{file_prefix}.test.1(input0)')
         file_path_gtneg = os.path.join(self.config['test_file_path'], 
-                                       f'gf.proposed_att.{file_prefix}.test.input0')
+                                       f'gf.proposed.{file_prefix}.test.input0')
         writefile(posdata_pred, file_path_neg)
         writefile(posdata_input, file_path_gtneg)       
 
         self.encS.train()
         self.encC.train()
         self.s_classifier.train()
-        self.style_mimicker.train()
         self.decoder.train()
-        self.attention.train()
+        self.disenS.train()
         self.disenC.train()
         # evaluation
         avg_loss = total_loss / (len(test_pos_loader)+len(test_neg_loader))

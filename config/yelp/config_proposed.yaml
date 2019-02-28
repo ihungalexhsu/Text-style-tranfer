@@ -51,7 +51,7 @@ init_tf_rate: 1.0
 tf_start_decay_epochs: 10
 tf_decay_epochs: 20
 tf_rate_lowerbound: 1.0
-epochs: 20
+epochs: 15
 m2_train_freq: 5
 max_dec_timesteps: 20
 max_grad_norm: 5

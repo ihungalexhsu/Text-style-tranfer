@@ -1,9 +1,10 @@
 #from style_cycle import Style_transfer_cycle
+#from autoencoder import AutoEncoder
 from style_fader import Style_transfer_fader
 from style_proposed import Style_transfer_proposed
 from style_proposed_attention import Style_transfer_proposed_att
 from style_attention_adversarial import Style_proposed_att_adver
-#from autoencoder import AutoEncoder
+from style_uai import Style_transfer_uai 
 import yaml
 from argparse import ArgumentParser
 import sys
@@ -15,7 +16,8 @@ if __name__ == '__main__':
     parser.add_argument('-model', '-m', default='style_fader', 
                         choices=['style_cycle','autoencoder',
                                  'style_fader','style_proposed',
-                                 'style_attention', 'style_att_adver'])
+                                 'style_attention', 'style_att_adver',
+                                 'style_uai'])
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--load_model', action='store_true')
     parser.add_argument('--test', action='store_true')
@@ -46,6 +48,9 @@ if __name__ == '__main__':
             model = Style_proposed_att_adver(config, args.alpha, args.beta, 
                                              args.gamma, args.delta, args.zeta,
                                              load_model=True)
+        elif args.model=='style_uai':
+            model = Style_transfer_uai(config, args.alpha, args.beta, 
+                                       args.gamma, args.delta, load_model=True)
         '''
         elif args.model=='style_cycle':
             model = Style_transfer_cycle(config, load_model=True)
@@ -67,6 +72,9 @@ if __name__ == '__main__':
             model = Style_proposed_att_adver(config, args.alpha, args.beta, 
                                              args.gamma, args.delta, args.zeta,
                                              load_model=False)
+        elif args.model=='style_uai':
+            model = Style_transfer_uai(config, args.alpha, args.beta, 
+                                       args.gamma, args.delta, load_model=False)
         '''
         elif args.model=='style_cycle':
             model = Style_transfer_cycle(config, load_model=False)
