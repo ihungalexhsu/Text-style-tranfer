@@ -360,7 +360,7 @@ class Style_transfer_uai(object):
                           tf_rate=1.0, ground_truth=None):
         decoder_input = torch.cat([style_vector, content_vector], dim=1)
         _, recon_log_probs, predicts, _ =\
-            self.decoder(decoder_input, None, want_styles, 
+            self.decoder(decoder_input, None, None,
                          ground_truth, tf_rate=tf_rate, 
                          max_dec_timesteps=self.config['max_dec_timesteps'])
         pred_ilens = get_prediction_length(predicts, eos=self.vocab['<EOS>'])
@@ -401,12 +401,14 @@ class Style_transfer_uai(object):
         if self.delta > 0:
             # domain discriminator
             if sty_type == 'pos':
-                _, predicts, pred_ilens,_ = self._get_decoder_pred(self.mean_style_neg, content_vector.detach())
+                _, predicts, pred_ilens = self._get_decoder_pred(self.mean_style_neg.expand(content_vector.size(0),-1), 
+                                                                   content_vector.detach())
                 RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
                     self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
                                               self.pos_domain_discri, self.neg_domain_discri)
             else:
-                _, predicts, pred_ilens,_ = self._get_decoder_pred(self.mean_style_pos, content_vector.detach())
+                _, predicts, pred_ilens = self._get_decoder_pred(self.mean_style_pos.expand(content_vector.size(0),-1), 
+                                                                   content_vector.detach())
                 RM_log_probs, FNM_log_probs, FM_log_probs, RNM_log_probs =\
                     self._train_domain_discri(xs, ilens, predicts.detach(), pred_ilens.detach(),
                                               self.neg_domain_discri, self.pos_domain_discri)
@@ -516,12 +518,14 @@ class Style_transfer_uai(object):
         loss_recon = -torch.mean(recon_log_probs)*1
         if sty_type=='pos':
             self.mean_style_pos = copy.deepcopy(torch.mean(style_vector.detach(), dim=0))
-            _, predicts, pred_ilens, _ =\
-                self._get_decoder_pred(self.mean_style_neg, content_vector)
+            _, predicts, pred_ilens =\
+                self._get_decoder_pred(self.mean_style_neg.expand(content_vector.size(0),-1), 
+                                       content_vector)
         else:
             self.mean_style_neg = copy.deepcopy(torch.mean(style_vector.detach(), dim=0))
-            _, predicts, pred_ilens, _ =\
-                self._get_decoder_pred(self.mean_style_pos, content_vector)
+            _, predicts, pred_ilens=\
+                self._get_decoder_pred(self.mean_style_pos.expand(content_vector.size(0),-1), 
+                                       content_vector)
 
         if self.delta > 0:
             # Domain discriminator
@@ -688,10 +692,12 @@ class Style_transfer_uai(object):
             _, content_vector = self._pass2encs(xs, ilens)
             if sty_type == 'pos':
                 recon_log_probs, prediction, pred_ilens=\
-                    self._get_decoder_pred(self.mean_style_neg, content_vector)
+                    self._get_decoder_pred(self.mean_style_neg.expand(content_vector.size(0),-1), 
+                                           content_vector)
             else:
                 recon_log_probs, prediction, pred_ilens=\
-                    self._get_decoder_pred(self.mean_style_pos, content_vector)
+                    self._get_decoder_pred(self.mean_style_pos.expand(content_vector.size(0),-1), 
+                                           content_vector)
             seq_len = [y.size(0) + 1 for y in ys]
             mask = cc(_seq_mask(seq_len=seq_len, max_len=recon_log_probs.size(1)))
             loss = (-torch.sum(recon_log_probs*mask))/sum(seq_len)
