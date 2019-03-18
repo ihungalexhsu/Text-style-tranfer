@@ -6,3 +6,4 @@ scripts_*/
 *.vec
 predictions
 submit_*
+pretrain_w2v/*
