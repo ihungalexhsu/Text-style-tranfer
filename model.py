@@ -20,8 +20,7 @@ class Encoder(torch.nn.Module):
         
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
         if pre_embedding is not None:
-            self.embedding.weight = nn.Parameter(pre_embedding)
-        self.embedding.weight.requires_grad = update_embedding
+            self.embedding = self.embedding.from_pretrained(pre_embedding, freeze=not(update_embedding))
         layers = []
         hdim = hidden_dim*2 if bidirectional else hidden_dim
         for i in range(n_layers):
@@ -58,10 +57,13 @@ class Decoder(torch.nn.Module):
                  n_styles, style_emb_dim=1, use_enc_init=True,
                  use_attention=False, attention=None,
                  use_style_embedding=True, ls_weight=0, labeldist=None, 
-                 give_context_directly=False, give_style_repre_directly=False):
+                 give_context_directly=False, give_style_repre_directly=False,
+                 pre_embedding=None, update_embedding=True):
         super(Decoder, self).__init__()
         self.bos, self.eos, self.pad = bos, eos, pad
         self.embedding = torch.nn.Embedding(output_dim, embedding_dim, padding_idx=pad)
+        if pre_embedding is not None:
+            self.embedding = self.embedding.from_pretrained(pre_embedding, freeze=not(update_embedding))
         self.hidden_dim = hidden_dim
         self.use_attention = use_attention
         self.use_style_embedding = use_style_embedding
@@ -236,8 +238,7 @@ class Domain_discri(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
         if pre_embedding is not None:
-            self.embedding.weight = nn.Parameter(pre_embedding)
-        self.embedding.weight.requires_grad = update_embedding
+            self.embedding = self.embedding.from_pretrained(pre_embedding, freeze=not(update_embedding))
         self.rnn = nn.GRU(embedding_dim, rnn_hidden_dim, num_layers=1,
                           bidirectional=True, batch_first=True)
         self.dropout_rate = dropout_rate
@@ -388,4 +389,49 @@ class BiRNN_discri(nn.Module):
             ilens=ilens[unsort_idx]
         logits = self.dnn(get_enc_context(rnnout,cc(ilens)))
         return torch.tanh(logits)
+
+class LSTMAttClassifier(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, rnn_hidden_dim, dropout_rate,
+                 dnn_hidden_dim, attention_dim,
+                 pad_idx=0, pre_embedding=None, update_embedding=True):
+        super().__init__()
+        if pre_embedding is not None:
+            self.embedding = nn.Embedding.from_pretrained(pre_embedding, freeze=not(update_embedding))
+        else:
+            self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
+        self.rnn = nn.GRU(embedding_dim, rnn_hidden_dim, num_layers=2,
+                          bidirectional=True, batch_first=True, dropout=dropout_rate)
+        self.dropout = nn.Dropout(p=dropout_rate)
+        self.attention = dotAttn(2*rnn_hidden_dim, 2*rnn_hidden_dim, attention_dim) 
+        self.dnn = nn.Sequential(
+            nn.Linear(2*rnn_hidden_dim, dnn_hidden_dim),
+            nn.LeakyReLU(0.2),
+            nn.Dropout(p=dropout_rate),
+            nn.Linear(dnn_hidden_dim, 2),
+        )
+                          
+    def forward(self, x, ilens, need_sort=False):
+        if need_sort:
+            sort_idx = np.argsort((-ilens).cpu().numpy())
+            x = x[sort_idx]
+            ilens = ilens[sort_idx]
+            unsort_idx = np.argsort(sort_idx)
+        embedded = self.embedding(x)
+        total_length = embedded.size(1)
+        xpack = pack_padded_sequence(embedded, ilens, batch_first=True)
+        self.rnn.flatten_parameters()
+        xpack, _ = self.rnn(xpack)
+        xpad, ilens = pad_packed_sequence(xpack, batch_first=True, total_length=total_length)
+        rnnout = self.dropout(xpad)
+        query = get_enc_context(rnnout, cc(ilens))
+        context, att_energy = self.attention(query, rnnout, rnnout, key_len=cc(ilens))
+        if need_sort:
+            rnnout=rnnout[unsort_idx]
+            ilens=ilens[unsort_idx]
+            context=context[unsort_idx]
+            att_energy=att_energy[unsort_idx]
+        logits = self.dnn(context)
+        log_probs = F.log_softmax(logits, dim=1)
+        prediction = log_probs.topk(1, dim=1)[1]
+        return logits, log_probs, prediction, att_energy
 

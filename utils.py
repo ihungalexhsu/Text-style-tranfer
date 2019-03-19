@@ -9,6 +9,9 @@ from sklearn import manifold
 from sklearn.decomposition import PCA
 from nltk.translate.bleu_score import corpus_bleu
 import statistics
+import gensim
+from gensim.models import KeyedVectors
+import pickle
 
 def pad_list(xs, pad_value=0):
     '''
@@ -156,4 +159,90 @@ def writefile(structure, path):
     with open(path, 'w') as f:
         for s in structure:
             f.write(s+'\n')
+    return
 
+def loadw2vweight(w2vpath, vocabdict, pad_idx, binary=False):
+    model = KeyedVectors.load_word2vec_format(w2vpath, binary=binary)
+    modelwordlist = model.index2entity
+    pretrainweight = list()
+    for i,(k,v) in enumerate(vocabdict.items()):
+        if i == pad_idx:
+            pretrainweight.append(np.zeros((100,),dtype=np.float32))
+        else:
+            if k in modelwordlist:
+                pretrainweight.append(model[k])
+            else:
+                pretrainweight.append(np.random.randn(100,).astype(np.float32))
+    pretrainweight = np.array(pretrainweight)
+    return torch.FloatTensor(pretrainweight)
+
+def mergew2v(w2vpath, vocabdict, pad_idx, binary=False):
+    model = KeyedVectors.load_word2vec_format(w2vpath, binary=binary)
+    modelwordlist = model.index2entity
+    pretrainweight = list()
+    for i,(k,v) in enumerate(vocabdict.items()):
+        if i == pad_idx:
+            pretrainweight.append(np.zeros((100,),dtype=np.float32))
+        else:
+            if k in modelwordlist:
+                pretrainweight.append(model[k])
+            else:
+                pretrainweight.append(np.random.randn(100,).astype(np.float32))
+    index = len(vocabdict)
+    for w in modelwordlist:
+        if w in vocabdict.keys():
+            pass
+        else:
+            vocabdict[w]=(index+1)
+            pretrainweight.append(model[w])
+            index+=1
+    pretrainweight = np.array(pretrainweight)
+    return torch.FloatTensor(pretrainweight), vocabdict
+
+def readfile2list(filepath):
+    sentences = list()
+    with open(filepath, 'r', encoding='utf8', errors='ignore') as f:
+        for line in f.readlines():
+            sentences.append(line)
+    return sentences
+
+def transform(sentences, vocab_dict):
+    new_sentences = list()
+    for s in sentences:
+        new_ws = list()
+        ws = s.split()
+        for w in ws:
+            if w in vocab_dict.keys():
+                new_ws.append(w)
+            else:
+                new_ws.append('<UNK>')
+        new_sentences.append(' '.join(new_ws))
+    return new_sentences
+
+def sent2vec(vocab_dict, sentence):
+    output = []
+    wordvec = sentence.split()
+    for w in wordvec:
+        if w not in vocab_dict.keys():
+            output.append(vocab_dict['<UNK>'])
+        else:
+            output.append(vocab_dict[w])
+    return output
+
+def construct_dataformat(sentences, vocab_dict, label):
+    out = dict()
+    i = 0
+    for s in sentences:
+        out[i] = {
+            'data': sent2vec(vocab_dict, s),
+            'label': label
+        }
+        i+=1
+    return out
+
+def transfer_txt2pickle(filepath, vocab_dict, label):
+    sentences = readfile2list(filepath)
+    sentences = transform(sentences, vocab_dict)
+    structure = construct_dataformat(sentences, vocab_dict, label)
+    pickle.dump(structure, open('./temp/test.p', 'wb'))
+    return './temp/test.p'
