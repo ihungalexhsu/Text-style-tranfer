@@ -1,6 +1,7 @@
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate.bleu_score import corpus_bleu
 from nltk.translate.bleu_score import SmoothingFunction
+from nltk.tokenize import word_tokenize
 import numpy as np
 import sys
 
@@ -12,9 +13,9 @@ def BLEU(candidate_path, reference_path):
     ref = list()
     can = list()
     for c,r in zip(candidates, references):
-        ref.append([r.lower().strip().split()])
-        #can.append((c.lower().split('\t')[1]).strip().split())
-        can.append(c.lower().strip().split())
+        ref.append([word_tokenize(r.lower().strip())])
+        #can.append(word_tokenize((c.lower().split('\t')[1]).strip()))
+        can.append(word_tokenize(c.lower().strip()))
     cc = SmoothingFunction()
     bleu = corpus_bleu(ref, can, smoothing_function=cc.method2)
     
@@ -22,9 +23,9 @@ def BLEU(candidate_path, reference_path):
     ref = list()
     can = list()
     for c,r in zip(candidates, references):
-        ref.append([r.lower().strip().split()])
-        #can.append((c.lower().split('\t')[1]).strip().split())
-        can.append(c.lower().strip().split())
+        ref.append([word_tokenize(r.lower().strip())])
+        #can.append(word_tokenize((c.lower().split('\t')[1]).strip()))
+        can.append(word_tokenize(c.lower().strip()))
     cc = SmoothingFunction()
     bleu4 = corpus_bleu(ref, can, smoothing_function=cc.method2, weights=(0, 0, 0, 1))
     

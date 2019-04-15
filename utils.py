@@ -12,6 +12,7 @@ import statistics
 import gensim
 from gensim.models import KeyedVectors
 import pickle
+from nltk.tokenize import word_tokenize
 
 def pad_list(xs, pad_value=0):
     '''
@@ -210,7 +211,7 @@ def transform(sentences, vocab_dict):
     new_sentences = list()
     for s in sentences:
         new_ws = list()
-        ws = s.split()
+        ws = word_tokenize(s)
         for w in ws:
             if w in vocab_dict.keys():
                 new_ws.append(w)

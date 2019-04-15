@@ -1,5 +1,6 @@
 import fastText
 import sys
+from nltk.tokenize import word_tokenize
 
 def Transferability(candidate_path, model_path, true_label):
     '''
@@ -9,7 +10,7 @@ def Transferability(candidate_path, model_path, true_label):
     candidates = readfile2list(candidate_path)
     correct = 0.
     for c in candidates:
-        label, confidence = m.predict(c.strip('\n').strip())
+        label, confidence = m.predict(' '.join(word_tokenize(c.strip('\n').strip())))
         if label[0]==true_label:
             correct += 1
     return correct*100/len(candidates)

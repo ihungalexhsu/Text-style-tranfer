@@ -1,7 +1,7 @@
 import torch 
 import torch.nn as nn
 import numpy as np
-from model import LSTMAttClassifier
+from model import LSTMAttClassifier, StructureSelfAtt
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
@@ -11,7 +11,7 @@ import yaml
 import os
 import pickle
 
-class Pretrain_selfatt_classifier(object):
+class Pretrain_structureSelfAttn(object):
     def __init__(self, config, load_model=False):
         self.config = config
         print(self.config)
@@ -102,12 +102,13 @@ class Pretrain_selfatt_classifier(object):
                                                 self.vocab['<PAD>'], False)
             print("vocabulary size:", len(self.vocab))
 
-        self.classifier=cc_model(LSTMAttClassifier(vocab_size=len(self.vocab),
+        self.classifier=cc_model(StructureSelfAtt(vocab_size=len(self.vocab),
                                         embedding_dim=self.config['embedding_dim'],
                                         rnn_hidden_dim=self.config['rnn_hidden_dim'],
                                         dropout_rate=self.config['dropout_p'],
                                         dnn_hidden_dim=self.config['dnn_hidden_dim'],
                                         attention_dim=self.config['att_dim'],
+                                        attention_hop=self.config['att_hop'],
                                         pad_idx=self.vocab['<PAD>'],
                                         pre_embedding=pretrain_w2v,
                                         update_embedding=self.config['update_embedding']))
@@ -163,6 +164,7 @@ class Pretrain_selfatt_classifier(object):
             # save best
             if val_acc > best_acc: 
                 model_path = os.path.join(self.config['model_dir'], self.config['model_name']+'_best')
+                best_acc = val_acc
                 self.save_model(model_path)
                 best_model = copy.deepcopy(self.classifier.state_dict())
                 print(f'Save #{epoch} model, val_loss={val_loss:.4f}, Accuracy={val_acc:.4f}')
@@ -244,14 +246,17 @@ class Pretrain_selfatt_classifier(object):
         return
     
     def _get_mean_att(self, att_energy):
-        return torch.mean(att_energy, dim=1)
+        return torch.mean(att_energy, dim=2)
 
     def get_important_word(self, input_words, att_energy):
-        means = self._get_mean_att(att_energy).view(-1,1).expand_as(att_energy)
+        means = self._get_mean_att(att_energy).unsqueeze(2).expand_as(att_energy)
         important_idx = att_energy > means
         important_words = list()
         for (ws, mask) in zip(input_words,important_idx):
-            important_words.append(torch.masked_select(ws, mask).cpu().tolist())
+            implist = list()
+            for m in mask:
+                implist = implist + torch.masked_select(ws, m).cpu().tolist()
+            important_words.append(implist)
         return important_words
 
     def _valid_feed_data(self, dataloader, total_loss, correct, total_instance):
@@ -377,7 +382,7 @@ class Pretrain_selfatt_classifier(object):
         print(f"------finish testing------, Testing Accuracy: {avg_acc:.4f}")
         return avg_acc
 
-    def test_ontxt(self, testfilepath, label, writefile=False, state_dict=None):
+    def test_ontxt(self, testfilepath, label, write=False, state_dict=None):
         if not os.path.exists('./temp'):
             os.makedirs('./temp')
         if state_dict is None:
@@ -398,13 +403,13 @@ class Pretrain_selfatt_classifier(object):
             self._valid_feed_data(test_loader, total_loss, correct, total_instance)
         important_word, inputs = self.idx2sent(important_word, inputs)
         # write file
-        if writefile:
+        if write:
             if not os.path.exists(self.config['test_file_path']):
                 os.makedirs(self.config['test_file_path'])
             file_path = os.path.join(self.config['test_file_path'], 
-                                    f'important_words.testontxt.1.temp')
-            file_path_input_pos = os.path.join(self.config['test_file_path'], 
-                                               f'input_sentences.testontxt.1.temp')
+                                    f'important_words.testontxt.{label}.temp')
+            file_path_input = os.path.join(self.config['test_file_path'], 
+                                               f'input_sentences.testontxt.{label}.temp')
             writefile(important_word, file_path)
             writefile(inputs, file_path_input)
         self.classifier.train()

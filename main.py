@@ -1,10 +1,3 @@
-#from style_cycle import Style_transfer_cycle
-#from autoencoder import AutoEncoder
-from style_fader import Style_transfer_fader
-from style_proposed import Style_transfer_proposed
-from style_proposed_attention import Style_transfer_proposed_att
-from style_attention_adversarial import Style_proposed_att_adver
-from style_uai import Style_transfer_uai 
 import yaml
 from argparse import ArgumentParser
 import sys
