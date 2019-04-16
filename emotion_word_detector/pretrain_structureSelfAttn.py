@@ -5,7 +5,6 @@ from model import LSTMAttClassifier, StructureSelfAtt
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
-from utils import _seq_mask
 import copy
 import yaml
 import os

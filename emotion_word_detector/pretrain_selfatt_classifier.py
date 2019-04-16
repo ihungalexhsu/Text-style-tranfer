@@ -5,11 +5,12 @@ from model import LSTMAttClassifier, StructureSelfAtt
 from dataloader import get_data_loader
 from dataset import PickleDataset
 from utils import *
-from utils import _seq_mask
 import copy
 import yaml
 import os
+from collections import Counter
 import pickle
+from nltk.corpus import stopwords
 
 class Pretrain_selfatt_classifier(object):
     def __init__(self, config, load_model=False):
@@ -243,32 +244,41 @@ class Pretrain_selfatt_classifier(object):
                                    value=loss,
                                    step=log_steps)
         return
-    
-    ''' 
-    def _get_mean_att(self, att_energy):
-        return torch.mean(att_energy, dim=1)
 
-    def get_important_word(self, input_words, att_energy):
-        means = self._get_mean_att(att_energy).unsqueeze(1).expand_as(att_energy)
-        important_idx = att_energy > means
-        important_words = list()
-        for (ws, mask) in zip(input_words,important_idx):
-            important_words.append(torch.masked_select(ws, mask).cpu().tolist())
-        return important_words
-    '''
     def _get_mean_att(self, att_energy):
         return torch.mean(att_energy, dim=2)
 
     def get_important_word(self, input_words, att_energy):
         means = self._get_mean_att(att_energy).unsqueeze(2).expand_as(att_energy)
-        important_idx = att_energy >= means
+        important_idx = (att_energy >= means)
+        emotion_alignment = (torch.sum(important_idx, dim=1) > 0) # (batch x seq_len) 
         important_words = list()
-        for (ws, mask) in zip(input_words,important_idx):
-            implist = list()
-            for m in mask:
-                implist = implist + torch.masked_select(ws, m).cpu().tolist()
-            important_words.append(implist)
-        return important_words
+        emotion_alignment = self.tune_alignment(input_words, emotion_alignment)
+        for (ws, mask) in zip(input_words, emotion_alignment):
+            important_words.append(torch.masked_select(ws, mask).cpu().tolist())
+        return important_words, emotion_alignment
+    
+    def tune_alignment(self, input_words, emotion_alignment):
+        if self.stop_words is None:
+            stop_words = set(stopwords.words('english'))
+            stop_words = stop_words - set('not')
+            symbol_list = ['.','!',"'s",'&','...',"'ll",'-','?','``','<UNK>',':',
+                           '_num_',"''",'(',')',';','--', ',', "'ve",'$', "'m", "'d"]
+            stop_words = stop_words.union(set(symbol_list))
+            self.stop_words = stop_words
+            idx_stop = list()
+            for w in self.stop_words:
+                if w in self.vocab.keys():
+                    idx_stop.append(self.vocab[w])
+            self.stop_words_ids = set(idx_stop)
+        new_alignment = emotion_alignment.new_zeros(emotion_alignment.size())
+        for i,(ws, masks) in enumerate(zip(input_words, emotion_alignment)):
+            for j,(w, m) in enumerate(zip(ws, masks)):
+                if (m) and (w.cpu().int().item() in self.stop_words_ids):
+                    new_alignment[i,j]=0
+                else:
+                    new_alignment[i,j]=m
+        return new_alignment
 
     def _valid_feed_data(self, dataloader, total_loss, correct, total_instance):
         all_inputs = []
@@ -284,8 +294,9 @@ class Pretrain_selfatt_classifier(object):
             loss = -torch.mean(true_log_probs)
             total_instance += len(prediction.view(-1))
             correct += (styles.eq(prediction.view(-1).long()).sum()).item()
-            all_inputs = all_inputs + [y.cpu().tolist() for y in ys] 
-            all_important_word = all_important_word + self.get_important_word(xs, att_energy)
+            all_inputs = all_inputs + [y.cpu().tolist() for y in ys]
+            important_words,_  = self.get_important_word(xs, att_energy)
+            all_important_word = all_important_word + important_words
             total_loss += loss.item()
 
         return all_inputs, all_important_word, correct, total_instance, total_loss
@@ -428,3 +439,84 @@ class Pretrain_selfatt_classifier(object):
         avg_acc = correct/total_instance
         print(f"------finish testing------, Testing Accuracy: {avg_acc:.4f}")
         return avg_acc
+
+    def collect_alignment(self, data_loader):
+        self.classifier.eval()
+        emo_word_collect = Counter()
+        pickle_data = list()
+        for data in data_loader:
+            bos = self.vocab['<BOS>']
+            eos = self.vocab['<EOS>']
+            pad = self.vocab['<PAD>']
+            xs, ys, ys_in, ys_out, ilens, styles = to_gpu(data, bos, eos, pad)
+            logits, log_probs, prediction, att_energy = self.classifier(xs, ilens)
+            emo_words, emotion_alignment = self.get_important_word(xs, att_energy)
+            emotion_alignment = trim_emotion_alignment(emotion_alignment, ilens)
+            emo_words = to_sents(emo_words, self.vocab, self.non_lang_syms)
+            for sen in emo_words:
+                for w in sen.split(' '):
+                    if w != '':
+                        emo_word_collect[w]+=1
+            ori_data, ori_style = reverse_to_dataformat(ys, styles)
+            for i in range(len(ori_data)):
+                temp_data={
+                    'data':ori_data[i],
+                    'label':ori_style[i],
+                    'align':emotion_alignment[i].cpu()
+                }
+                pickle_data.append(temp_data)
+        self.classifier.train()
+        return pickle_data, emo_word_collect
+
+    def get_alignmentoutput(self):
+        self.stop_words = None
+        train_pos_data, train_pos_emo = self.collect_alignment(self.train_pos_loader)
+        store_root = self.config['store_data_path']
+        pos_emo_path = os.path.join(store_root, 'pos_emotion_word.p')
+        pickle.dump(train_pos_emo, open(pos_emo_path,'wb'))
+        pos_data_path = os.path.join(store_root, 'pos_train_withA.p')
+        pickle.dump(list_todictformat(train_pos_data), open(pos_data_path,'wb'))
+        del train_pos_data
+        del train_pos_emo
+        
+        train_neg_data, train_neg_emo = self.collect_alignment(self.train_neg_loader)
+        neg_emo_path = os.path.join(store_root, 'neg_emotion_word.p')
+        pickle.dump(train_neg_emo, open(neg_emo_path,'wb'))
+        neg_data_path = os.path.join(store_root, 'neg_train_withA.p')
+        pickle.dump(list_todictformat(train_neg_data), open(neg_data_path,'wb'))
+        del train_neg_data
+        del train_neg_emo
+                
+        dev_pos_data, _ = self.collect_alignment(self.dev_pos_loader)
+        pos_data_path = os.path.join(store_root, 'pos_dev_withA.p')
+        pickle.dump(list_todictformat(dev_pos_data), open(pos_data_path,'wb'))
+        del dev_pos_data
+        
+        dev_neg_data, _ = self.collect_alignment(self.dev_neg_loader)
+        neg_data_path = os.path.join(store_root, 'neg_dev_withA.p')
+        pickle.dump(list_todictformat(dev_neg_data), open(neg_data_path,'wb'))
+        del dev_neg_data
+        
+        root_dir = self.config['dataset_root_dir']
+        test_pos_set = self.config['test_pos']
+        test_neg_set = self.config['test_neg']
+        test_pos_dataset = PickleDataset(os.path.join(root_dir, f'{test_pos_set}.p'), 
+                                         config=None, sort=False)
+        test_pos_loader = get_data_loader(test_pos_dataset, 
+                                          batch_size=1, 
+                                          shuffle=False)
+        test_neg_dataset = PickleDataset(os.path.join(root_dir, f'{test_neg_set}.p'), 
+                                         config=None, sort=False)
+        test_neg_loader = get_data_loader(test_neg_dataset, 
+                                          batch_size=1, 
+                                          shuffle=False)
+        test_pos_data, _ = self.collect_alignment(test_pos_loader)
+        pos_data_path = os.path.join(store_root, 'pos_test_withA.p')
+        pickle.dump(list_todictformat(test_pos_data), open(pos_data_path,'wb'))
+        del test_pos_data
+        
+        test_neg_data, _ = self.collect_alignment(test_neg_loader)
+        neg_data_path = os.path.join(store_root, 'neg_test_withA.p')
+        pickle.dump(list_todictformat(test_neg_data), open(neg_data_path,'wb'))
+        del test_neg_data
+        return
