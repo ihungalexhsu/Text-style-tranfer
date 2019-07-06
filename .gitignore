@@ -7,3 +7,5 @@ scripts_*/
 predictions
 submit_*
 pretrain_w2v/*
+*.p
+
